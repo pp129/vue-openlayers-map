@@ -34,6 +34,29 @@ function panTo (map, center, zoom) {
   map.getView().animate({ center: center }, { zoom: zoom })
 }
 
+function setView (option, map) {
+  const viewOption = Object.assign({
+    center: [0, 0],
+    zoom: 12,
+    constrainResolution: true,
+    projection: 'EPSG:4326'
+  }, option)
+  const view = new View(viewOption)
+  map.setView(view)
+  // 移动动画
+  if (validObjKey(viewOption, 'animate')) {
+    const animate = Object.assign({
+      center: [0, 0], // 中心点
+      zoom: 12, // 级别
+      resolution: undefined, // zoom设置了，这个被忽略
+      rotation: undefined, // 缩放完成view视图旋转弧度
+      anchor: undefined, // 在旋转或分辨率动画期间保持固定的可选锚点 不需要设置，
+      duration: 1000 // 缩放持续时间，默认不需要设置
+    }, viewOption.animate)
+    view.animate(animate)
+  }
+}
+
 function baseTile (option, visible) {
   let layers = []
   if (typeof option === 'string') {
@@ -136,10 +159,8 @@ function restVisibleBaseTile (map, name) {
 
 function setLayer (option, map) {
   const layers = map.getLayers()
-  console.log(option)
   layers.forEach(item => {
     if (item && item.get('id') === option.id) {
-      console.log(item)
       map.removeLayer(item)
     }
   })
@@ -496,6 +517,10 @@ export class VMap {
         return setOverlayPosition(overlay, option.position)
       }
     })
+  }
+
+  static setView (option) {
+    return setView(option, VMap.map.map)
   }
 
   constructor (option = {}) {

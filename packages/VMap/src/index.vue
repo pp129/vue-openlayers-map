@@ -36,6 +36,7 @@ export default {
     option: {
       handler (value) {
         console.log('watch option ----> ', value)
+        // todo 用store记录变更
         if (value.updateLayers && value.updateLayers.length > 0) {
           // 局部更新图层
           value.updateLayers.forEach(updateLayer => {
@@ -53,6 +54,7 @@ export default {
           this.restVisibleBaseTile(value.visibleTile)
         }
         this.setOverlayPosition(value.overlays)
+        this.setView(value.view)
       },
       deep: true,
       immediate: false
@@ -110,6 +112,9 @@ export default {
       overlays.forEach(overlay => {
         VMap.setOverlayPosition(overlay)
       })
+    },
+    setView (option) {
+      VMap.setView(option)
     }
   }
 }

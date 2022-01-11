@@ -78,13 +78,7 @@ export default {
       ],
       checked: ['layer1', 'cluster', 'polygon', 'heatmap'],
       editor: null,
-      currentZoom: 0,
-      updateFeatures: []
-    }
-  },
-  computed: {
-    map () {
-      return VMap
+      currentZoom: 0
     }
   },
   created () {
@@ -135,7 +129,6 @@ export default {
       }
     },
     onChangeZoom (evt) {
-      console.log('current zoom: ' + evt.map.getView().getZoom())
       this.currentZoom = evt.map.getView().getZoom()
     },
     showOverlay (properties, id, element, coordinate) {
