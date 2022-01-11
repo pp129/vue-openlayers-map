@@ -1,33 +1,41 @@
 export default {
   /**
    * 基础图层
+   * @param {Array} [baseTile=['td']] 数组内元素可以是字符串或对象，默认天地图矢量图层
    */
   baseTile: [
-    'td', // 天地矢量
-    'td_img', // 天地影像
-    // 自定义路径
+    'td', // 天地图-矢量
     {
-      base: true,
+      type: 'td_img'// 天地图-影像
+    },
+    /**
+     * 自定义图层 以天地图地形图为例
+     * @param {String} [type]
+     * @param {Array} [url]
+     */
+    {
       type: 'xyz',
+      // 图层加载路径需符合XYZ规则
       url: [
         'http://t4.tianditu.com/DataServer?T=ter_w&x={x}&y={y}&l={z}&tk=88e2f1d5ab64a7477a7361edd6b5f68a',
         'http://t3.tianditu.com/DataServer?T=cia_w&x={x}&y={y}&l={z}&tk=88e2f1d5ab64a7477a7361edd6b5f68a'
-      ],
-      visible: false
+      ]
     }
   ],
-  visibleTile: 'td', // 多个基础图层情况下默认显示的图层
+  visibleTile: 'td', // 多个基础图层情况下默认显示的图层,对应baseTile中元素，当元素类型为对象时指定对象中type的值
   /**
-   * 鹰眼显示图层
+   * 鹰眼显示图层 值参考baseTile中元素，可以是字符串也可以是对象，不设置次属性或值为false则不显示鹰眼
    */
-  overview: 'td_img',
+  overview: false,
   /**
-   * 视图
+   * 视图 view
+   * 属性参考： https://openlayers.org/en/latest/apidoc/module-ol_View-View.html
    */
   view: {
     center: [118.045456, 24.567489],
     zoom: 12,
-    constrainResolution: true, // 设置视图是否应允许中间缩放级别。true:鼠标缩放地图,每次缩放为1级别
+    // 设置视图是否应允许中间缩放级别。true:鼠标缩放地图,每次缩放级别为整数1
+    constrainResolution: true,
     // 地图加载初始动画
     animate: {
       center: [118.18239576954171, 24.487288698062056], // 中心点
@@ -35,7 +43,8 @@ export default {
     }
   },
   /**
-   * 图层
+   * 图层 layer：https://openlayers.org/en/latest/apidoc/module-ol_layer_Layer-Layer.html
+   * 单个layer属性参考：https://openlayers.org/en/latest/apidoc/module-ol_layer_Layer-Layer.html
    */
   layers: [
     /**
@@ -49,8 +58,34 @@ export default {
         {
           coordinates: [118.124728, 24.487902],
           style: {
-            icon: require('@/assets/img/point_red.png')
+            // 点位图标：https://openlayers.org/en/latest/apidoc/module-ol_style_Icon-Icon.html
+            icon: {
+              scale: 0.6,
+              src: require('@/assets/img/point_red.png')
+            },
+            // 点位文字：https://openlayers.org/en/latest/apidoc/module-ol_style_Text-Text.html
+            text: {
+              text: 'text',
+              font: '13px sans-serif',
+              fill: {
+                color: '#3d73e8'
+              },
+              backgroundFill: {
+                color: '#ffffff'
+              },
+              stroke: {
+                color: '#ffffff',
+                width: 1
+              },
+              backgroundStroke: {
+                color: '#000000',
+                width: 1
+              },
+              offsetX: 0,
+              offsetY: 30
+            }
           },
+          // 需要附加在元素上的属性，一般用于点击获取点位信息，使用feature.get('properties')读取
           properties: {
             name: 'feature1'
           }
@@ -58,7 +93,9 @@ export default {
         {
           coordinates: [118.159440, 24.499776],
           style: {
-            icon: require('@/assets/img/point_red.png')
+            icon: {
+              src: require('@/assets/img/point_red.png')
+            }
           },
           properties: {
             name: 'feature2'
@@ -67,7 +104,9 @@ export default {
         {
           coordinates: [118.0501900989113, 24.58279368463898],
           style: {
-            icon: require('@/assets/img/point_blue.png')
+            icon: {
+              src: require('@/assets/img/point_blue.png')
+            }
           },
           properties: {
             name: 'feature3'
@@ -76,7 +115,7 @@ export default {
       ]
     },
     /**
-     * 示例图层
+     * 示例图层 继承layer
      * features为多边形、折线、圆形
      */
     {
@@ -84,7 +123,7 @@ export default {
       visible: true,
       features: [
         {
-          type: 'polygon',
+          type: 'polygon', // 除了普通icon点位，其他元素需注明元素类型
           style: {
             fill: {
               color: 'rgba(167,26,12,0.15)'
@@ -93,6 +132,11 @@ export default {
               color: 'rgba(67,126,255,1)',
               width: 1,
               lineDash: [20, 10, 20, 10]
+            }
+          },
+          updateStyle: {
+            fill: {
+              color: 'rgba(4,3,43,0.5)'
             }
           },
           coordinates: [[118.23048075355373, 24.587052571002776], [118.25051461705989, 24.592192894082423], [118.24383041710121, 24.561810933485354], [118.23048075355373, 24.587052571002776]]
@@ -116,29 +160,42 @@ export default {
       ]
     },
     /**
-     * 示例图层
+     * 示例图层 继承layer
      * 聚合
      */
     {
       id: 'cluster',
       type: 'cluster',
       visible: true,
+      minZoom: 10,
+      maxZoom: 16,
       features: [
         {
-          coordinates: [117.96768937292673, 24.51616895381355]
+          coordinates: [117.96768937292673, 24.51616895381355],
+          style: {
+            icon: {
+              src: require('@/assets/img/point_red.png')
+            }
+          }
         },
         {
-          coordinates: [117.97481324839465, 24.502306340499445]
+          coordinates: [117.97481324839465, 24.502306340499445],
+          style: {
+            icon: {
+              src: require('@/assets/img/point_blue.png')
+            }
+          }
         }
       ],
-      distance: 120,
-      minDistance: 0,
-      minZoom: 1,
-      maxZoom: 16
+      // 聚合：https://openlayers.org/en/latest/apidoc/module-ol_source_Cluster-Cluster.html
+      cluster: {
+        distance: 120, // 要素将聚集在一起的像素距离。
+        minDistance: 1// 聚合之间的最小距离（以像素为单位）。将被限制在配置的距离。默认情况下，不设置最小距离。此配置可用于避免重叠图标。作为权衡，聚合要素的位置将不再是其所有要素的中心。
+      }
     },
     /**
-     * 示例图层
-     * 热力图
+     * 示例图层 继承layer
+     * 热力图：https://openlayers.org/en/latest/apidoc/module-ol_layer_Heatmap-Heatmap.html
      */
     {
       id: 'heatmap',
@@ -147,29 +204,43 @@ export default {
       features: [
         {
           coordinates: [117.97453973475076, 24.61692211214447],
-          weight: 0.7
+          qz: '7'// 一般来说在元素上配置权重,默认为"weight"，Number类型。
         },
         {
           coordinates: [118.00639182661692, 24.57216235632966],
-          weight: 0.8
+          qz: '8'
         },
         {
           coordinates: [117.98525113645174, 24.57184088412666],
-          weight: 0.6
+          qz: '6'
         }
       ],
       blur: 100,
-      radius: 100
+      radius: 100,
+      /**
+       * 用于权重的特征属性或从特征返回权重的函数。权重值的范围应为 0 到 1（超出范围的值将被限制在该范围内）。
+       * type: string | function
+       * (defaults to 'weight')
+       */
+      weight: function (feature) {
+        return Number(feature.get('qz')) / 10
+      }
     }
   ],
   /**
-   * 叠加（弹框）
+   * 叠加（弹框）https://openlayers.org/en/latest/apidoc/module-ol_Overlay-Overlay.html
    */
   overlays: [
     {
       id: 'overlay',
-      target: 'overlay'// dom元素id
+      element: 'overlay'// dom元素id
     }
   ],
-  eventListeners: ['changeZoom']
+  updateLayers: [], // 想要局部更新的layers id最好不要重复
+  /**
+   * 需要注册的地图事件
+   * click:点击 回调：@click
+   * changeZoom:层级变化 回调：@changeZoom
+   */
+  eventListeners: ['click', 'changeZoom']
 }

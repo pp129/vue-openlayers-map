@@ -36,8 +36,22 @@ export default {
     option: {
       handler (value) {
         console.log('watch option ----> ', value)
-        this.setLayers(value.layers)
-        this.restVisibleBaseTile(value.visibleTile)
+        if (value.updateLayers && value.updateLayers.length > 0) {
+          // 局部更新图层
+          value.updateLayers.forEach(updateLayer => {
+            value.layers.forEach(layer => {
+              if (layer.id === updateLayer) {
+                this.setLayer(layer)
+              }
+            })
+          })
+        } else {
+          // 全量更新
+          this.setLayers(value.layers)
+        }
+        if (value.baseTile.length > 1) { // 理论上有多基础图层的情况下才有必要走这一步
+          this.restVisibleBaseTile(value.visibleTile)
+        }
         this.setOverlayPosition(value.overlays)
       },
       deep: true,
@@ -53,11 +67,14 @@ export default {
   methods: {
     init () {
       VMap.map = new VMap(this.option)
-      this.map.on('click', evt => {
-        this.$emit('click', evt, this.map)
-      })
       // 添加事件
       if (Object.prototype.hasOwnProperty.call(this.option, 'eventListeners') && this.option.eventListeners && this.option.eventListeners.length > 0) {
+        // 点击事件
+        if (this.option.eventListeners.indexOf('click') > -1) {
+          this.map.on('click', evt => {
+            this.$emit('click', evt, this.map)
+          })
+        }
         // 层级变化
         if (this.option.eventListeners.indexOf('changeZoom') > -1) {
           this.map.getView().once('change:resolution', () => {

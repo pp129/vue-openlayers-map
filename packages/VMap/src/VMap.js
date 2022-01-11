@@ -9,6 +9,23 @@ import { Fill, Icon, Stroke, Style, Text, Circle as CircleStyle } from 'ol/style
 import { OverviewMap } from 'ol/control'
 // import { defaults as defaultControls } from 'ol/control'
 
+Map.prototype.getFeaturesByLayerId = function (id) {
+  const layers = this.getLayers()
+  let features = []
+  layers.forEach(layer => {
+    if (layer.get('id') === id) {
+      features = layer.getSource().getFeatures()
+    }
+  })
+  return features
+}
+
+Feature.prototype.update = function (key, value) {
+  if (key === 'style') {
+    this.setStyle(setStyle(value))
+  }
+}
+
 function validObjKey (obj, key) {
   return Object.prototype.hasOwnProperty.call(obj, key) && Object.keys(obj).length > 0
 }
@@ -17,74 +34,89 @@ function panTo (map, center, zoom) {
   map.getView().animate({ center: center }, { zoom: zoom })
 }
 
-function baseTile (option) {
+function baseTile (option, visible) {
   let layers = []
   if (typeof option === 'string') {
-    layers = getBaseTile({ type: option })
-  } else if (typeof option === 'object' && option instanceof Array) {
-    option.forEach(item => {
-      if (typeof item === 'string') {
-        const layer = getBaseTile({ type: item })
-        layers = layers.concat(layer)
-      } else if (typeof item === 'object') {
-        const layer = getBaseTile(item)
-        layers = layers.concat(layer)
-      }
-    })
+    layers = getBaseTile({ type: option }, visible)
+  } else if (typeof option === 'object') {
+    if (option instanceof Array) {
+      option.forEach(item => {
+        if (typeof item === 'string') {
+          const layer = getBaseTile({ type: item }, visible)
+          layers = layers.concat(layer)
+        } else if (typeof item === 'object') {
+          const layer = getBaseTile(item, visible)
+          layers = layers.concat(layer)
+        }
+      })
+    } else {
+      const layer = getBaseTile(option, visible)
+      layers = layers.concat(layer)
+    }
   }
   return layers
 }
 
-function getBaseTile (option) {
+function getBaseTile (option, visible) {
   switch (option.type) {
     case 'td':
-      return getTDMap()
+      return getTDMap(visible)
     case 'td_img':
-      return getTDImg()
+      return getTDImg(visible)
     case 'xyz':
-      return getCustomerTileXYZ(option)
+      option.base = true
+      return getCustomerTileXYZ(option, visible)
     default:
-      return getTDMap()
+      return getTDMap(visible)
   }
 }
 
-function getTDMap (visible = true, XYZUrl) {
+function getTDMap (visible, XYZUrl) {
   const urls = XYZUrl || [
     'http://t4.tianditu.com/DataServer?T=vec_w&x={x}&y={y}&l={z}&tk=88e2f1d5ab64a7477a7361edd6b5f68a',
     'http://t3.tianditu.com/DataServer?T=cva_w&x={x}&y={y}&l={z}&tk=88e2f1d5ab64a7477a7361edd6b5f68a'
   ]
   return getCustomerTileXYZ({
     url: urls,
-    visible: true,
-    base: true,
-    type: 'td'
-  })
+    type: 'td',
+    base: true
+  }, visible)
 }
 
-function getTDImg (visible = true, XYZUrl) {
+function getTDImg (visible, XYZUrl) {
   const urls = XYZUrl || [
     'http://t4.tianditu.com/DataServer?T=img_w&x={x}&y={y}&l={z}&tk=88e2f1d5ab64a7477a7361edd6b5f68a',
     'http://t3.tianditu.com/DataServer?T=cia_w&x={x}&y={y}&l={z}&tk=88e2f1d5ab64a7477a7361edd6b5f68a'
   ]
   return getCustomerTileXYZ({
     url: urls,
-    visible: true,
-    base: true,
-    type: 'td_img'
-  })
+    type: 'td_img',
+    base: true
+  }, visible)
 }
 
-function getCustomerTileXYZ (option) {
+function getCustomerTileXYZ (option, visible) {
   const tiles = []
   option.url.forEach(val => {
     const layer = new TileLayer({
-      visible: option.visible,
+      visible: false,
       source: new XYZ({
         url: val
       })
     })
+    let visibleTile = ''
+    if (typeof visible === 'string') {
+      visibleTile = visible
+    } else if (typeof visible === 'object') {
+      visibleTile = visible.type
+    }
+    if (option.type === visibleTile) {
+      layer.setVisible(true)
+    }
     layer.set('type', option.type || '')
-    layer.set('base', option.base || undefined)
+    if (validObjKey(option, 'base')) {
+      layer.set('base', option.base)
+    }
     tiles.push(layer)
   })
   return tiles
@@ -104,16 +136,13 @@ function restVisibleBaseTile (map, name) {
 
 function setLayer (option, map) {
   const layers = map.getLayers()
-  const existLayer = []
+  console.log(option)
   layers.forEach(item => {
-    if (item.get('id') === option.id) {
-      existLayer.push(item)
+    if (item && item.get('id') === option.id) {
+      console.log(item)
+      map.removeLayer(item)
     }
   })
-  if (existLayer.length > 0) {
-    console.log(existLayer)
-    existLayer.forEach(layer => { map.removeLayer(layer) })
-  }
   const layer = setVectorLayer(option, map)
   map.addLayer(layer)
 }
@@ -134,7 +163,7 @@ function setVectorLayer (option, map) {
   } else {
     // 元素图层
     const layerOptions = Object.assign({
-      source: addSource(option.features || [], map),
+      source: addVectorSource(option.features || [], map),
       visible: true
     }, option)
     const layer = new VectorLayer(layerOptions)
@@ -174,24 +203,34 @@ function addOverviewMapControl (view, layers) {
 }
 
 function addOverlay (option) {
-  const overlayOption = Object.assign({
-    id: '',
-    element: document.getElementById(option.target),
-    position: [0, 0],
-    positioning: 'top-left'
-  }, option)
-  return new Overlay(overlayOption)
+  if (validObjKey(option, 'element')) {
+    option.element = document.getElementById(option.element.toString())
+    const overlayOption = Object.assign({}, option)
+    return new Overlay(overlayOption)
+  }
 }
 
 function setText (option) {
-  const textStyle = new Text(option)
+  const defaultOption = Object.assign({
+    font: '14px sans-serif',
+    padding: [2, 5, 2, 5] // [top, right, bottom, left].
+  }, option)
+  const textStyle = new Text(defaultOption)
   if (validObjKey(option, 'fill')) {
     const fillStyle = new Fill(option.fill)
     textStyle.setFill(fillStyle)
   }
+  if (validObjKey(option, 'backgroundFill')) {
+    const backgroundFillStyle = new Fill(option.backgroundFill)
+    textStyle.setBackgroundFill(backgroundFillStyle)
+  }
   if (validObjKey(option, 'stroke')) {
     const strokeStyle = new Stroke(option.stroke)
     textStyle.setStroke(strokeStyle)
+  }
+  if (validObjKey(option, 'backgroundStroke')) {
+    const backgroundStrokeStyle = new Stroke(option.backgroundStroke)
+    textStyle.setBackgroundStroke(backgroundStrokeStyle)
   }
   return textStyle
 }
@@ -225,12 +264,7 @@ function setPointFeature (option) {
   if (validObjKey(option, 'style')) {
     const optionStyle = option.style
     if (validObjKey(optionStyle, 'icon')) {
-      const imageStyle = new Icon({
-        src: optionStyle.icon
-      })
-      if (validObjKey(option, 'scale')) {
-        imageStyle.setScale(optionStyle.scale)
-      }
+      const imageStyle = new Icon(optionStyle.icon)
       featureStyle.setImage(imageStyle)
     }
     if (validObjKey(optionStyle, 'text')) {
@@ -266,6 +300,7 @@ function setCircle (option, map) {
     geometry: new Circle(option.center, getRadiusByUnit(map, option.radius))
   })
   feature.set('style', option.style || null)
+  feature.set('type', option.type || 'circle')
   feature.set('properties', option.properties || null)
   return feature
 }
@@ -280,6 +315,7 @@ function setPolyline (option) {
     geometry: new LineString(option.coordinates)
   })
   feature.set('style', option.style || null)
+  feature.set('type', option.type || 'polyline')
   feature.set('properties', option.properties || null)
   return feature
 }
@@ -288,8 +324,13 @@ function setPolygon (option) {
   const feature = new Feature({
     geometry: new Polygon([option.coordinates])
   })
-  feature.set('style', option.style || null)
-  feature.set('properties', option.properties || null)
+  if (typeof option === 'object') {
+    for (const i in option) {
+      if (Object.prototype.hasOwnProperty.call(option, i)) {
+        feature.set(i, option[i])
+      }
+    }
+  }
   return feature
 }
 
@@ -301,10 +342,13 @@ function setStyle (option) {
   if (validObjKey(option, 'stroke')) {
     style.setStroke(new Stroke(option.stroke))
   }
+  if (validObjKey(option, 'icon')) {
+    style.setImage(new Icon(option.icon))
+  }
   return style
 }
 
-function addSource (features, map) {
+function addVectorSource (features, map) {
   return new VectorSource({
     features: setFeatures(features, map)
   })
@@ -315,93 +359,84 @@ function setOverlayPosition (overlay, position) {
 }
 
 function addClusterLayer (option) {
-  const options = Object.assign({
-    distance: 50,
-    minDistance: 0
-  }, option)
-  const source = addSource(option.features)
-  const clusterSource = new Cluster({
-    distance: parseInt(options.distance, 10),
-    minDistance: parseInt(options.minDistance, 10),
-    source: source
-  })
+  const options = Object.assign({}, option.cluster)
+  const clusterSource = new Cluster(options)
+  const source = addVectorSource(option.features)
+  clusterSource.setSource(source)
   const styleCache = {}
   const clusterOptions = Object.assign({
     source: clusterSource,
     style: function (feature) {
       const size = feature.get('features').length
       let style = styleCache[size]
-      if (!style) {
-        let styleOptions = {}
-        if (!validObjKey(options, 'style')) {
-          styleOptions = {
-            image: new CircleStyle({
-              radius: 20,
-              stroke: new Stroke({
-                color: '#fff'
+      if (size > 1) {
+        if (!style) {
+          let styleOptions = {}
+          if (!validObjKey(options, 'style')) {
+            styleOptions = {
+              image: new CircleStyle({
+                radius: 20,
+                stroke: new Stroke({
+                  color: '#fff'
+                }),
+                fill: new Fill({
+                  color: '#3399CC'
+                })
               }),
-              fill: new Fill({
-                color: '#3399CC'
+              text: new Text({
+                font: '16px sans-serif',
+                text: size.toString(),
+                fill: new Fill({
+                  color: '#fff'
+                })
               })
-            }),
-            text: new Text({
-              font: '16px sans-serif',
-              text: size.toString(),
-              fill: new Fill({
-                color: '#fff'
-              })
-            })
-          }
-        } else {
-          options.style.forEach(e => {
-            let min = 0
-            let max = 0
-            let textColor = 'white'
-            if (validObjKey(e, 'textColor')) {
-              textColor = e.textColor
             }
-            if (validObjKey(e, 'min') && validObjKey(e, 'max')) {
-              min = e.min
-              max = e.max
-            } else {
-              const total = source.getFeatures()
-              if (total > 0) {
-                const average = total / options.style.length
-                for (let i = 0; i < options.style.length; i++) {
-                  min = i
-                  max = average * (i + 1)
+          } else {
+            options.style.forEach(e => {
+              let min = 0
+              let max = 0
+              let textColor = 'white'
+              if (validObjKey(e, 'textColor')) {
+                textColor = e.textColor
+              }
+              if (validObjKey(e, 'min') && validObjKey(e, 'max')) {
+                min = e.min
+                max = e.max
+              } else {
+                const total = source.getFeatures()
+                if (total > 0) {
+                  const average = total / options.style.length
+                  for (let i = 0; i < options.style.length; i++) {
+                    min = i
+                    max = average * (i + 1)
+                  }
                 }
               }
-            }
-            if (min < size && size <= max) {
-              styleOptions = clusterFeatureStyle(e.icon, size.toString(), textColor)
-            }
-          })
+              if (min < size && size <= max) {
+                styleOptions = clusterFeatureStyle(e.icon, size.toString(), textColor)
+              }
+            })
+          }
+          style = new Style(styleOptions)
+          styleCache[size] = style
         }
-        style = new Style(styleOptions)
-        styleCache[size] = style
+      } else {
+        style = setStyle(feature.get('features')[0].get('style'))
       }
       return style
     }
-  }, options)
+  }, option)
   const clusters = new VectorLayer(clusterOptions)
   clusters.set('type', 'cluster')
   clusters.set('id', options.id)
-  clusters.set('minZoom', options.minZoom)
-  clusters.set('maxZoom', options.maxZoom)
   return clusters
 }
 
 function addHeatmapLayer (option) {
-  const options = Object.assign({
-    source: addSource(option.features),
-    blur: 15,
-    radius: 8,
-    weight: function (feature) {
-      return feature.get('weight')
-    }
-  }, option)
+  const options = Object.assign({}, option)
   const vector = new HeatmapLayer(options)
+  const source = addVectorSource(option.features)
+  vector.setSource(source)
   vector.set('id', options.id)
   return vector
 }
@@ -465,13 +500,19 @@ export class VMap {
 
   constructor (option = {}) {
     const viewOption = Object.assign({
-      zoom: 12,
       center: [0, 0],
+      zoom: 12,
+      constrainResolution: true,
       projection: 'EPSG:4326'
     }, option.view)
     const view = new View(viewOption)
     const baseTiles = Object.assign(['td'], option.baseTile)
-    const visibleTile = option.visibleTile || 'td'
+    let visibleTile
+    if (validObjKey(option, 'visibleTile') && option.visibleTile) {
+      visibleTile = option.visibleTile
+    } else {
+      visibleTile = baseTiles[0]
+    }
 
     // 生成地图
     this.map = new Map({
@@ -502,7 +543,7 @@ export class VMap {
     })
 
     // 基础图层
-    const tileLayer = baseTile(baseTiles)
+    const tileLayer = baseTile(baseTiles, visibleTile)
 
     // 添加图层
     const vectorLayersOption = option.layers
@@ -516,18 +557,13 @@ export class VMap {
     // 所有图层
     const layers = tileLayer.concat(vectorLayers)
     layers.forEach(layer => {
-      if (layer.get('base') === true) {
-        layer.setVisible(false)
-        if (layer.get('type') === visibleTile) {
-          layer.setVisible(true)
-        }
-      }
       this.map.addLayer(layer)
     })
 
     // 鹰眼
     if (option.overview) {
-      this.map.addControl(addOverviewMapControl(viewOption, baseTile(option.overview)))
+      const overviewLayer = baseTile(option.overview, option.overview)
+      this.map.addControl(addOverviewMapControl(viewOption, overviewLayer))
     }
 
     // 弹框
@@ -535,7 +571,9 @@ export class VMap {
     if (overlays && overlays.length > 0) {
       overlays.forEach(overlay => {
         const item = addOverlay(overlay)
-        this.map.addOverlay(item)
+        if (item) {
+          this.map.addOverlay(item)
+        }
       })
     }
   }

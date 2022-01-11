@@ -78,7 +78,13 @@ export default {
       ],
       checked: ['layer1', 'cluster', 'polygon', 'heatmap'],
       editor: null,
-      currentZoom: 0
+      currentZoom: 0,
+      updateFeatures: []
+    }
+  },
+  computed: {
+    map () {
+      return VMap
     }
   },
   created () {
@@ -101,16 +107,30 @@ export default {
       console.log('on map click === get coordinate', evt.coordinate)
       const pixel = map.getEventPixel(evt.originalEvent)
       const hit = map.hasFeatureAtPixel(pixel)
+      const polyFeatures = map.getFeaturesByLayerId('polygon')
       if (hit) {
         const features = map.getFeaturesAtPixel(evt.pixel)
         if (features && features.length > 0) {
           let item = null
+          let type = ''
           features.forEach(feature => {
             item = feature.get('properties')
+            type = feature.get('type')
+            if (type && type === 'polygon') {
+              feature.update('style', feature.get('updateStyle'))
+            }
           })
           if (item && Object.prototype.hasOwnProperty.call(item, 'name')) {
             this.showOverlay(item, 'overlay', 'overlay', evt.coordinate)
           }
+        }
+      } else {
+        if (polyFeatures) {
+          polyFeatures.forEach(feature => {
+            if (feature.get('type') === 'polygon') {
+              feature.update('style', feature.get('style'))
+            }
+          })
         }
       }
     },
@@ -140,7 +160,9 @@ export default {
         features.push({
           coordinates: val,
           style: {
-            icon: require('@/assets/img/point_red.png')
+            icon: {
+              src: require('@/assets/img/point_red.png')
+            }
           }
         })
       })
@@ -148,6 +170,13 @@ export default {
         id: 'layer2',
         features: features
       })
+      if (this.option.updateLayers.indexOf('layer2') < 0) {
+        this.option.updateLayers.push('layer2')
+      }
+      const index = this.option.layers.map(item => item.id).indexOf('layer2')
+      if (index > -1) {
+        this.option.layers.splice(index, 1)
+      }
       this.option.layers.push(this.newLayer)
     },
     changeTile () {
@@ -162,6 +191,8 @@ export default {
       })
     },
     setLayerVisible (value) {
+      this.option.updateLayers = []
+      this.option.updateLayers.push(value)
       const index = this.checked.indexOf(value)
       this.option.layers.forEach(layer => {
         if (layer.id === value) {
