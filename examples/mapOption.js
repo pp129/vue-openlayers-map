@@ -17,8 +17,7 @@ export default {
       type: 'xyz',
       // 图层加载路径需符合XYZ规则
       url: [
-        'http://t4.tianditu.com/DataServer?T=ter_w&x={x}&y={y}&l={z}&tk=88e2f1d5ab64a7477a7361edd6b5f68a',
-        'http://t3.tianditu.com/DataServer?T=cia_w&x={x}&y={y}&l={z}&tk=88e2f1d5ab64a7477a7361edd6b5f68a'
+        'http://t4.tianditu.com/DataServer?T=ter_w&x={x}&y={y}&l={z}&tk=88e2f1d5ab64a7477a7361edd6b5f68a'
       ]
     }
   ],
@@ -204,15 +203,15 @@ export default {
       features: [
         {
           coordinates: [117.97453973475076, 24.61692211214447],
-          qz: '7'// 一般来说在元素上配置权重,默认为"weight"，Number类型。
+          weight: 0.7// 一般来说在元素上配置权重,默认为"weight"，Number类型。
         },
         {
           coordinates: [118.00639182661692, 24.57216235632966],
-          qz: '8'
+          weight: 0.8
         },
         {
           coordinates: [117.98525113645174, 24.57184088412666],
-          qz: '6'
+          weight: 0.6
         }
       ],
       blur: 100,
@@ -222,9 +221,7 @@ export default {
        * type: string | function
        * (defaults to 'weight')
        */
-      weight: function (feature) {
-        return Number(feature.get('qz')) / 10
-      }
+      weight: 'weight'
     }
   ],
   /**
@@ -232,15 +229,14 @@ export default {
    */
   overlays: [
     {
-      id: 'overlay',
-      element: 'overlay'// dom元素id
+      id: 'overlay1',
+      element: 'overlay1', // dom元素id
+      position: undefined
+    }, {
+      id: 'overlay2',
+      element: 'overlay2', // dom元素id
+      position: undefined
     }
   ],
-  updateLayers: [], // 想要局部更新的layers id最好不要重复
-  /**
-   * 需要注册的地图事件
-   * click:点击 回调：@click
-   * changeZoom:层级变化 回调：@changeZoom
-   */
-  eventListeners: ['click', 'changeZoom']
+  updateLayers: []// 想要局部更新的layers id最好不要重复
 }

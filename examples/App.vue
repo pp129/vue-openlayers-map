@@ -2,6 +2,8 @@
   <div id="app">
     <div class="tools">
       <button class="btn" @click="addLayer">新增/更新点位图层</button>
+      <button class="btn" @click="removeLayer">删除点位图层</button>
+      <button class="btn" @click="moveFeature">移动点位</button>
       <select id="changeLayer" class="btn" v-model="selectedTile" @change="changeTile">
         <option value="td">天地图-矢量</option>
         <option value="td_img">天地图-卫星</option>
@@ -14,15 +16,29 @@
         </div>
       </div>
       <span class="btn">当前层级：{{currentZoom}}</span>
+      <span class="btn">
+        移动到 ---
+        经度：<input class="btn-input" type="number" v-model="option.view.animate.center[0]">
+        维度：<input class="btn-input" type="number" v-model="option.view.animate.center[1]">
+        层级：<input class="btn-input" type="number" v-model="option.view.animate.zoom">
+      </span>
     </div>
-    <div class="code">
-      <button class="btn-run" @click="runCode">运行</button>
-      <textarea ref="code" id="code" name="code"></textarea>
+    <v-map
+      ref="map"
+      class="map"
+      :height="height"
+      :width="width"
+      :option="option"
+      @click="onClick"
+      @changeZoom="onChangeZoom">
+    </v-map>
+    <div ref="overlay" id="overlay1" class="overlay">
+      <p>overlay1</p>
+      <span @click="closeOverlay('overlay1')">close</span>
     </div>
-    <v-map ref="map" class="map" :height="height" :width="width" :option="option" @click="onClick" @changeZoom="onChangeZoom"></v-map>
-    <div ref="overlay" id="overlay" class="overlay">
-      <p>{{overlayName}}</p>
-      <span @click="closeOverlay">close</span>
+    <div ref="overlay" id="overlay2" class="overlay">
+      <p>overlay2</p>
+      <span @click="closeOverlay('overlay2')">close</span>
     </div>
   </div>
 </template>
@@ -33,16 +49,6 @@ import mapOption from '@/mapOption.js'
 
 import Mock from 'mockjs'
 
-import 'codemirror/lib/codemirror.css'
-import 'codemirror/addon/fold/foldgutter.css'
-import 'codemirror/theme/mdn-like.css'
-import CodeMirror from 'codemirror'
-import 'codemirror/addon/fold/foldcode'
-import 'codemirror/addon/fold/foldgutter'
-import 'codemirror/addon/fold/brace-fold'
-import 'codemirror/addon/fold/indent-fold'
-import 'codemirror/mode/javascript/javascript.js'
-
 export default {
   name: 'App',
   components: {
@@ -50,14 +56,14 @@ export default {
   },
   data () {
     return {
+      mapId: 'map',
       height: '100%',
-      width: '70%',
+      width: '100%',
       option: mapOption,
       coder: '',
       newLayer: {
       },
       selectedTile: 'td',
-      overlayName: '',
       checkbox: [
         {
           label: '点位',
@@ -81,20 +87,27 @@ export default {
       currentZoom: 0
     }
   },
+  watch: {
+    'option.layers': {
+      handler (value) {
+        this.checkbox = []
+        this.checked = []
+        value.forEach(item => {
+          this.checkbox.push({
+            label: item.id,
+            value: item.id
+          })
+          if (item.visible) {
+            this.checked.push(item.id)
+          }
+        })
+      },
+      immediate: true
+    }
+  },
   created () {
-    this.coder = JSON.stringify(mapOption, null, 4)
   },
   mounted () {
-    this.editor = CodeMirror.fromTextArea(this.$refs.code, {
-      mode: 'javascript',
-      theme: 'mdn-like',
-      lineNumbers: true,
-      lineWrapping: false,
-      extraKeys: { 'Ctrl-Q': function (cm) { cm.foldCode(cm.getCursor()) } },
-      foldGutter: true,
-      gutters: ['CodeMirror-linenumbers', 'CodeMirror-foldgutter']
-    })
-    this.editor.setOption('value', this.coder)
   },
   methods: {
     onClick (evt, map) {
@@ -106,16 +119,23 @@ export default {
         const features = map.getFeaturesAtPixel(evt.pixel)
         if (features && features.length > 0) {
           let item = null
+          let polygon = null
           let type = ''
           features.forEach(feature => {
             item = feature.get('properties')
             type = feature.get('type')
             if (type && type === 'polygon') {
               feature.update('style', feature.get('updateStyle'))
+              polygon = {
+                type: 'polygon'
+              }
             }
           })
           if (item && Object.prototype.hasOwnProperty.call(item, 'name')) {
-            this.showOverlay(item, 'overlay', 'overlay', evt.coordinate)
+            this.showOverlay(item, 'overlay1', 'overlay1', evt.coordinate)
+          }
+          if (polygon) {
+            this.showOverlay(polygon, 'overlay2', 'overlay2', evt.coordinate)
           }
         }
       } else {
@@ -132,19 +152,17 @@ export default {
       this.currentZoom = evt.map.getView().getZoom()
     },
     showOverlay (properties, id, element, coordinate) {
-      this.overlayName = properties.name
-      this.option.overlays.forEach(overlay => {
+      this.option.overlays.forEach((overlay, index) => {
         if (overlay.id === id) {
           overlay.position = coordinate
           overlay.properties = properties
+          // this.option.overlays[index] = _.cloneDeep(overlay)
         }
       })
-      this.option = Object.assign({}, this.option)
     },
-    closeOverlay () {
-      const overlay = this.option.overlays.filter(item => item.id === 'overlay')
+    closeOverlay (id) {
+      const overlay = this.option.overlays.filter(item => item.id === id)
       overlay[0].position = undefined
-      this.option = Object.assign({}, this.option)
     },
     addLayer () {
       const features = []
@@ -161,6 +179,7 @@ export default {
       })
       this.newLayer = Object.assign({}, {
         id: 'layer2',
+        visible: true,
         features: features
       })
       if (this.option.updateLayers.indexOf('layer2') < 0) {
@@ -171,6 +190,27 @@ export default {
         this.option.layers.splice(index, 1)
       }
       this.option.layers.push(this.newLayer)
+    },
+    removeLayer () {
+      const index = this.option.layers.map(item => item.id).indexOf('layer2')
+      if (index > -1) {
+        this.option.layers.splice(index, 1)
+        // this.option.updateLayers = []
+      }
+    },
+    getMockNumber () {
+      return Mock.mock({
+        'a|-10-10': 10
+      })
+    },
+    moveFeature () {
+      const newFeatures = []
+      this.option.layers[0].features.forEach(feature => {
+        feature.coordinates[0] = feature.coordinates[0] + (this.getMockNumber().a / 100)
+        feature.coordinates[1] = feature.coordinates[1] + (this.getMockNumber().a / 100)
+        newFeatures.push(feature)
+      })
+      this.option.layers[0].features = newFeatures
     },
     changeTile () {
       this.option.visibleTile = this.selectedTile
@@ -192,9 +232,6 @@ export default {
           layer.visible = index < 0
         }
       })
-    },
-    runCode () {
-      this.option = JSON.parse(this.editor.getValue())
     }
   }
 }
@@ -232,6 +269,10 @@ html,body,#app {
       margin-left: 20px;
       background: white;
       padding: 10px;
+      &-input{
+        width: 100px;
+        margin-right: 10px;
+      }
     }
     .checkbox-group{
       padding: 5px;
@@ -248,25 +289,6 @@ html,body,#app {
     position: absolute;
     top: 0;
     right: 0;
-  }
-  .code{
-    height: 100%;
-    width: 30%;
-    margin: 0;
-    padding: 0;
-    position: absolute;
-    top: 0;
-    left: 0;
-    .btn-run{
-      position: absolute;
-      top: 12px;
-      right: 28px;
-      z-index: 4;
-    }
-    .CodeMirror{
-      height: 100%;
-      z-index: 3;
-    }
   }
   .overlay{
     width: 100px;

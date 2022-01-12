@@ -20,9 +20,15 @@ Map.prototype.getFeaturesByLayerId = function (id) {
   return features
 }
 
-Feature.prototype.update = function (key, value) {
-  if (key === 'style') {
-    this.setStyle(setStyle(value))
+export class FeatureExt extends Feature {
+  setPosition = function (coordinates) {
+    this.getGeometry().setCoordinates(coordinates)
+  }
+
+  update = function (key, value) {
+    if (key === 'style') {
+      this.setStyle(setStyle(value))
+    }
   }
 }
 
@@ -32,29 +38,6 @@ function validObjKey (obj, key) {
 
 function panTo (map, center, zoom) {
   map.getView().animate({ center: center }, { zoom: zoom })
-}
-
-function setView (option, map) {
-  const viewOption = Object.assign({
-    center: [0, 0],
-    zoom: 12,
-    constrainResolution: true,
-    projection: 'EPSG:4326'
-  }, option)
-  const view = new View(viewOption)
-  map.setView(view)
-  // 移动动画
-  if (validObjKey(viewOption, 'animate')) {
-    const animate = Object.assign({
-      center: [0, 0], // 中心点
-      zoom: 12, // 级别
-      resolution: undefined, // zoom设置了，这个被忽略
-      rotation: undefined, // 缩放完成view视图旋转弧度
-      anchor: undefined, // 在旋转或分辨率动画期间保持固定的可选锚点 不需要设置，
-      duration: 1000 // 缩放持续时间，默认不需要设置
-    }, viewOption.animate)
-    view.animate(animate)
-  }
 }
 
 function baseTile (option, visible) {
@@ -158,28 +141,40 @@ function restVisibleBaseTile (map, name) {
 }
 
 function setLayer (option, map) {
+  removeLayer(option, map)
+  const layer = setVectorLayer(option, map)
+  map.addLayer(layer)
+}
+
+function removeLayer (option, map) {
   const layers = map.getLayers()
   layers.forEach(item => {
     if (item && item.get('id') === option.id) {
       map.removeLayer(item)
     }
   })
-  const layer = setVectorLayer(option, map)
-  map.addLayer(layer)
 }
 
+/**
+ * 设置矢量图层
+ * @param option
+ * @param map
+ * @returns {VectorLayer<VectorSourceType>|Heatmap}
+ */
 function setVectorLayer (option, map) {
   if (validObjKey(option, 'type') && option.type === 'cluster') {
     // 聚合图层
     const layer = addClusterLayer(option)
     layer.set('id', option.id || '')
     layer.set('type', option.type)
+    layer.set('users', true)
     return layer
   } else if (validObjKey(option, 'type') && option.type === 'heatmap') {
     // 热力图
     const layer = addHeatmapLayer(option)
     layer.set('id', option.id || '')
     layer.set('type', option.type)
+    layer.set('users', true)
     return layer
   } else {
     // 元素图层
@@ -211,6 +206,7 @@ function setVectorLayer (option, map) {
     })
     layer.set('id', option.id || '')
     layer.set('type', 'VectorLayer')
+    layer.set('users', true)
     return layer
   }
 }
@@ -226,7 +222,9 @@ function addOverviewMapControl (view, layers) {
 function addOverlay (option) {
   if (validObjKey(option, 'element')) {
     option.element = document.getElementById(option.element.toString())
-    const overlayOption = Object.assign({}, option)
+    const overlayOption = Object.assign({
+      position: undefined
+    }, option)
     return new Overlay(overlayOption)
   }
 }
@@ -277,7 +275,7 @@ function setFeature (option, map) {
 }
 
 function setPointFeature (option) {
-  const feature = new Feature({
+  const feature = new FeatureExt({
     geometry: new Point(option.coordinates)
   })
   // newFeaturePrototype(feature)
@@ -317,7 +315,7 @@ function setFeatures (features, map) {
 }
 
 function setCircle (option, map) {
-  const feature = new Feature({
+  const feature = new FeatureExt({
     geometry: new Circle(option.center, getRadiusByUnit(map, option.radius))
   })
   feature.set('style', option.style || null)
@@ -332,7 +330,7 @@ function getRadiusByUnit (map, radius) {
 }
 
 function setPolyline (option) {
-  const feature = new Feature({
+  const feature = new FeatureExt({
     geometry: new LineString(option.coordinates)
   })
   feature.set('style', option.style || null)
@@ -342,7 +340,7 @@ function setPolyline (option) {
 }
 
 function setPolygon (option) {
-  const feature = new Feature({
+  const feature = new FeatureExt({
     geometry: new Polygon([option.coordinates])
   })
   if (typeof option === 'object') {
@@ -485,6 +483,10 @@ export class VMap {
     return setLayer(val, VMap.map.map)
   }
 
+  static removeLayer (val) {
+    return removeLayer(val, VMap.map.map)
+  }
+
   static restVisibleBaseTile (name) {
     return restVisibleBaseTile(VMap.map.map, name)
   }
@@ -519,8 +521,8 @@ export class VMap {
     })
   }
 
-  static setView (option) {
-    return setView(option, VMap.map.map)
+  static panTo (center, zoom) {
+    return panTo(VMap.map.map, center, zoom)
   }
 
   constructor (option = {}) {
@@ -628,10 +630,6 @@ export class VMap {
 
   setVectorLayer (option, map) {
     return setVectorLayer(option, map)
-  }
-
-  panTo (center, zoom) {
-    panTo(this.map, center, zoom)
   }
 
   get getLayers () {

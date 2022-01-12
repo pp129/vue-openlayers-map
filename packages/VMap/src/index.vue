@@ -1,5 +1,5 @@
 <template>
-  <div ref="map" id="map" :style="{'width':width,'height':height}"></div>
+  <div :id="target" :style="{'width':width,'height':height}"></div>
 </template>
 
 <script>
@@ -19,49 +19,76 @@ export default {
     option: {
       type: Object,
       default: () => {
-        return {
-          layers: [],
-          view: {},
-          baseTile: []
-        }
+        return {}
       }
     }
   },
   computed: {
     map () {
       return VMap.map.map
+    },
+    target () {
+      return this.option.target || 'map'
+    },
+    animate () {
+      return this.option.view.animate
+    },
+    layers () {
+      return this.option.layers
+    },
+    overlays () {
+      return this.option.overlays
+    },
+    visibleTile () {
+      return this.option.visibleTile
     }
   },
   watch: {
-    option: {
+    animate: {
       handler (value) {
-        console.log('watch option ----> ', value)
-        // todo 用store记录变更
-        if (value.updateLayers && value.updateLayers.length > 0) {
-          // 局部更新图层
-          value.updateLayers.forEach(updateLayer => {
-            value.layers.forEach(layer => {
-              if (layer.id === updateLayer) {
-                this.setLayer(layer)
-              }
-            })
-          })
-        } else {
-          // 全量更新
-          this.setLayers(value.layers)
+        if (value) {
+          console.log('view animate change', value)
+          const center = value.center
+          const zoom = value.zoom
+          VMap.panTo(center, zoom)
         }
-        if (value.baseTile.length > 1) { // 理论上有多基础图层的情况下才有必要走这一步
-          this.restVisibleBaseTile(value.visibleTile)
+      },
+      deep: true,
+      immediate: false
+    },
+    layers: {
+      handler (value) {
+        console.log('layers change', value)
+        this.setLayers(value)
+      },
+      deep: true,
+      immediate: false
+    },
+    overlays: {
+      handler (value) {
+        if (value) {
+          console.log('overlays change', value)
+          this.setOverlayPosition(value)
         }
-        this.setOverlayPosition(value.overlays)
-        this.setView(value.view)
+      },
+      deep: true,
+      immediate: false
+    },
+    visibleTile: {
+      handler (value, oldValue) {
+        console.log('visibleTile change', value, oldValue)
+        if (this.option.baseTile.length > 1 && value !== oldValue) { // 理论上有多基础图层的情况下才有必要走这一步
+          this.restVisibleBaseTile(value)
+        }
       },
       deep: true,
       immediate: false
     }
   },
   data () {
-    return {}
+    return {
+      users: []
+    }
   },
   mounted () {
     this.init()
@@ -69,23 +96,16 @@ export default {
   methods: {
     init () {
       VMap.map = new VMap(this.option)
-      // 添加事件
-      if (Object.prototype.hasOwnProperty.call(this.option, 'eventListeners') && this.option.eventListeners && this.option.eventListeners.length > 0) {
-        // 点击事件
-        if (this.option.eventListeners.indexOf('click') > -1) {
-          this.map.on('click', evt => {
-            this.$emit('click', evt, this.map)
-          })
-        }
-        // 层级变化
-        if (this.option.eventListeners.indexOf('changeZoom') > -1) {
-          this.map.getView().once('change:resolution', () => {
-            this.map.once('moveend', (evt) => {
-              this.zoomEnd(evt)
-            })
-          })
-        }
-      }
+      // 点击事件
+      this.map.on('click', evt => {
+        this.$emit('click', evt, this.map)
+      })
+      // 层级变化
+      this.map.getView().once('change:resolution', () => {
+        this.map.once('moveend', (evt) => {
+          this.zoomEnd(evt)
+        })
+      })
     },
     zoomEnd (evt) {
       this.$emit('changeZoom', evt, this.map)
@@ -103,18 +123,22 @@ export default {
       VMap.setLayer(layer)
     },
     setLayers (layers) {
+      this.users = []
+      VMap.map.map.getLayers().forEach(layer => {
+        if (layer && layer.get('users')) {
+          this.users.push(layer.get('id'))
+        }
+      })
       layers.forEach(layer => { this.setLayer(layer) })
     },
     restVisibleBaseTile (visibleTile) {
+      console.log('reset tile')
       VMap.restVisibleBaseTile(visibleTile)
     },
     setOverlayPosition (overlays) {
       overlays.forEach(overlay => {
         VMap.setOverlayPosition(overlay)
       })
-    },
-    setView (option) {
-      VMap.setView(option)
     }
   }
 }
