@@ -123,10 +123,17 @@ export default {
       VMap.setLayer(layer)
     },
     setLayers (layers) {
-      this.users = []
-      VMap.map.map.getLayers().forEach(layer => {
+      this.map.getLayers().forEach(layer => {
+        let index = -1
         if (layer && layer.get('users')) {
-          this.users.push(layer.get('id'))
+          layers.forEach(item => {
+            if (item.id === layer.get('id')) {
+              index++
+            }
+          })
+          if (index < 0) {
+            VMap.removeLayer(layer)
+          }
         }
       })
       layers.forEach(layer => { this.setLayer(layer) })

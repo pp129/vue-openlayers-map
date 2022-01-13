@@ -1,9 +1,9 @@
 <template>
   <div id="app">
     <div class="tools">
-      <button class="btn" @click="addLayer">新增/更新点位图层</button>
-      <button class="btn" @click="removeLayer">删除点位图层</button>
-      <button class="btn" @click="moveFeature">移动点位</button>
+      <button class="btn" @click="addLayer">新增/更新layer2</button>
+      <button class="btn" @click="removeLayer">删除layer2</button>
+      <button class="btn" @click="moveFeature">随机移动layer1中点位</button>
       <select id="changeLayer" class="btn" v-model="selectedTile" @change="changeTile">
         <option value="td">天地图-矢量</option>
         <option value="td_img">天地图-卫星</option>

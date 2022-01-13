@@ -141,18 +141,22 @@ function restVisibleBaseTile (map, name) {
 }
 
 function setLayer (option, map) {
-  removeLayer(option, map)
+  removeLayerById(option.id, map)
   const layer = setVectorLayer(option, map)
   map.addLayer(layer)
 }
 
-function removeLayer (option, map) {
+function removeLayerById (id, map) {
   const layers = map.getLayers()
   layers.forEach(item => {
-    if (item && item.get('id') === option.id) {
+    if (item && item.get('id') === id) {
       map.removeLayer(item)
     }
   })
+}
+
+function removeLayer (layer, map) {
+  map.removeLayer(layer)
 }
 
 /**
