@@ -797,7 +797,7 @@ export class VMap {
     const view = new View(viewOption)
 
     // controls
-    const controlsOption = Object.assign({ zoom: false }, option.controls)
+    const controlsOption = Object.assign({ zoom: false, rotate: false }, option.controls)
     const controls = defaultControls(controlsOption).extend([])
 
     // tile

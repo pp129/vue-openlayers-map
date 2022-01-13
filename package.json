@@ -1,6 +1,6 @@
 {
   "name": "vue-openlayers-map",
-  "version": "1.0.6",
+  "version": "1.0.8",
   "private": false,
   "main": "lib/vue-openlayers-map.umd.min.js",
   "scripts": {
@@ -33,5 +33,8 @@
     "sass-loader": "^8.0.2",
     "vue-template-compiler": "^2.6.11"
   },
-  "repository": "https://github.com/pp129/vue-openlayers-map"
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/pp129/vue-openlayers-map.git"
+  }
 }
