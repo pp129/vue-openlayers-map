@@ -45,7 +45,7 @@
       <p>overlay1</p>
       <span @click="closeOverlay('overlay1')">close</span>
     </div>
-    <div ref="overlay" id="overlay2" class="overlay">
+    <div ref="overlay2" id="overlay2" class="overlay">
       <p>overlay2</p>
       <span @click="closeOverlay('overlay2')">close</span>
     </div>
@@ -115,8 +115,14 @@ export default {
     }
   },
   created () {
+
   },
   mounted () {
+    this.option.overlays.push({
+      id: 'overlay2',
+      element: this.$refs.overlay2,
+      position: undefined
+    })
   },
   methods: {
     modifyEnd (evt, map) {

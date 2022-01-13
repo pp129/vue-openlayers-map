@@ -71,7 +71,7 @@ export default {
       handler (value) {
         if (value) {
           console.log('overlays change', value)
-          this.setOverlayPosition(value)
+          this.setOverlays(value)
         }
       },
       deep: true,
@@ -150,6 +150,11 @@ export default {
     restVisibleBaseTile (visibleTile) {
       console.log('reset tile')
       VMap.restVisibleBaseTile(visibleTile)
+    },
+    setOverlays (overlays) {
+      overlays.forEach(val => {
+        VMap.addOverlay(val)
+      })
     },
     setOverlayPosition (overlays) {
       overlays.forEach(overlay => {

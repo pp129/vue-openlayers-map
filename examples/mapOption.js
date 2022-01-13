@@ -232,10 +232,6 @@ export default {
       id: 'overlay1',
       element: 'overlay1', // dom元素id
       position: undefined
-    }, {
-      id: 'overlay2',
-      element: 'overlay2', // dom元素id
-      position: undefined
     }
   ],
   /**

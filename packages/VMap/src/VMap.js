@@ -340,11 +340,21 @@ function addOverviewMapControl (view, layers) {
  * @returns {Overlay}
  */
 function addOverlay (option) {
-  if (validObjKey(option, 'element')) {
-    option.element = document.getElementById(option.element.toString())
+  let element
+  if (validObjKey(option, 'element') && option.element !== null) {
+    console.log(option.element)
+    if (typeof option.element === 'string') {
+      element = option.element
+      option.element = document.getElementById(element)
+    } else {
+      setTimeout(() => {
+        option.element = option.element.id
+      }, 50)
+    }
     const overlayOption = Object.assign({
       position: undefined
     }, option)
+    console.log(overlayOption)
     return new Overlay(overlayOption)
   }
 }
@@ -764,9 +774,18 @@ export class VMap {
           }
         })
       } else {
-        return addOverlay(option)
+        const overlay = addOverlay(option)
+        VMap.map.map.addOverlay(overlay)
       }
     }
+  }
+
+  static getOverlays () {
+    return VMap.map.map.getOverlays()
+  }
+
+  static getOverlaysById (id) {
+    return VMap.map.map.getOverlayById(id)
   }
 
   static setOverlayPosition (option) {
@@ -858,17 +877,6 @@ export class VMap {
     if (option.overview) {
       const overviewLayer = baseTile(option.overview, option.overview)
       this.map.addControl(addOverviewMapControl(viewOption, overviewLayer))
-    }
-
-    // 弹框
-    const overlays = option.overlays
-    if (overlays && overlays.length > 0) {
-      overlays.forEach(overlay => {
-        const item = addOverlay(overlay)
-        if (item) {
-          this.map.addOverlay(item)
-        }
-      })
     }
 
     // 编辑
