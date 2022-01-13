@@ -1,6 +1,15 @@
 <template>
   <div id="app">
     <div class="tools">
+      <button class="btn">测量</button>
+      <button class="btn" @click="setModify">{{modifyStatus?'结束':'开始'}}编辑矢量元素</button>
+      <select id="draw" class="btn" v-model="drawType" @change="changeInteractions">
+        <option value="none">绘制图形</option>
+        <option value="Point">Point</option>
+        <option value="LineString">LineString</option>
+        <option value="Polygon">Polygon</option>
+        <option value="Circle">Circle</option>
+      </select>
       <button class="btn" @click="addLayer">新增/更新layer2</button>
       <button class="btn" @click="removeLayer">删除layer2</button>
       <button class="btn" @click="moveFeature">随机移动layer1中点位</button>
@@ -60,7 +69,6 @@ export default {
       height: '100%',
       width: '100%',
       option: mapOption,
-      coder: '',
       newLayer: {
       },
       selectedTile: 'td',
@@ -83,8 +91,9 @@ export default {
         }
       ],
       checked: ['layer1', 'cluster', 'polygon', 'heatmap'],
-      editor: null,
-      currentZoom: 0
+      currentZoom: 0,
+      drawType: 'none',
+      modifyStatus: false
     }
   },
   watch: {
@@ -110,6 +119,9 @@ export default {
   mounted () {
   },
   methods: {
+    modifyEnd (evt, map) {
+      console.log('modifyEnd', evt)
+    },
     onClick (evt, map) {
       console.log('on map click === get coordinate', evt.coordinate)
       const pixel = map.getEventPixel(evt.originalEvent)
@@ -125,7 +137,9 @@ export default {
             item = feature.get('properties')
             type = feature.get('type')
             if (type && type === 'polygon') {
-              feature.update('style', feature.get('updateStyle'))
+              if (feature.get('updateStyle')) {
+                feature.update('style', feature.get('updateStyle'))
+              }
               polygon = {
                 type: 'polygon'
               }
@@ -232,6 +246,24 @@ export default {
           layer.visible = index < 0
         }
       })
+    },
+    changeInteractions () {
+      this.option.interaction = []
+      if (this.drawType !== 'none') {
+        this.option.interaction.push({
+          type: 'draw',
+          value: this.drawType,
+          freehand: true
+        })
+      }
+    },
+    setModify () {
+      this.modifyStatus = !this.modifyStatus
+      if (this.modifyStatus) {
+        this.option.interaction = [{ type: 'select' }, { type: 'modify', selectFeature: true }]
+      } else {
+        this.option.interaction = []
+      }
     }
   }
 }
@@ -263,14 +295,18 @@ html,body,#app {
     display: flex;
     justify-content: flex-start;
     align-content: center;
+    button,select{
+      cursor: pointer;
+    }
     .btn{
       display: flex;
       align-items: center;
       margin-left: 20px;
       background: white;
       padding: 10px;
+      font-size: 12px;
       &-input{
-        width: 100px;
+        width: 85px;
         margin-right: 10px;
       }
     }

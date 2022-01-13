@@ -37,7 +37,7 @@ export default {
     constrainResolution: true,
     // 地图加载初始动画
     animate: {
-      center: [118.18239576954171, 24.487288698062056], // 中心点
+      center: [118.182395, 24.487288], // 中心点
       zoom: 14 // 级别
     }
   },
@@ -238,5 +238,14 @@ export default {
       position: undefined
     }
   ],
+  /**
+   * 除去默认的 https://openlayers.org/en/latest/apidoc/module-ol_interaction.html#~DefaultsOptions
+   * 要新加的交互类型集合
+   * 目前支持:
+   * select选择要素功能
+   * modify更改要素
+   * draw绘制地理要素功能
+   */
+  interaction: [],
   updateLayers: []// 想要局部更新的layers id最好不要重复
 }

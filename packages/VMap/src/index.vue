@@ -41,6 +41,9 @@ export default {
     },
     visibleTile () {
       return this.option.visibleTile
+    },
+    interaction () {
+      return this.option.interaction
     }
   },
   watch: {
@@ -83,6 +86,12 @@ export default {
       },
       deep: true,
       immediate: false
+    },
+    interaction: {
+      handler (value) {
+        console.log('interaction change', value)
+        this.setInteraction(value)
+      }
     }
   },
   data () {
@@ -146,6 +155,35 @@ export default {
       overlays.forEach(overlay => {
         VMap.setOverlayPosition(overlay)
       })
+    },
+    setInteraction (value) {
+      VMap.setInteraction(value)
+      let modify
+      let draw
+      this.map.getInteractions().forEach(item => {
+        if (item.get('type') === 'modify') {
+          modify = item
+        }
+        if (item.get('type') === 'draw') {
+          draw = item
+        }
+      })
+      if (modify) {
+        modify.on('modifystart', evt => {
+          this.$emit('modifystart', evt, this.map)
+        })
+        modify.on('modifyend', evt => {
+          this.$emit('modifyend', evt, this.map)
+        })
+      }
+      if (draw) {
+        draw.on('drawstart', evt => {
+          this.$emit('drawstart', evt, this.map)
+        })
+        draw.on('drawend', evt => {
+          this.$emit('drawend', evt, this.map)
+        })
+      }
     }
   }
 }

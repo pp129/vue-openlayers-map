@@ -6,9 +6,19 @@ import { Cluster, XYZ, Vector as VectorSource } from 'ol/source'
 import Feature from 'ol/Feature'
 import { Circle, LineString, Point, Polygon } from 'ol/geom'
 import { Fill, Icon, Stroke, Style, Text, Circle as CircleStyle } from 'ol/style'
-import { OverviewMap } from 'ol/control'
+import { OverviewMap, defaults as defaultControls } from 'ol/control'
+import { Draw, Modify, Select } from 'ol/interaction'
 // import { defaults as defaultControls } from 'ol/control'
 
+function validObjKey (obj, key) {
+  return obj && Object.prototype.hasOwnProperty.call(obj, key) && Object.keys(obj).length > 0
+}
+
+/**
+ * 对Map进行扩展，根据图层id获取当前图层下所有元素
+ * @param id
+ * @returns {*[]}
+ */
 Map.prototype.getFeaturesByLayerId = function (id) {
   const layers = this.getLayers()
   let features = []
@@ -20,26 +30,58 @@ Map.prototype.getFeaturesByLayerId = function (id) {
   return features
 }
 
+/**
+ * 对Feature扩展
+ */
 export class FeatureExt extends Feature {
+  /**
+   * 更新元素位置
+   * @param coordinates
+   */
   setPosition = function (coordinates) {
-    this.getGeometry().setCoordinates(coordinates)
+    setPosition(this, coordinates)
   }
 
+  /**
+   * 更新元素属性
+   * @param key
+   * @param value
+   */
   update = function (key, value) {
     if (key === 'style') {
       this.setStyle(setStyle(value))
     }
+    if (key === 'position') {
+      setPosition(this, value)
+    }
   }
 }
 
-function validObjKey (obj, key) {
-  return Object.prototype.hasOwnProperty.call(obj, key) && Object.keys(obj).length > 0
-}
-
+/**
+ * 地图移动动画
+ * @param map
+ * @param center
+ * @param zoom
+ */
 function panTo (map, center, zoom) {
   map.getView().animate({ center: center }, { zoom: zoom })
 }
 
+/**
+ * 设置元素位置
+ * @param feature
+ * @param coordinates
+ */
+function setPosition (feature, coordinates) {
+  feature.getGeometry().setCoordinates(coordinates)
+}
+
+/**
+ * 设置地图基础切片图层
+ * @param option
+ * @param visible
+ * @returns {*[]}
+ */
 function baseTile (option, visible) {
   let layers = []
   if (typeof option === 'string') {
@@ -63,6 +105,12 @@ function baseTile (option, visible) {
   return layers
 }
 
+/**
+ * 获取地图基础切片图层
+ * @param option
+ * @param visible
+ * @returns {*[]}
+ */
 function getBaseTile (option, visible) {
   switch (option.type) {
     case 'td':
@@ -77,6 +125,12 @@ function getBaseTile (option, visible) {
   }
 }
 
+/**
+ * 天地图-矢量图
+ * @param visible
+ * @param XYZUrl
+ * @returns {*[]}
+ */
 function getTDMap (visible, XYZUrl) {
   const urls = XYZUrl || [
     'http://t4.tianditu.com/DataServer?T=vec_w&x={x}&y={y}&l={z}&tk=88e2f1d5ab64a7477a7361edd6b5f68a',
@@ -89,6 +143,12 @@ function getTDMap (visible, XYZUrl) {
   }, visible)
 }
 
+/**
+ * 天地图-影像图
+ * @param visible
+ * @param XYZUrl
+ * @returns {*[]}
+ */
 function getTDImg (visible, XYZUrl) {
   const urls = XYZUrl || [
     'http://t4.tianditu.com/DataServer?T=img_w&x={x}&y={y}&l={z}&tk=88e2f1d5ab64a7477a7361edd6b5f68a',
@@ -101,6 +161,12 @@ function getTDImg (visible, XYZUrl) {
   }, visible)
 }
 
+/**
+ * 自定义xyz切片
+ * @param option
+ * @param visible
+ * @returns {*[]}
+ */
 function getCustomerTileXYZ (option, visible) {
   const tiles = []
   option.url.forEach(val => {
@@ -128,6 +194,11 @@ function getCustomerTileXYZ (option, visible) {
   return tiles
 }
 
+/**
+ * 更新可视的基础切片图层
+ * @param map
+ * @param name
+ */
 function restVisibleBaseTile (map, name) {
   const layers = map.getLayers()
   layers.forEach(layer => {
@@ -140,12 +211,38 @@ function restVisibleBaseTile (map, name) {
   })
 }
 
+/**
+ * 添加图层
+ * @param option
+ * @param map
+ */
 function setLayer (option, map) {
   removeLayerById(option.id, map)
   const layer = setVectorLayer(option, map)
   map.addLayer(layer)
 }
 
+/**
+ * 根据id获取图层
+ * @param id
+ * @param map
+ * @returns {*}
+ */
+function getLayerById (id, map) {
+  let layer
+  map.getLayers().forEach(item => {
+    if (item && item.get('id') === id) {
+      layer = item
+    }
+  })
+  return layer
+}
+
+/**
+ * 根据id删除制定图层
+ * @param id
+ * @param map
+ */
 function removeLayerById (id, map) {
   const layers = map.getLayers()
   layers.forEach(item => {
@@ -155,6 +252,11 @@ function removeLayerById (id, map) {
   })
 }
 
+/**
+ * 删除图层
+ * @param layer
+ * @param map
+ */
 function removeLayer (layer, map) {
   map.removeLayer(layer)
 }
@@ -182,12 +284,12 @@ function setVectorLayer (option, map) {
     return layer
   } else {
     // 元素图层
+    const source = addVectorSource(option.features || [], map)
     const layerOptions = Object.assign({
-      source: addVectorSource(option.features || [], map),
+      source: source,
       visible: true
     }, option)
     const layer = new VectorLayer(layerOptions)
-    // 针对不规则图案元素图层
     layer.setStyle(function (feature) {
       if (feature.get('style')) {
         return setStyle(feature.get('style'))
@@ -209,12 +311,21 @@ function setVectorLayer (option, map) {
       }
     })
     layer.set('id', option.id || '')
-    layer.set('type', 'VectorLayer')
+    layer.set('type', option.type || 'VectorLayer')
+    if (option.type === 'draw') {
+
+    }
     layer.set('users', true)
     return layer
   }
 }
 
+/**
+ * 添加鹰眼
+ * @param view
+ * @param layers
+ * @returns {OverviewMap}
+ */
 function addOverviewMapControl (view, layers) {
   return new OverviewMap({
     view: new View(view),
@@ -223,6 +334,11 @@ function addOverviewMapControl (view, layers) {
   })
 }
 
+/**
+ * 添加弹框
+ * @param option
+ * @returns {Overlay}
+ */
 function addOverlay (option) {
   if (validObjKey(option, 'element')) {
     option.element = document.getElementById(option.element.toString())
@@ -233,6 +349,20 @@ function addOverlay (option) {
   }
 }
 
+/**
+ * 更新弹框位置
+ * @param overlay
+ * @param position
+ */
+function setOverlayPosition (overlay, position) {
+  overlay.setPosition(position)
+}
+
+/**
+ * 设置文本样式
+ * @param option
+ * @returns {Text}
+ */
 function setText (option) {
   const defaultOption = Object.assign({
     font: '14px sans-serif',
@@ -258,6 +388,26 @@ function setText (option) {
   return textStyle
 }
 
+/**
+ * 设置多元素
+ * @param features
+ * @param map
+ * @returns {*[]}
+ */
+function setFeatures (features, map) {
+  const output = []
+  features.forEach(val => {
+    output.push(setFeature(val, map))
+  })
+  return output
+}
+
+/**
+ * 设置元素
+ * @param option
+ * @param map
+ * @returns {FeatureExt}
+ */
 function setFeature (option, map) {
   if (validObjKey(option, 'type')) {
     const type = option.type
@@ -278,6 +428,11 @@ function setFeature (option, map) {
   }
 }
 
+/**
+ * 获取点类型元素
+ * @param option
+ * @returns {FeatureExt}
+ */
 function setPointFeature (option) {
   const feature = new FeatureExt({
     geometry: new Point(option.coordinates)
@@ -310,14 +465,12 @@ function setPointFeature (option) {
   return feature
 }
 
-function setFeatures (features, map) {
-  const output = []
-  features.forEach(val => {
-    output.push(setFeature(val, map))
-  })
-  return output
-}
-
+/**
+ * 获取圆形类型元素
+ * @param option
+ * @param map
+ * @returns {FeatureExt}
+ */
 function setCircle (option, map) {
   const feature = new FeatureExt({
     geometry: new Circle(option.center, getRadiusByUnit(map, option.radius))
@@ -328,11 +481,22 @@ function setCircle (option, map) {
   return feature
 }
 
+/**
+ * 获取以米为单位的半径
+ * @param map
+ * @param radius
+ * @returns {number}
+ */
 function getRadiusByUnit (map, radius) {
   const metersPerUnit = map.getView().getProjection().getMetersPerUnit()
   return radius / metersPerUnit
 }
 
+/**
+ * 获取折线类型元素
+ * @param option
+ * @returns {FeatureExt}
+ */
 function setPolyline (option) {
   const feature = new FeatureExt({
     geometry: new LineString(option.coordinates)
@@ -343,6 +507,11 @@ function setPolyline (option) {
   return feature
 }
 
+/**
+ * 获取多边形类型元素
+ * @param option
+ * @returns {FeatureExt}
+ */
 function setPolygon (option) {
   const feature = new FeatureExt({
     geometry: new Polygon([option.coordinates])
@@ -357,6 +526,11 @@ function setPolygon (option) {
   return feature
 }
 
+/**
+ * 获取样式
+ * @param option
+ * @returns {Style}
+ */
 function setStyle (option) {
   const style = new Style()
   if (validObjKey(option, 'fill')) {
@@ -371,16 +545,38 @@ function setStyle (option) {
   return style
 }
 
+/**
+ * 添加矢量图层来源
+ * @param features
+ * @param map
+ * @returns {VectorSource<Geometry>}
+ */
 function addVectorSource (features, map) {
   return new VectorSource({
     features: setFeatures(features, map)
   })
 }
 
-function setOverlayPosition (overlay, position) {
-  overlay.setPosition(position)
+function addDrawLayer (id = 'draw', map, style) {
+  removeLayerById(id, map)
+  const layer = setVectorLayer({ id: id, type: 'draw' }, map)
+  if (style) {
+    layer.setStyle(setStyle(style))
+  }
+  console.log(layer)
+  map.addLayer(layer)
 }
 
+function getSourceByLayerId (id = 'draw', map) {
+  const layer = getLayerById(id, map)
+  return layer.getSource()
+}
+
+/**
+ * 添加聚合图层
+ * @param option
+ * @returns {VectorLayer<VectorSourceType>}
+ */
 function addClusterLayer (option) {
   const options = Object.assign({}, option.cluster)
   const clusterSource = new Cluster(options)
@@ -455,15 +651,13 @@ function addClusterLayer (option) {
   return clusters
 }
 
-function addHeatmapLayer (option) {
-  const options = Object.assign({}, option)
-  const vector = new HeatmapLayer(options)
-  const source = addVectorSource(option.features)
-  vector.setSource(source)
-  vector.set('id', options.id)
-  return vector
-}
-
+/**
+ * 设置聚合样式
+ * @param icon
+ * @param text
+ * @param color
+ * @returns {{image: Icon, text: Text}}
+ */
 function clusterFeatureStyle (icon, text, color) {
   const styleImage = new Icon({
     src: icon
@@ -477,6 +671,65 @@ function clusterFeatureStyle (icon, text, color) {
   return {
     image: styleImage,
     text: styleText
+  }
+}
+
+/**
+ * 添加热力图图层
+ * @param option
+ * @returns {Heatmap}
+ */
+function addHeatmapLayer (option) {
+  const options = Object.assign({}, option)
+  const vector = new HeatmapLayer(options)
+  const source = addVectorSource(option.features)
+  vector.setSource(source)
+  vector.set('id', options.id)
+  return vector
+}
+
+/**
+ * 设置交互功能
+ * @param map
+ * @param value
+ */
+function setInteraction (map, value) {
+  map.getInteractions().forEach(interaction => {
+    if (interaction && interaction.get('type')) {
+      if (interaction.get('type') === 'draw' || interaction.get('type') === 'select' || interaction.get('type') === 'modify') {
+        map.removeInteraction(interaction)
+      }
+    }
+  })
+  const select = new Select()
+  select.set('type', 'select')
+  let draw
+  let modify
+  if (value && value.length > 0) {
+    value.forEach(item => {
+      if (item.type === 'draw') {
+        addDrawLayer(item.layer, map, item.style)
+        draw = new Draw({
+          source: getSourceByLayerId(item.layer, map),
+          type: item.value,
+          freehand: item.freehand
+        })
+        draw.set('type', 'draw')
+        map.addInteraction(draw)
+      }
+      if (item.type === 'select') {
+        map.addInteraction(select)
+      }
+      if (item.type === 'modify') {
+        if (validObjKey(item, 'selectFeature') && item.selectFeature) {
+          modify = new Modify({
+            features: select.getFeatures()
+          })
+          modify.set('type', 'modify')
+          map.addInteraction(modify)
+        }
+      }
+    })
   }
 }
 
@@ -525,11 +778,16 @@ export class VMap {
     })
   }
 
+  static setInteraction (value) {
+    return setInteraction(VMap.map.map, value)
+  }
+
   static panTo (center, zoom) {
     return panTo(VMap.map.map, center, zoom)
   }
 
   constructor (option = {}) {
+    // view
     const viewOption = Object.assign({
       center: [0, 0],
       zoom: 12,
@@ -537,6 +795,12 @@ export class VMap {
       projection: 'EPSG:4326'
     }, option.view)
     const view = new View(viewOption)
+
+    // controls
+    const controlsOption = Object.assign({ zoom: false }, option.controls)
+    const controls = defaultControls(controlsOption).extend([])
+
+    // tile
     const baseTiles = Object.assign(['td'], option.baseTile)
     let visibleTile
     if (validObjKey(option, 'visibleTile') && option.visibleTile) {
@@ -548,9 +812,8 @@ export class VMap {
     // 生成地图
     this.map = new Map({
       target: option.target || 'map',
-      layers: [],
       view: view,
-      controls: []
+      controls: controls
     })
 
     // 移动动画
@@ -607,6 +870,11 @@ export class VMap {
         }
       })
     }
+
+    // 编辑
+    if (validObjKey(option, 'interaction') && option.interaction.length > 0) {
+      this.setInteraction(this.map, option.interaction)
+    }
   }
 
   getMap () {
@@ -619,8 +887,8 @@ export class VMap {
     })
   }
 
-  setFeature (option) {
-    return setFeature(option)
+  setFeature (option, map) {
+    return setFeature(option, map)
   }
 
   setFeatures (features, map) {
@@ -634,6 +902,10 @@ export class VMap {
 
   setVectorLayer (option, map) {
     return setVectorLayer(option, map)
+  }
+
+  setInteraction (map, value) {
+    setInteraction(map, value)
   }
 
   get getLayers () {
