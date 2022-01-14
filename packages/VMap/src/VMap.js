@@ -342,19 +342,13 @@ function addOverviewMapControl (view, layers) {
 function addOverlay (option) {
   let element
   if (validObjKey(option, 'element') && option.element !== null) {
-    console.log(option.element)
     if (typeof option.element === 'string') {
       element = option.element
       option.element = document.getElementById(element)
-    } else {
-      setTimeout(() => {
-        option.element = option.element.id
-      }, 50)
     }
     const overlayOption = Object.assign({
       position: undefined
     }, option)
-    console.log(overlayOption)
     return new Overlay(overlayOption)
   }
 }
