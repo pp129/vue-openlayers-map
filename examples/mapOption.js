@@ -306,5 +306,6 @@ export default {
    * draw绘制地理要素功能
    */
   interaction: [],
+  measure: false,
   updateLayers: []// 想要局部更新的layers id最好不要重复
 }

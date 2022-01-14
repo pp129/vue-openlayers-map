@@ -1,7 +1,7 @@
 <template>
   <div id="app">
     <div class="tools">
-      <button class="btn">测量</button>
+      <button class="btn" @click="webGlPoint">添加海量点</button>
       <button class="btn" @click="setModify">{{modifyStatus?'结束':'开始'}}编辑矢量元素</button>
       <select id="draw" class="btn" v-model="drawType" @change="changeInteractions">
         <option value="none">绘制图形</option>
@@ -9,6 +9,11 @@
         <option value="LineString">LineString</option>
         <option value="Polygon">Polygon</option>
         <option value="Circle">Circle</option>
+      </select>
+      <select id="measure" class="btn" v-model="measureType" @change="measure">
+        <option value="none">测量</option>
+        <option value="LineString">Length (LineString)</option>
+        <option value="Polygon">Area (Polygon)</option>
       </select>
       <button class="btn" @click="addLayer">新增/更新layer2</button>
       <button class="btn" @click="removeLayer">删除layer2</button>
@@ -39,6 +44,8 @@
       :height="height"
       :width="width"
       :option="option"
+      @drawend="drawEnd"
+      @measureend="measureEnd"
       @click="onClick"
       @changeZoom="onChangeZoom">
     </v-map>
@@ -93,7 +100,8 @@ export default {
       checked: ['layer1', 'cluster', 'polygon', 'heatmap'],
       currentZoom: 0,
       drawType: 'none',
-      modifyStatus: false
+      modifyStatus: false,
+      measureType: 'none'
     }
   },
   watch: {
@@ -127,6 +135,12 @@ export default {
   methods: {
     modifyEnd (evt, map) {
       console.log('modifyEnd', evt)
+    },
+    drawEnd (evt) {
+      console.log('on draw end', evt)
+    },
+    measureEnd (evt) {
+      console.log('on measure end', evt)
     },
     onClick (evt, map) {
       console.log('on map click === get coordinate', evt.coordinate)
@@ -210,6 +224,29 @@ export default {
       }
       this.option.layers.push(this.newLayer)
     },
+    webGlPoint () {
+      const features = []
+      const mockData = this.setMockData(200000)
+      mockData.array.forEach(val => {
+        features.push({
+          coordinates: val
+        })
+      })
+      const option = Object.assign({}, {
+        id: 'webGLPoints',
+        type: 'webGLPoints',
+        visible: true,
+        features: features
+      })
+      if (this.option.updateLayers.indexOf('webGLPoints') < 0) {
+        this.option.updateLayers.push('webGLPoints')
+      }
+      const index = this.option.layers.map(item => item.id).indexOf('webGLPoints')
+      if (index > -1) {
+        this.option.layers.splice(index, 1)
+      }
+      this.option.layers.push(option)
+    },
     removeLayer () {
       const index = this.option.layers.map(item => item.id).indexOf('layer2')
       if (index > -1) {
@@ -234,13 +271,13 @@ export default {
     changeTile () {
       this.option.visibleTile = this.selectedTile
     },
-    setMockData () {
+    setMockData (count = 100) {
       const Random = Mock.Random
-      return Mock.mock({
-        'array|100': [
-          () => [Random.float(117, 118, 6, 6), Random.float(24, 24, 6, 6)]
-        ]
-      })
+      const option = {}
+      option[`array|${count}`] = [
+        () => [Random.float(117, 118, 6, 6), Random.float(24, 24, 6, 6)]
+      ]
+      return Mock.mock(option)
     },
     setLayerVisible (value) {
       this.option.updateLayers = []
@@ -268,6 +305,16 @@ export default {
         this.option.interaction = [{ type: 'select' }, { type: 'modify', selectFeature: true }]
       } else {
         this.option.interaction = []
+      }
+    },
+    measure () {
+      this.option.measure = false
+      if (this.measureType !== 'none') {
+        this.option.measure = {
+          type: this.measureType,
+          segments: true,
+          clear: true
+        }
       }
     }
   }
@@ -298,6 +345,8 @@ html,body,#app {
     top: 10px;
     right: 20px;
     display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
     justify-content: flex-start;
     align-content: center;
     button,select{

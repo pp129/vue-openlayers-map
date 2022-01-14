@@ -44,6 +44,9 @@ export default {
     },
     interaction () {
       return this.option.interaction
+    },
+    measure () {
+      return this.option.measure
     }
   },
   watch: {
@@ -113,6 +116,12 @@ export default {
       handler (value) {
         console.log('interaction change', value)
         this.setInteraction(value)
+      }
+    },
+    measure: {
+      handler (value) {
+        console.log('measure change', value)
+        this.setMeasure(value)
       }
     }
   },
@@ -212,6 +221,29 @@ export default {
         })
         draw.on('drawend', evt => {
           this.$emit('drawend', evt, this.map)
+        })
+      }
+    },
+    setMeasure (value) {
+      console.log(value)
+      VMap.setMeasure(value)
+      let measure
+      this.map.getInteractions().forEach(item => {
+        console.log(item)
+        if (item.get('measureDraw')) {
+          measure = item
+          if (!value) {
+            VMap.removeInteraction(measure)
+            return false
+          }
+        }
+      })
+      if (measure) {
+        measure.on('drawstart', evt => {
+          this.$emit('measurestart', evt, this.map)
+        })
+        measure.on('drawend', evt => {
+          this.$emit('measureend', evt, this.map)
         })
       }
     }

@@ -2,17 +2,19 @@ import 'ol/ol.css'
 import { Map, View } from 'ol'
 import Overlay from 'ol/Overlay'
 import { Tile as TileLayer, Vector as VectorLayer, Heatmap as HeatmapLayer } from 'ol/layer'
+import WebGLPointsLayer from 'ol/layer/WebGLPoints'
 import { Cluster, XYZ, Vector as VectorSource } from 'ol/source'
 import Feature from 'ol/Feature'
 import { Circle, LineString, Point, Polygon } from 'ol/geom'
-import { Fill, Icon, Stroke, Style, Text, Circle as CircleStyle } from 'ol/style'
+import { Fill, Icon, Stroke, Style, Text, Circle as CircleStyle, RegularShape } from 'ol/style'
 import { OverviewMap, defaults as defaultControls } from 'ol/control'
 import { Draw, Modify, Select } from 'ol/interaction'
 import TileGrid from 'ol/tilegrid/TileGrid'
 import { addCoordinateTransforms, addProjection, Projection } from 'ol/proj'
 // import { applyTransform } from 'ol/extent'
-import projzh from '~/VMap/src/utils/projConvert'
 // import { defaults as defaultControls } from 'ol/control'
+import projzh from '~/VMap/src/utils/projConvert'
+import { getArea, getLength } from 'ol/sphere'
 
 function validObjKey (obj, key) {
   return obj && Object.prototype.hasOwnProperty.call(obj, key) && Object.keys(obj).length > 0
@@ -167,6 +169,12 @@ function getTDImg (visible, XYZUrl) {
   }, visible)
 }
 
+/**
+ * 百度地图
+ * @param option
+ * @param visible
+ * @returns {TileLayer<TileSourceType>[]}
+ */
 function getBDMap (option, visible) {
   // const extent = [72.004, 0.8293, 137.8347, 55.8271]//中国范围
 
@@ -282,8 +290,12 @@ function restVisibleBaseTile (map, name) {
  */
 function setLayer (option, map) {
   removeLayerById(option.id, map)
+  // 启动计时器
+  console.time('layer render')
   const layer = setVectorLayer(option, map)
   map.addLayer(layer)
+  // 停止计时，输出时间
+  console.timeEnd('layer render')
 }
 
 /**
@@ -342,6 +354,12 @@ function setVectorLayer (option, map) {
   } else if (validObjKey(option, 'type') && option.type === 'heatmap') {
     // 热力图
     const layer = addHeatmapLayer(option)
+    layer.set('id', option.id || '')
+    layer.set('type', option.type)
+    layer.set('users', true)
+    return layer
+  } else if (validObjKey(option, 'type') && option.type === 'webGLPoints') {
+    const layer = addWebGLPointsLayer(option, map)
     layer.set('id', option.id || '')
     layer.set('type', option.type)
     layer.set('users', true)
@@ -756,6 +774,30 @@ function addHeatmapLayer (option) {
   return vector
 }
 
+const defaultWebGLPointStyle = {
+  symbolType: 'circle',
+  size: 18,
+  color: '#006688',
+  opacity: 0.95,
+  rotateWithView: false
+}
+
+function addWebGLPointsLayer (option, map) {
+  const layer = new WebGLPointsLayer({
+    source: addVectorSource(option.features, map),
+    style: {
+      symbol: Object.assign(defaultWebGLPointStyle, option.style)
+    },
+    disableHitDetection: false // 将此设置为true会稍微提高性能，但会阻止在图层上进行所有命中检测，需要交互的话，设置false
+  })
+  for (const i in option) {
+    if (Object.prototype.hasOwnProperty.call(option, i)) {
+      layer.set(i, option[i])
+    }
+  }
+  return layer
+}
+
 /**
  * 设置交互功能
  * @param map
@@ -799,6 +841,258 @@ function setInteraction (map, value) {
       }
     })
   }
+}
+
+function removeInteraction (map, value) {
+  map.removeInteraction(value)
+}
+
+function setMeasure (map, value) {
+  console.log(value)
+  map.getInteractions().forEach(interaction => {
+    console.log(interaction)
+    if (interaction && interaction.get('type')) {
+      console.log(interaction.get('type'))
+      if (interaction.get('type') === 'measure') {
+        map.removeInteraction(interaction)
+      }
+    }
+  })
+  removeLayerById('measure', map)
+  if (!value) {
+    return false
+  }
+  const style = new Style({
+    fill: new Fill({
+      color: 'rgba(255, 255, 255, 0.2)'
+    }),
+    stroke: new Stroke({
+      color: 'rgba(0, 0, 0, 0.5)',
+      lineDash: [10, 10],
+      width: 2
+    }),
+    image: new CircleStyle({
+      radius: 5,
+      stroke: new Stroke({
+        color: 'rgba(0, 0, 0, 0.7)'
+      }),
+      fill: new Fill({
+        color: 'rgba(255, 255, 255, 0.2)'
+      })
+    })
+  })
+
+  const labelStyle = new Style({
+    text: new Text({
+      font: '14px Calibri,sans-serif',
+      fill: new Fill({
+        color: 'rgba(255, 255, 255, 1)'
+      }),
+      backgroundFill: new Fill({
+        color: 'rgba(0, 0, 0, 0.7)'
+      }),
+      padding: [3, 3, 3, 3],
+      textBaseline: 'bottom',
+      offsetY: -15
+    }),
+    image: new RegularShape({
+      radius: 8,
+      points: 3,
+      angle: Math.PI,
+      displacement: [0, 10],
+      fill: new Fill({
+        color: 'rgba(0, 0, 0, 0.7)'
+      })
+    })
+  })
+
+  const tipStyle = new Style({
+    text: new Text({
+      font: '12px Calibri,sans-serif',
+      fill: new Fill({
+        color: 'rgba(255, 255, 255, 1)'
+      }),
+      backgroundFill: new Fill({
+        color: 'rgba(0, 0, 0, 0.4)'
+      }),
+      padding: [2, 2, 2, 2],
+      textAlign: 'left',
+      offsetX: 15
+    })
+  })
+
+  const modifyStyle = new Style({
+    image: new CircleStyle({
+      radius: 5,
+      stroke: new Stroke({
+        color: 'rgba(0, 0, 0, 0.7)'
+      }),
+      fill: new Fill({
+        color: 'rgba(0, 0, 0, 0.4)'
+      })
+    }),
+    text: new Text({
+      text: '编辑测量',
+      font: '12px Calibri,sans-serif',
+      fill: new Fill({
+        color: 'rgba(255, 255, 255, 1)'
+      }),
+      backgroundFill: new Fill({
+        color: 'rgba(0, 0, 0, 0.7)'
+      }),
+      padding: [2, 2, 2, 2],
+      textAlign: 'left',
+      offsetX: 15
+    })
+  })
+
+  const segmentStyle = new Style({
+    text: new Text({
+      font: '12px Calibri,sans-serif',
+      fill: new Fill({
+        color: 'rgba(255, 255, 255, 1)'
+      }),
+      backgroundFill: new Fill({
+        color: 'rgba(0, 0, 0, 0.4)'
+      }),
+      padding: [2, 2, 2, 2],
+      textBaseline: 'bottom',
+      offsetY: -12
+    }),
+    image: new RegularShape({
+      radius: 6,
+      points: 3,
+      angle: Math.PI,
+      displacement: [0, 8],
+      fill: new Fill({
+        color: 'rgba(0, 0, 0, 0.4)'
+      })
+    })
+  })
+
+  const segmentStyles = [segmentStyle]
+
+  const formatLength = function (line) {
+    const length = getLength(line, {
+      projection: 'EPSG:4326'
+    })
+    let output
+    if (length > 100) {
+      output = Math.round((length / 1000) * 100) / 100 + ' km'
+    } else {
+      output = Math.round(length * 100) / 100 + ' m'
+    }
+    return output
+  }
+
+  const formatArea = function (polygon) {
+    const area = getArea(polygon, {
+      projection: 'EPSG:4326'
+    })
+    let output
+    if (area > 10000) {
+      output = Math.round((area / 1000000) * 100) / 100 + ' km\xB2'
+    } else {
+      output = Math.round(area * 100) / 100 + ' m\xB2'
+    }
+    return output
+  }
+
+  const source = new VectorSource()
+
+  const modify = new Modify({ source: source, style: modifyStyle })
+
+  let tipPoint
+
+  function styleFunction (feature, segments, drawType, tip) {
+    const styles = [style]
+    const geometry = feature.getGeometry()
+    const type = geometry.getType()
+    let point, label, line
+    if (!drawType || drawType === type) {
+      if (type === 'Polygon') {
+        point = geometry.getInteriorPoint()
+        label = formatArea(geometry)
+        line = new LineString(geometry.getCoordinates()[0])
+      } else if (type === 'LineString') {
+        point = new Point(geometry.getLastCoordinate())
+        label = formatLength(geometry)
+        line = geometry
+      }
+    }
+    if (segments && line) {
+      let count = 0
+      line.forEachSegment(function (a, b) {
+        const segment = new LineString([a, b])
+        const label = formatLength(segment)
+        if (segmentStyles.length - 1 < count) {
+          segmentStyles.push(segmentStyle.clone())
+        }
+        const segmentPoint = new Point(segment.getCoordinateAt(0.5))
+        segmentStyles[count].setGeometry(segmentPoint)
+        segmentStyles[count].getText().setText(label)
+        styles.push(segmentStyles[count])
+        count++
+      })
+    }
+    if (label) {
+      labelStyle.setGeometry(point)
+      labelStyle.getText().setText(label)
+      styles.push(labelStyle)
+    }
+    if (
+      tip &&
+      type === 'Point' &&
+      !modify.getOverlay().getSource().getFeatures().length
+    ) {
+      tipPoint = geometry
+      tipStyle.getText().setText(tip)
+      styles.push(tipStyle)
+    }
+    return styles
+  }
+  const vector = new VectorLayer({
+    source: source,
+    style: function (feature) {
+      return styleFunction(feature, value.segments)
+    }
+  })
+  vector.set('id', 'measure')
+  map.addLayer(vector)
+  modify.set('type', 'measure')
+  map.addInteraction(modify)
+  const drawType = value.type
+  const activeTip =
+    '点击继续测量' +
+    (drawType === 'Polygon' ? '面积' : '长度')
+  const idleTip = '点击开始测量'
+  let tip = idleTip
+  const draw = new Draw({
+    source: source,
+    type: drawType,
+    style: function (feature) {
+      return styleFunction(feature, value.segments, drawType, tip)
+    }
+  })
+  draw.set('type', 'measure')
+  draw.set('measureDraw', true)
+  draw.on('drawstart', function () {
+    if (value.clear) {
+      source.clear()
+    }
+    modify.setActive(false)
+    tip = activeTip
+  })
+  draw.on('drawend', function () {
+    modifyStyle.setGeometry(tipPoint)
+    modify.setActive(true)
+    map.once('pointermove', function () {
+      modifyStyle.setGeometry()
+    })
+    tip = idleTip
+  })
+  modify.setActive(true)
+  map.addInteraction(draw)
 }
 
 export class VMap {
@@ -861,6 +1155,14 @@ export class VMap {
 
   static setInteraction (value) {
     return setInteraction(VMap.map.map, value)
+  }
+
+  static removeInteraction (value) {
+    removeInteraction(VMap.map.map, value)
+  }
+
+  static setMeasure (value) {
+    return setMeasure(VMap.map.map, value)
   }
 
   static panTo (center, zoom) {
