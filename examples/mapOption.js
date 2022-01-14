@@ -19,7 +19,8 @@ export default {
       url: [
         'http://t4.tianditu.com/DataServer?T=ter_w&x={x}&y={y}&l={z}&tk=88e2f1d5ab64a7477a7361edd6b5f68a'
       ]
-    }
+    },
+    'bd'
   ],
   visibleTile: 'td', // 多个基础图层情况下默认显示的图层,对应baseTile中元素，当元素类型为对象时指定对象中type的值
   /**
@@ -109,6 +110,68 @@ export default {
           },
           properties: {
             name: 'feature3'
+          }
+        },
+        {
+          coordinates: [118.17377442687904, 24.47150100874583],
+          style: {
+            // 点位图标：https://openlayers.org/en/latest/apidoc/module-ol_style_Icon-Icon.html
+            icon: {
+              scale: 0.6,
+              src: require('@/assets/img/point_red.png')
+            },
+            // 点位文字：https://openlayers.org/en/latest/apidoc/module-ol_style_Text-Text.html
+            text: {
+              text: '84点位',
+              font: '13px sans-serif',
+              fill: {
+                color: '#3d73e8'
+              },
+              backgroundFill: {
+                color: '#ffffff'
+              },
+              stroke: {
+                color: '#ffffff',
+                width: 1
+              },
+              backgroundStroke: {
+                color: '#000000',
+                width: 1
+              },
+              offsetX: 0,
+              offsetY: 30
+            }
+          }
+        },
+        {
+          coordinates: [118.208004, 24.469997],
+          style: {
+            // 点位图标：https://openlayers.org/en/latest/apidoc/module-ol_style_Icon-Icon.html
+            icon: {
+              scale: 0.6,
+              src: require('@/assets/img/point_red.png')
+            },
+            // 点位文字：https://openlayers.org/en/latest/apidoc/module-ol_style_Text-Text.html
+            text: {
+              text: '百度点位',
+              font: '13px sans-serif',
+              fill: {
+                color: '#3d73e8'
+              },
+              backgroundFill: {
+                color: '#ffffff'
+              },
+              stroke: {
+                color: '#ffffff',
+                width: 1
+              },
+              backgroundStroke: {
+                color: '#000000',
+                width: 1
+              },
+              offsetX: 0,
+              offsetY: 30
+            }
           }
         }
       ]

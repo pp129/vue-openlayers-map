@@ -8,6 +8,10 @@ import { Circle, LineString, Point, Polygon } from 'ol/geom'
 import { Fill, Icon, Stroke, Style, Text, Circle as CircleStyle } from 'ol/style'
 import { OverviewMap, defaults as defaultControls } from 'ol/control'
 import { Draw, Modify, Select } from 'ol/interaction'
+import TileGrid from 'ol/tilegrid/TileGrid'
+import { addCoordinateTransforms, addProjection, Projection } from 'ol/proj'
+// import { applyTransform } from 'ol/extent'
+import projzh from '~/VMap/src/utils/projConvert'
 // import { defaults as defaultControls } from 'ol/control'
 
 function validObjKey (obj, key) {
@@ -114,14 +118,16 @@ function baseTile (option, visible) {
 function getBaseTile (option, visible) {
   switch (option.type) {
     case 'td':
-      return getTDMap(visible)
+      return getTDMap(visible, option.url)
     case 'td_img':
-      return getTDImg(visible)
+      return getTDImg(visible, option.url)
     case 'xyz':
       option.base = true
       return getCustomerTileXYZ(option, visible)
+    case 'bd':
+      return getBDMap(option, visible)
     default:
-      return getTDMap(visible)
+      return getTDMap(visible, option.url)
   }
 }
 
@@ -159,6 +165,64 @@ function getTDImg (visible, XYZUrl) {
     type: 'td_img',
     base: true
   }, visible)
+}
+
+function getBDMap (option, visible) {
+  // const extent = [72.004, 0.8293, 137.8347, 55.8271]//中国范围
+
+  const baiduMercatorProj = new Projection({
+    code: 'baidu',
+    // extent: applyTransform(extent, projzh.ll2bmerc),
+    units: 'm'
+  })
+
+  addProjection(baiduMercatorProj)
+  addCoordinateTransforms('EPSG:4326', baiduMercatorProj, projzh.ll2bmerc, projzh.bmerc2ll)
+  addCoordinateTransforms('EPSG:3857', baiduMercatorProj, projzh.smerc2bmerc, projzh.bmerc2smerc)
+  // 计算百度使用的分辨率
+  const resolutions = []
+  for (let i = 0; i < 19; i++) {
+    resolutions[i] = Math.pow(2, 18 - i)
+  }
+  const tilegrid = new TileGrid({
+    // extent: applyTransform(extent, projzh.ll2bmerc),
+    origin: [0, 0], // 设置原点坐标
+    resolutions: resolutions // 设置分辨率
+  })
+  // 创建百度地图的数据源
+  const tile = new XYZ({
+    projection: 'baidu',
+    tileGrid: tilegrid,
+    tileUrlFunction: function (tileCoord, pixelRatio, proj) {
+      if (!tileCoord) {
+        return ''
+      }
+      const z = tileCoord[0]
+      const x = tileCoord[1]
+      const y = -tileCoord[2] - 1
+      return 'https://maponline1.bdimg.com/tile/?qt=vtile&x=' +
+        x + '&y=' + y + '&z=' + z +
+        '&styles=pl&scaler=1&udt=20220113&from=jsapi2_0'
+    },
+    crossOrigin: 'anonymous'
+  })
+  // 百度地图层
+  const layer = new TileLayer({
+    visible: false,
+    source: tile
+  })
+  let visibleTile = ''
+  if (typeof visible === 'string') {
+    visibleTile = visible
+  } else if (typeof visible === 'object') {
+    visibleTile = visible.type
+  }
+  if (option.type === visibleTile) {
+    layer.setVisible(true)
+  }
+  layer.set('type', option.type || 'bd')
+  layer.set('base', true)
+  return [layer]
 }
 
 /**
@@ -746,6 +810,10 @@ export class VMap {
 
   static removeLayer (val) {
     return removeLayer(val, VMap.map.map)
+  }
+
+  static removeLayerById (val) {
+    return removeLayerById(val, VMap.map.map)
   }
 
   static restVisibleBaseTile (name) {

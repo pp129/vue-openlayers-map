@@ -3,7 +3,7 @@
 </template>
 
 <script>
-import { VMap } from './VMap.js'
+import { VMap } from '~/VMap/src/VMap.js'
 
 export default {
   name: 'v-map',
@@ -62,7 +62,29 @@ export default {
     layers: {
       handler (value) {
         console.log('layers change', value)
-        this.setLayers(value)
+        if (value) {
+          if (this.option.updateLayers && this.option.updateLayers.length > 0) {
+            // 局部更新图层
+            this.option.updateLayers.forEach(updateLayer => {
+              const index = value.findIndex(x => x.id === updateLayer)
+              console.log(index, updateLayer)
+              if (index > -1) {
+                value.forEach(layer => {
+                  if (layer.id === updateLayer) {
+                    this.setLayer(layer)
+                  }
+                })
+              } else {
+                this.removeLayerById(updateLayer)
+                const indexUpdate = this.option.updateLayers.map(item => item.id).indexOf(updateLayer)
+                this.option.updateLayers.splice(indexUpdate, 1)
+              }
+            })
+          } else {
+            // 全量更新
+            this.setLayers(value)
+          }
+        }
       },
       deep: true,
       immediate: false
@@ -146,6 +168,9 @@ export default {
         }
       })
       layers.forEach(layer => { this.setLayer(layer) })
+    },
+    removeLayerById (id) {
+      VMap.removeLayerById(id)
     },
     restVisibleBaseTile (visibleTile) {
       console.log('reset tile')

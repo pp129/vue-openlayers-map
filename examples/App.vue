@@ -17,6 +17,7 @@
         <option value="td">天地图-矢量</option>
         <option value="td_img">天地图-卫星</option>
         <option value="xyz">天地图-地形</option>
+        <option value="bd">百度地图</option>
       </select>
       <div class="checkbox-group btn">
         <div v-for="(item,index) in checkbox" :key="index" class="checkbox-item">
@@ -69,8 +70,7 @@ export default {
       height: '100%',
       width: '100%',
       option: mapOption,
-      newLayer: {
-      },
+      newLayer: {},
       selectedTile: 'td',
       checkbox: [
         {
@@ -176,7 +176,6 @@ export default {
         if (overlay.id === id) {
           overlay.position = coordinate
           overlay.properties = properties
-          // this.option.overlays[index] = _.cloneDeep(overlay)
         }
       })
     },
