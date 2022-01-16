@@ -113,7 +113,8 @@ export default {
           }
         },
         {
-          coordinates: [118.17377442687904, 24.47150100874583],
+          coordinates: [118.140448, 24.512917],
+          convert: 'bd-84', // 经纬度转化 支持：百度(bd)、高德(gd)、wgs84(84)互转
           style: {
             // 点位图标：https://openlayers.org/en/latest/apidoc/module-ol_style_Icon-Icon.html
             icon: {
@@ -122,38 +123,7 @@ export default {
             },
             // 点位文字：https://openlayers.org/en/latest/apidoc/module-ol_style_Text-Text.html
             text: {
-              text: '84点位',
-              font: '13px sans-serif',
-              fill: {
-                color: '#3d73e8'
-              },
-              backgroundFill: {
-                color: '#ffffff'
-              },
-              stroke: {
-                color: '#ffffff',
-                width: 1
-              },
-              backgroundStroke: {
-                color: '#000000',
-                width: 1
-              },
-              offsetX: 0,
-              offsetY: 30
-            }
-          }
-        },
-        {
-          coordinates: [118.208004, 24.469997],
-          style: {
-            // 点位图标：https://openlayers.org/en/latest/apidoc/module-ol_style_Icon-Icon.html
-            icon: {
-              scale: 0.6,
-              src: require('@/assets/img/point_red.png')
-            },
-            // 点位文字：https://openlayers.org/en/latest/apidoc/module-ol_style_Text-Text.html
-            text: {
-              text: '百度点位',
+              text: '百度转84',
               font: '13px sans-serif',
               fill: {
                 color: '#3d73e8'
@@ -263,22 +233,9 @@ export default {
       id: 'heatmap',
       type: 'heatmap',
       visible: true,
-      features: [
-        {
-          coordinates: [117.97453973475076, 24.61692211214447],
-          weight: 0.7// 一般来说在元素上配置权重,默认为"weight"，Number类型。
-        },
-        {
-          coordinates: [118.00639182661692, 24.57216235632966],
-          weight: 0.8
-        },
-        {
-          coordinates: [117.98525113645174, 24.57184088412666],
-          weight: 0.6
-        }
-      ],
-      blur: 100,
-      radius: 100,
+      features: [],
+      // blur: 60, // 模糊大小 控制热力图热度深浅
+      // radius: 40, // 半径大小 点扩散的范围
       /**
        * 用于权重的特征属性或从特征返回权重的函数。权重值的范围应为 0 到 1（超出范围的值将被限制在该范围内）。
        * type: string | function
@@ -294,6 +251,11 @@ export default {
     {
       id: 'overlay1',
       element: 'overlay1', // dom元素id
+      position: undefined
+    },
+    {
+      id: 'overlay2',
+      element: 'overlay2', // dom元素id
       position: undefined
     }
   ],

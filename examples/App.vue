@@ -53,6 +53,7 @@
       <p>overlay1</p>
       <span @click="closeOverlay('overlay1')">close</span>
     </div>
+<!--    <map-overlay id="overlay2" ref="overlay2" @close="closeOverlay('overlay2')"></map-overlay>-->
     <div ref="overlay2" id="overlay2" class="overlay">
       <p>overlay2</p>
       <span @click="closeOverlay('overlay2')">close</span>
@@ -63,6 +64,8 @@
 <script>
 import { VMap } from '~/index'
 import mapOption from '@/mapOption.js'
+// import MapOverlay from '@/components/overlay'
+import { heatmap } from '@/heatmap'
 
 import Mock from 'mockjs'
 
@@ -70,6 +73,7 @@ export default {
   name: 'App',
   components: {
     VMap
+    // MapOverlay
   },
   data () {
     return {
@@ -123,14 +127,9 @@ export default {
     }
   },
   created () {
-
   },
   mounted () {
-    this.option.overlays.push({
-      id: 'overlay2',
-      element: this.$refs.overlay2,
-      position: undefined
-    })
+    this.getHeatmapData()
   },
   methods: {
     modifyEnd (evt, map) {
@@ -187,6 +186,7 @@ export default {
     },
     showOverlay (properties, id, element, coordinate) {
       this.option.overlays.forEach((overlay, index) => {
+        console.log(overlay)
         if (overlay.id === id) {
           overlay.position = coordinate
           overlay.properties = properties
@@ -315,6 +315,22 @@ export default {
           segments: true,
           clear: true
         }
+      }
+    },
+    getHeatmapData () {
+      const data = []
+      heatmap.forEach(val => {
+        const longitude = Number(val.coordinates.split(',')[0])
+        const latitude = Number(val.coordinates.split(',')[1])
+        data.push({
+          coordinates: [longitude, latitude],
+          weight: val.count,
+          convert: 'bd-84'
+        })
+      })
+      const index = this.option.layers.findIndex(x => x.id === 'heatmap')
+      if (index > -1) {
+        this.option.layers[index].features = data
       }
     }
   }

@@ -14,6 +14,7 @@ import { addCoordinateTransforms, addProjection, Projection } from 'ol/proj'
 // import { applyTransform } from 'ol/extent'
 // import { defaults as defaultControls } from 'ol/control'
 import projzh from '~/VMap/src/utils/projConvert'
+import coordtransform from '~/VMap/src/utils/coordtransform'
 import { getArea, getLength } from 'ol/sphere'
 
 function validObjKey (obj, key) {
@@ -353,7 +354,7 @@ function setVectorLayer (option, map) {
     return layer
   } else if (validObjKey(option, 'type') && option.type === 'heatmap') {
     // 热力图
-    const layer = addHeatmapLayer(option)
+    const layer = addHeatmapLayer(option, map)
     layer.set('id', option.id || '')
     layer.set('type', option.type)
     layer.set('users', true)
@@ -416,17 +417,20 @@ function addOverviewMapControl (view, layers) {
   })
 }
 
+// function isElement (obj) {
+//   return (typeof HTMLElement === 'object') ? obj instanceof HTMLElement : obj && typeof obj === 'object' && obj.nodeType === 1 && typeof obj.nodeName === 'string'
+// }
+
 /**
  * 添加弹框
  * @param option
  * @returns {Overlay}
  */
 function addOverlay (option) {
-  let element
   if (validObjKey(option, 'element') && option.element !== null) {
+    // console.log(isElement(option.element))
     if (typeof option.element === 'string') {
-      element = option.element
-      option.element = document.getElementById(element)
+      option.element = document.getElementById(option.element.toString())
     }
     const overlayOption = Object.assign({
       position: undefined
@@ -520,8 +524,36 @@ function setFeature (option, map) {
  * @returns {FeatureExt}
  */
 function setPointFeature (option) {
+  let coordinates = []
+  if (validObjKey(option, 'convert') && option.convert) {
+    switch (option.convert) {
+      case 'bd-84':
+        coordinates = coordtransform.bd09towgs84(option.coordinates[0], option.coordinates[1])
+        break
+      case 'bd-gd':
+        coordinates = coordtransform.bd09togcj02(option.coordinates[0], option.coordinates[1])
+        break
+      case 'gd-84':
+        coordinates = coordtransform.gcj02towgs84(option.coordinates[0], option.coordinates[1])
+        break
+      case 'gd-bd':
+        coordinates = coordtransform.gcj02tobd09(option.coordinates[0], option.coordinates[1])
+        break
+      case '84-gd':
+        coordinates = coordtransform.wgs84togcj02(option.coordinates[0], option.coordinates[1])
+        break
+      case '84-bd':
+        coordinates = coordtransform.wgs84tobd09(option.coordinates[0], option.coordinates[1])
+        break
+      default:
+        coordinates = option.coordinates
+        break
+    }
+  } else {
+    coordinates = option.coordinates
+  }
   const feature = new FeatureExt({
-    geometry: new Point(option.coordinates)
+    geometry: new Point(coordinates)
   })
   // newFeaturePrototype(feature)
   const featureStyle = new Style({})
@@ -763,12 +795,13 @@ function clusterFeatureStyle (icon, text, color) {
 /**
  * 添加热力图图层
  * @param option
+ * @param map
  * @returns {Heatmap}
  */
-function addHeatmapLayer (option) {
+function addHeatmapLayer (option, map) {
   const options = Object.assign({}, option)
   const vector = new HeatmapLayer(options)
-  const source = addVectorSource(option.features)
+  const source = addVectorSource(option.features, map)
   vector.setSource(source)
   vector.set('id', options.id)
   return vector
@@ -1115,6 +1148,7 @@ export class VMap {
   }
 
   static addOverlay (option) {
+    console.log(option)
     const overlays = VMap.map.map.getOverlays()
     if (overlays) {
       const existOverlays = []
