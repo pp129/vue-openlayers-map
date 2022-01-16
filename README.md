@@ -15,7 +15,7 @@ Vue.use(VMap)
 import { VMap } from 'vue-openlayers-map'
 ```
 
-###简单示例
+### 简单示例
 ```vue
 <template>
   <div class="home">
@@ -42,7 +42,7 @@ export default {
 </script>
 ```
 
-###配置及说明
+### 配置及说明
 ```js
 // 对应vue中mapOption.js
 export default {
