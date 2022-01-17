@@ -1,5 +1,7 @@
 # vue-openlayers-map
-A vue component for openlayers map
+> 一个基于[OpenLayers](https://openlayers.org/) 的vue组件
+
+![image](examples/assets/screenshot/screenshot.png)
 
 ### 安装
 ```bash
@@ -304,12 +306,7 @@ export default {
   overlays: [
     {
       id: 'overlay1',
-      element: 'overlay1', // dom元素id
-      position: undefined
-    },
-    {
-      id: 'overlay2',
-      element: 'overlay2', // dom元素id
+      element: 'overlay1', // 仅支持dom元素id，不支持直接设置HTMLElement
       position: undefined
     }
   ],

@@ -417,10 +417,6 @@ function addOverviewMapControl (view, layers) {
   })
 }
 
-// function isElement (obj) {
-//   return (typeof HTMLElement === 'object') ? obj instanceof HTMLElement : obj && typeof obj === 'object' && obj.nodeType === 1 && typeof obj.nodeName === 'string'
-// }
-
 /**
  * 添加弹框
  * @param option
@@ -429,12 +425,16 @@ function addOverviewMapControl (view, layers) {
 function addOverlay (option) {
   if (validObjKey(option, 'element') && option.element !== null) {
     // console.log(isElement(option.element))
+    let element
     if (typeof option.element === 'string') {
-      option.element = document.getElementById(option.element.toString())
+      element = document.getElementById(option.element.toString())
     }
+    console.log(element)
     const overlayOption = Object.assign({
       position: undefined
-    }, option)
+    }, option, {
+      element: element
+    })
     return new Overlay(overlayOption)
   }
 }

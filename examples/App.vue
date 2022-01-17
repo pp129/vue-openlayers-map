@@ -108,7 +108,7 @@ export default {
       drawType: 'none',
       modifyStatus: false,
       measureType: 'none',
-      useCom: false,
+      useCom: true,
       overlay2: 'overlay2'
     }
   },
@@ -134,6 +134,11 @@ export default {
   },
   mounted () {
     this.getHeatmapData()
+    this.option.overlays.push({
+      id: 'overlay2',
+      element: 'overlay2', // dom元素id
+      position: undefined
+    })
   },
   methods: {
     modifyEnd (evt, map) {

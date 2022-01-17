@@ -257,12 +257,7 @@ export default {
   overlays: [
     {
       id: 'overlay1',
-      element: 'overlay1', // dom元素id
-      position: undefined
-    },
-    {
-      id: 'overlay2',
-      element: 'overlay2', // dom元素id
+      element: 'overlay1', // 仅支持dom元素id，不支持直接设置HTMLElement
       position: undefined
     }
   ],
