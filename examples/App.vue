@@ -30,6 +30,7 @@
           <input type="checkbox" :value="item.value" v-model="checked" @click="setLayerVisible(item.value)">
         </div>
       </div>
+      <span class="btn">点击位置经纬度：{{currentCoordinates}}</span>
       <span class="btn">当前层级：{{currentZoom}}</span>
       <span class="btn">
         移动到 ---
@@ -53,8 +54,8 @@
       <p>overlay1</p>
       <span @click="closeOverlay('overlay1')">close</span>
     </div>
-<!--    <map-overlay id="overlay2" ref="overlay2" @close="closeOverlay('overlay2')"></map-overlay>-->
-    <div ref="overlay2" id="overlay2" class="overlay">
+    <map-overlay v-if="useCom" :id="overlay2" ref="overlay2" @close="closeOverlay('overlay2')"></map-overlay>
+    <div v-else ref="overlay2" :id="overlay2" class="overlay">
       <p>overlay2</p>
       <span @click="closeOverlay('overlay2')">close</span>
     </div>
@@ -64,7 +65,7 @@
 <script>
 import { VMap } from '~/index'
 import mapOption from '@/mapOption.js'
-// import MapOverlay from '@/components/overlay'
+import MapOverlay from '@/components/overlay'
 import { heatmap } from '@/heatmap'
 
 import Mock from 'mockjs'
@@ -72,8 +73,8 @@ import Mock from 'mockjs'
 export default {
   name: 'App',
   components: {
-    VMap
-    // MapOverlay
+    VMap,
+    MapOverlay
   },
   data () {
     return {
@@ -103,9 +104,12 @@ export default {
       ],
       checked: ['layer1', 'cluster', 'polygon', 'heatmap'],
       currentZoom: 0,
+      currentCoordinates: '',
       drawType: 'none',
       modifyStatus: false,
-      measureType: 'none'
+      measureType: 'none',
+      useCom: false,
+      overlay2: 'overlay2'
     }
   },
   watch: {
@@ -143,6 +147,7 @@ export default {
     },
     onClick (evt, map) {
       console.log('on map click === get coordinate', evt.coordinate)
+      this.currentCoordinates = `${evt.coordinate[0].toFixed(6)}, ${evt.coordinate[1].toFixed(6)}`
       const pixel = map.getEventPixel(evt.originalEvent)
       const hit = map.hasFeatureAtPixel(pixel)
       const polyFeatures = map.getFeaturesByLayerId('polygon')
@@ -213,7 +218,8 @@ export default {
       this.newLayer = Object.assign({}, {
         id: 'layer2',
         visible: true,
-        features: features
+        features: features,
+        extent: [117.882223, 24.386902, 118.373857, 24.90727]
       })
       if (this.option.updateLayers.indexOf('layer2') < 0) {
         this.option.updateLayers.push('layer2')
@@ -330,7 +336,7 @@ export default {
       })
       const index = this.option.layers.findIndex(x => x.id === 'heatmap')
       if (index > -1) {
-        this.option.layers[index].features = data
+        this.option.layers[index].source.features = data
       }
     }
   }
@@ -372,6 +378,7 @@ html,body,#app {
       display: flex;
       align-items: center;
       margin-left: 20px;
+      margin-bottom: 10px;
       background: white;
       padding: 10px;
       font-size: 12px;

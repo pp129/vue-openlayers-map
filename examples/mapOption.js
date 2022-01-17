@@ -33,13 +33,13 @@ export default {
    */
   view: {
     center: [118.045456, 24.567489],
-    zoom: 12,
+    zoom: 10,
     // 设置视图是否应允许中间缩放级别。true:鼠标缩放地图,每次缩放级别为整数1
     constrainResolution: true,
     // 地图加载初始动画
     animate: {
-      center: [118.182395, 24.487288], // 中心点
-      zoom: 14 // 级别
+      center: [118.085428, 24.519409], // 中心点
+      zoom: 12 // 级别
     }
   },
   /**
@@ -201,26 +201,30 @@ export default {
       visible: true,
       minZoom: 10,
       maxZoom: 16,
-      features: [
-        {
-          coordinates: [117.96768937292673, 24.51616895381355],
-          style: {
-            icon: {
-              src: require('@/assets/img/point_red.png')
-            }
-          }
-        },
-        {
-          coordinates: [117.97481324839465, 24.502306340499445],
-          style: {
-            icon: {
-              src: require('@/assets/img/point_blue.png')
-            }
-          }
-        }
-      ],
       // 聚合：https://openlayers.org/en/latest/apidoc/module-ol_source_Cluster-Cluster.html
       cluster: {
+        // 继承source
+        source: {
+          features: [
+            {
+              coordinates: [117.96768937292673, 24.51616895381355],
+              style: {
+                icon: {
+                  src: require('@/assets/img/point_red.png')
+                }
+              }
+            },
+            {
+              coordinates: [117.97481324839465, 24.502306340499445],
+              style: {
+                icon: {
+                  src: require('@/assets/img/point_blue.png')
+                }
+              }
+            }
+          ],
+          extent: [117.882223, 24.386902, 118.373857, 24.90727]
+        },
         distance: 120, // 要素将聚集在一起的像素距离。
         minDistance: 1// 聚合之间的最小距离（以像素为单位）。将被限制在配置的距离。默认情况下，不设置最小距离。此配置可用于避免重叠图标。作为权衡，聚合要素的位置将不再是其所有要素的中心。
       }
@@ -233,7 +237,10 @@ export default {
       id: 'heatmap',
       type: 'heatmap',
       visible: true,
-      features: [],
+      // 继承source
+      source: {
+        features: []
+      },
       // blur: 60, // 模糊大小 控制热力图热度深浅
       // radius: 40, // 半径大小 点扩散的范围
       /**

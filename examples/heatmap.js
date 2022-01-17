@@ -182,5 +182,6 @@ export const heatmap = [
   { name: '同安区汀溪镇', coordinates: '118.136505,24.794722', count: 2 },
   { name: '同安区新民镇', coordinates: '118.142245,24.718723', count: 22 },
   { name: '同安区莲花镇', coordinates: '118.07871,24.748529', count: 1 },
-  { name: '同安区西柯镇', coordinates: '118.169701,24.670675', count: 17 }
+  { name: '同安区西柯镇', coordinates: '118.169701,24.670675', count: 17 },
+  { name: 'text', coordinates: '118.56409455793512,24.43005514865925', count: 25 }
 ]

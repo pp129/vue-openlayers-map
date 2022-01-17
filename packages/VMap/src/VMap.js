@@ -347,7 +347,7 @@ function removeLayer (layer, map) {
 function setVectorLayer (option, map) {
   if (validObjKey(option, 'type') && option.type === 'cluster') {
     // 聚合图层
-    const layer = addClusterLayer(option)
+    const layer = addClusterLayer(option, map)
     layer.set('id', option.id || '')
     layer.set('type', option.type)
     layer.set('users', true)
@@ -367,7 +367,7 @@ function setVectorLayer (option, map) {
     return layer
   } else {
     // 元素图层
-    const source = addVectorSource(option.features || [], map)
+    const source = addVectorSource(option || [], map)
     const layerOptions = Object.assign({
       source: source,
       visible: true
@@ -665,14 +665,15 @@ function setStyle (option) {
 
 /**
  * 添加矢量图层来源
- * @param features
+ * @param option
  * @param map
  * @returns {VectorSource<Geometry>}
  */
-function addVectorSource (features, map) {
-  return new VectorSource({
-    features: setFeatures(features, map)
+function addVectorSource (option, map) {
+  const source = Object.assign({}, option, {
+    features: setFeatures(option.features, map)
   })
+  return new VectorSource(source)
 }
 
 function addDrawLayer (id = 'draw', map, style) {
@@ -693,13 +694,15 @@ function getSourceByLayerId (id = 'draw', map) {
 /**
  * 添加聚合图层
  * @param option
+ * @param map
  * @returns {VectorLayer<VectorSourceType>}
  */
-function addClusterLayer (option) {
-  const options = Object.assign({}, option.cluster)
+function addClusterLayer (option, map) {
+  const source = addVectorSource(option.cluster.source, map)
+  const options = Object.assign({}, option.cluster, {
+    source: source
+  })
   const clusterSource = new Cluster(options)
-  const source = addVectorSource(option.features)
-  clusterSource.setSource(source)
   const styleCache = {}
   const clusterOptions = Object.assign({
     source: clusterSource,
@@ -799,9 +802,11 @@ function clusterFeatureStyle (icon, text, color) {
  * @returns {Heatmap}
  */
 function addHeatmapLayer (option, map) {
-  const options = Object.assign({}, option)
+  const source = addVectorSource(option.source, map)
+  const options = Object.assign({}, option, {
+    source: source
+  })
   const vector = new HeatmapLayer(options)
-  const source = addVectorSource(option.features, map)
   vector.setSource(source)
   vector.set('id', options.id)
   return vector
@@ -817,7 +822,7 @@ const defaultWebGLPointStyle = {
 
 function addWebGLPointsLayer (option, map) {
   const layer = new WebGLPointsLayer({
-    source: addVectorSource(option.features, map),
+    source: addVectorSource(option, map),
     style: {
       symbol: Object.assign(defaultWebGLPointStyle, option.style)
     },
