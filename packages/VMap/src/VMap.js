@@ -502,7 +502,7 @@ function setFeature (option, map) {
     const type = option.type
     switch (type) {
       case 'point':
-        return setPointFeature(option)
+        return setPointFeature(option, map)
       case 'polygon':
         return setPolygon(option)
       case 'polyline':
@@ -510,19 +510,20 @@ function setFeature (option, map) {
       case 'circle':
         return setCircle(option, map)
       default:
-        return setPointFeature(option)
+        return setPointFeature(option, map)
     }
   } else {
-    return setPointFeature(option)
+    return setPointFeature(option, map)
   }
 }
 
 /**
  * 获取点类型元素
  * @param option
+ * @param map
  * @returns {FeatureExt}
  */
-function setPointFeature (option) {
+function setPointFeature (option, map) {
   let coordinates = []
   if (validObjKey(option, 'convert') && option.convert) {
     switch (option.convert) {
@@ -557,17 +558,39 @@ function setPointFeature (option) {
   // newFeaturePrototype(feature)
   const featureStyle = new Style({})
   if (validObjKey(option, 'style')) {
-    const optionStyle = option.style
-    if (validObjKey(optionStyle, 'icon')) {
-      const imageStyle = new Icon(optionStyle.icon)
-      featureStyle.setImage(imageStyle)
-    }
-    if (validObjKey(optionStyle, 'text')) {
-      const optionText = optionStyle.text
-      const textStyle = setText(optionText)
-      featureStyle.setText(textStyle)
-    }
-    feature.setStyle(featureStyle)
+    feature.setStyle(function (feature, resolution) {
+      console.log(feature, resolution)
+      console.log(map.getView().getZoom())
+      const viewZoom = map.getView().getZoom()
+      const optionStyle = option.style
+      let minZoom = 0
+      let maxZoom = 28
+      if (validObjKey(optionStyle, 'minZoom')) {
+        minZoom = optionStyle.minZoom
+      }
+      if (validObjKey(optionStyle, 'maxZoom')) {
+        maxZoom = optionStyle.maxZoom
+      }
+      if (validObjKey(optionStyle, 'icon')) {
+        const imageStyle = new Icon(optionStyle.icon)
+        featureStyle.setImage(imageStyle)
+      }
+      if (validObjKey(optionStyle, 'text')) {
+        const optionText = optionStyle.text
+        const textStyle = setText(optionText)
+        let minTextZoom = 0
+        let maxTextZoom = 28
+        if (validObjKey(optionText, 'minZoom')) {
+          minTextZoom = optionText.minZoom
+        }
+        if (validObjKey(optionText, 'maxZoom')) {
+          maxTextZoom = optionText.maxZoom
+        }
+        featureStyle.setText(minTextZoom <= viewZoom && viewZoom <= maxTextZoom ? textStyle : null)
+      }
+      // feature.setStyle(featureStyle)
+      return minZoom <= viewZoom && viewZoom <= maxZoom ? featureStyle : null
+    })
   }
   if (validObjKey(option, 'id')) {
     feature.setId(option.id)

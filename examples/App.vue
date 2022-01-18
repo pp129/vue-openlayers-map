@@ -38,7 +38,6 @@
         维度：<input class="btn-input" type="number" v-model="option.view.animate.center[1]">
         层级：<input class="btn-input" type="number" v-model="option.view.animate.zoom">
       </span>
-      <!-- todo 轨迹动画 -->
       <button class="btn" @click="startTrack">出发</button>
     </div>
     <v-map
@@ -304,7 +303,7 @@ export default {
         this.option.interaction.push({
           type: 'draw',
           value: this.drawType,
-          freehand: true
+          freehand: false
         })
       }
     },
