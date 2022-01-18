@@ -58,14 +58,14 @@ export default {
         {
           coordinates: [118.124728, 24.487902],
           style: {
-            minZoom: 13,
-            maxZoom: 16,
+            minZoom: 13, // 特殊属性，控制元素最小显示层级
+            maxZoom: 16, // 特殊属性，控制元素最大显示层级
             // 点位图标：https://openlayers.org/en/latest/apidoc/module-ol_style_Icon-Icon.html
             icon: {
               scale: 0.6,
               src: require('@/assets/img/point_red.png')
             },
-            // 点位文字：https://openlayers.org/en/latest/apidoc/module-ol_style_Text-Text.html
+            // 文本样式：https://openlayers.org/en/latest/apidoc/module-ol_style_Text-Text.html
             text: {
               text: '控制显示层级',
               font: '13px sans-serif',
@@ -85,8 +85,8 @@ export default {
               },
               offsetX: 0,
               offsetY: 30,
-              minZoom: 14,
-              maxZoom: 16
+              minZoom: 14, // 特殊属性，控制元素文本最小显示层级
+              maxZoom: 16// 特殊属性，控制元素文本最大显示层级
             }
           },
           // 需要附加在元素上的属性，一般用于点击获取点位信息，使用feature.get('properties')读取
@@ -312,6 +312,12 @@ export default {
    * draw绘制地理要素功能
    */
   interaction: [],
+  /**
+   * 测量工具
+   * @param {String} [type] LineString：测线 Polygon：测面
+   * @param {Boolean} [segments] 是否显示分段测量值
+   * @param {Boolean} [clear] 是否清空上次测量
+   */
   measure: false,
   updateLayers: []// 想要局部更新的layers id最好不要重复
 }

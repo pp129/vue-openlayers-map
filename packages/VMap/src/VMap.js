@@ -424,7 +424,6 @@ function addOverviewMapControl (view, layers) {
  */
 function addOverlay (option) {
   if (validObjKey(option, 'element') && option.element !== null) {
-    // console.log(isElement(option.element))
     let element
     if (typeof option.element === 'string') {
       element = document.getElementById(option.element.toString())
@@ -559,8 +558,6 @@ function setPointFeature (option, map) {
   const featureStyle = new Style({})
   if (validObjKey(option, 'style')) {
     feature.setStyle(function (feature, resolution) {
-      console.log(feature, resolution)
-      console.log(map.getView().getZoom())
       const viewZoom = map.getView().getZoom()
       const optionStyle = option.style
       let minZoom = 0
@@ -702,6 +699,12 @@ function addVectorSource (option, map) {
   return new VectorSource(source)
 }
 
+/**
+ * 绘制图层
+ * @param id
+ * @param map
+ * @param style
+ */
 function addDrawLayer (id = 'draw', map, style) {
   removeLayerById(id, map)
   const layer = setVectorLayer({ id: id, type: 'draw' }, map)
@@ -711,6 +714,12 @@ function addDrawLayer (id = 'draw', map, style) {
   map.addLayer(layer)
 }
 
+/**
+ * 根据图层id获取图层来源
+ * @param id
+ * @param map
+ * @returns {*}
+ */
 function getSourceByLayerId (id = 'draw', map) {
   const layer = getLayerById(id, map)
   return layer.getSource()
@@ -837,6 +846,10 @@ function addHeatmapLayer (option, map) {
   return vector
 }
 
+/**
+ * WebGL图层样式
+ * @type {{size: number, color: string, opacity: number, rotateWithView: boolean, symbolType: string}}
+ */
 const defaultWebGLPointStyle = {
   symbolType: 'circle',
   size: 18,
@@ -845,6 +858,12 @@ const defaultWebGLPointStyle = {
   rotateWithView: false
 }
 
+/**
+ * WebGL图层
+ * @param option
+ * @param map
+ * @returns {WebGLPointsLayer<VectorSourceType>}
+ */
 function addWebGLPointsLayer (option, map) {
   const layer = new WebGLPointsLayer({
     source: addVectorSource(option, map),
@@ -906,23 +925,65 @@ function setInteraction (map, value) {
   }
 }
 
+/**
+ * 删除交互
+ * @param map
+ * @param value
+ */
 function removeInteraction (map, value) {
   map.removeInteraction(value)
 }
 
+/**
+ * 删除所有测量图层
+ * @param map
+ */
+function removeAllMeasureLayers (map) {
+  const layers = map.getLayers()
+  layers.forEach(item => {
+    if (item && item.get('measureLayer') && item.get('measureLayer') === true) {
+      map.removeLayer(item)
+    }
+  })
+}
+
+/**
+ * 测量交互
+ * @param map
+ * @param value
+ * @returns {boolean}
+ */
 function setMeasure (map, value) {
+  if (!value) {
+    map.getInteractions().forEach(interaction => {
+      if (interaction && interaction.get('type')) {
+        if (interaction.get('type') === 'measure') {
+          map.removeInteraction(interaction)
+        }
+      }
+    })
+    // removeLayerById('measure', map)
+    removeAllMeasureLayers(map)
+  }
+  let clear = true
+  if (validObjKey(value, 'clear') && typeof value.clear === 'boolean') {
+    clear = value.clear
+  }
   map.getInteractions().forEach(interaction => {
     if (interaction && interaction.get('type')) {
-      console.log(interaction.get('type'))
       if (interaction.get('type') === 'measure') {
         map.removeInteraction(interaction)
       }
     }
   })
-  removeLayerById('measure', map)
-  if (!value) {
+  if (clear) {
+    removeAllMeasureLayers(map)
+  }
+
+  if (!validObjKey(value, 'type') || !value.type) {
     return false
   }
+
   const style = new Style({
     fill: new Fill({
       color: 'rgba(255, 255, 255, 0.2)'
@@ -942,7 +1003,6 @@ function setMeasure (map, value) {
       })
     })
   })
-
   const labelStyle = new Style({
     text: new Text({
       font: '14px Calibri,sans-serif',
@@ -966,7 +1026,6 @@ function setMeasure (map, value) {
       })
     })
   })
-
   const tipStyle = new Style({
     text: new Text({
       font: '12px Calibri,sans-serif',
@@ -981,7 +1040,6 @@ function setMeasure (map, value) {
       offsetX: 15
     })
   })
-
   const modifyStyle = new Style({
     image: new CircleStyle({
       radius: 5,
@@ -1006,7 +1064,6 @@ function setMeasure (map, value) {
       offsetX: 15
     })
   })
-
   const segmentStyle = new Style({
     text: new Text({
       font: '12px Calibri,sans-serif',
@@ -1030,9 +1087,7 @@ function setMeasure (map, value) {
       })
     })
   })
-
   const segmentStyles = [segmentStyle]
-
   const formatLength = function (line) {
     const length = getLength(line, {
       projection: 'EPSG:4326'
@@ -1045,7 +1100,6 @@ function setMeasure (map, value) {
     }
     return output
   }
-
   const formatArea = function (polygon) {
     const area = getArea(polygon, {
       projection: 'EPSG:4326'
@@ -1058,13 +1112,13 @@ function setMeasure (map, value) {
     }
     return output
   }
-
   const source = new VectorSource()
-
   const modify = new Modify({ source: source, style: modifyStyle })
-
   let tipPoint
-
+  let segments = true
+  if (validObjKey(value, 'segments') && typeof value.segments === 'boolean') {
+    segments = value.segments
+  }
   function styleFunction (feature, segments, drawType, tip) {
     const styles = [style]
     const geometry = feature.getGeometry()
@@ -1115,10 +1169,11 @@ function setMeasure (map, value) {
   const vector = new VectorLayer({
     source: source,
     style: function (feature) {
-      return styleFunction(feature, value.segments)
+      return styleFunction(feature, segments)
     }
   })
   vector.set('id', 'measure')
+  vector.set('measureLayer', true)
   map.addLayer(vector)
   modify.set('type', 'measure')
   map.addInteraction(modify)
@@ -1132,13 +1187,13 @@ function setMeasure (map, value) {
     source: source,
     type: drawType,
     style: function (feature) {
-      return styleFunction(feature, value.segments, drawType, tip)
+      return styleFunction(feature, segments, drawType, tip)
     }
   })
   draw.set('type', 'measure')
   draw.set('measureDraw', true)
   draw.on('drawstart', function () {
-    if (value.clear) {
+    if (clear) {
       source.clear()
     }
     modify.setActive(false)
