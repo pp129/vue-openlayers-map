@@ -39,18 +39,8 @@ const moveFeature = function (vectorLayer, routeLength, routeCoords, startMarker
   let x, y, rotation
   console.log('index: ', index)
   if (routeCoords[index] && routeCoords[index + 1]) {
-    // x = routeCoords[index][0] - routeCoords[index + 1][0]
-    // y = routeCoords[index][1] - routeCoords[index + 1][1]
-    if (routeCoords[index][0] > routeCoords[index + 1][0]) {
-      x = routeCoords[index][0] - routeCoords[index + 1][0]
-    } else {
-      x = routeCoords[index + 1][0] - routeCoords[index][0]
-    }
-    if (routeCoords[index][1] > routeCoords[index + 1][1]) {
-      y = routeCoords[index][1] - routeCoords[index + 1][1]
-    } else {
-      y = routeCoords[index + 1][1] - routeCoords[index][1]
-    }
+    x = routeCoords[index][0] - routeCoords[index + 1][0]
+    y = routeCoords[index][1] - routeCoords[index + 1][1]
     rotation = Math.atan2(y, x)
   } else {
     rotation = 0

@@ -261,7 +261,6 @@ export default {
       position: undefined
     }
   ],
-  // todo 轨迹动画
   track: [
     {
       id: 'track1',

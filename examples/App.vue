@@ -39,7 +39,7 @@
         层级：<input class="btn-input" type="number" v-model="option.view.animate.zoom">
       </span>
       <!-- todo 轨迹动画 -->
-<!--      <button class="btn" @click="startTrack">出发</button>-->
+      <button class="btn" @click="startTrack">出发</button>
     </div>
     <v-map
       ref="map"
@@ -56,11 +56,7 @@
       <p>overlay1</p>
       <span @click="closeOverlay('overlay1')">close</span>
     </div>
-    <map-overlay v-if="useCom" :id="overlay2" ref="overlay2" @close="closeOverlay('overlay2')"></map-overlay>
-    <div v-else ref="overlay2" :id="overlay2" class="overlay">
-      <p>overlay2</p>
-      <span @click="closeOverlay('overlay2')">close</span>
-    </div>
+    <map-overlay id="overlay2" ref="overlay2" @close="closeOverlay('overlay2')"></map-overlay>
   </div>
 </template>
 
@@ -133,14 +129,14 @@ export default {
     }
   },
   created () {
-  },
-  mounted () {
-    this.getHeatmapData()
     this.option.overlays.push({
       id: 'overlay2',
       element: 'overlay2', // dom元素id
       position: undefined
     })
+  },
+  mounted () {
+    this.getHeatmapData()
   },
   methods: {
     modifyEnd (evt, map) {

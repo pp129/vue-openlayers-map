@@ -367,7 +367,7 @@ function setVectorLayer (option, map) {
     return layer
   } else {
     // 元素图层
-    const source = addVectorSource(option || [], map)
+    const source = addVectorSource(option, map)
     const layerOptions = Object.assign({
       source: source,
       visible: true
@@ -669,8 +669,12 @@ function setStyle (option) {
  * @returns {VectorSource<Geometry>}
  */
 function addVectorSource (option, map) {
+  let features = []
+  if (validObjKey(option, 'features')) {
+    features = option.features
+  }
   const source = Object.assign({}, option, {
-    features: setFeatures(option.features, map)
+    features: setFeatures(features, map)
   })
   return new VectorSource(source)
 }
@@ -681,7 +685,6 @@ function addDrawLayer (id = 'draw', map, style) {
   if (style) {
     layer.setStyle(setStyle(style))
   }
-  console.log(layer)
   map.addLayer(layer)
 }
 
@@ -885,9 +888,7 @@ function removeInteraction (map, value) {
 }
 
 function setMeasure (map, value) {
-  console.log(value)
   map.getInteractions().forEach(interaction => {
-    console.log(interaction)
     if (interaction && interaction.get('type')) {
       console.log(interaction.get('type'))
       if (interaction.get('type') === 'measure') {

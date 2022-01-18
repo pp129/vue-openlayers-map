@@ -4,8 +4,8 @@
 
 <script>
 import { VMap } from '~/VMap/src/VMap.js'
-// todo 轨迹动画
-// import track from '~/VMap/src/utils/track'
+// 轨迹动画
+import track from '~/VMap/src/utils/track'
 // import track from '~/VMap/src/utils/trackAnimation'
 
 export default {
@@ -50,10 +50,10 @@ export default {
     },
     measure () {
       return this.option.measure
+    },
+    track () {
+      return this.option.track
     }
-    // track () {
-    //   return this.option.track
-    // }
   },
   watch: {
     animate: {
@@ -129,25 +129,25 @@ export default {
         console.log('measure change', value)
         this.setMeasure(value)
       }
+    },
+    track: {
+      handler (value) {
+        if (value) {
+          console.log('track change', value)
+          value.forEach(item => {
+            if (item.state) {
+              switch (item.state) {
+                case 'start':
+                  track.start(item.speed)
+                  break
+              }
+            }
+          })
+        }
+      },
+      deep: true,
+      immediate: false
     }
-    // track: {
-    //   handler (value) {
-    //     if (value) {
-    //       console.log('track change', value)
-    //       value.forEach(item => {
-    //         if (item.state) {
-    //           switch (item.state) {
-    //             case 'start':
-    //               track.start(item.speed)
-    //               break
-    //           }
-    //         }
-    //       })
-    //     }
-    //   },
-    //   deep: true,
-    //   immediate: false
-    // }
   },
   data () {
     return {
@@ -170,12 +170,13 @@ export default {
           this.zoomEnd(evt)
         })
       })
-      // this.option.track.forEach(item => {
-      //   const option = Object.assign({}, item, {
-      //     map: this.map
-      //   })
-      //   track.init(option)
-      // })
+      // 初始化轨迹图层
+      this.option.track.forEach(item => {
+        const option = Object.assign({}, item, {
+          map: this.map
+        })
+        track.init(option)
+      })
     },
     zoomEnd (evt) {
       this.$emit('changeZoom', evt, this.map)
@@ -255,11 +256,9 @@ export default {
       }
     },
     setMeasure (value) {
-      console.log(value)
       VMap.setMeasure(value)
       let measure
       this.map.getInteractions().forEach(item => {
-        console.log(item)
         if (item.get('measureDraw')) {
           measure = item
           if (!value) {
