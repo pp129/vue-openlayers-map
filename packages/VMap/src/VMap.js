@@ -429,7 +429,6 @@ function addOverlay (option) {
     if (typeof option.element === 'string') {
       element = document.getElementById(option.element.toString())
     }
-    console.log(element)
     const overlayOption = Object.assign({
       position: undefined
     }, option, {
@@ -1153,7 +1152,6 @@ export class VMap {
   }
 
   static addOverlay (option) {
-    console.log(option)
     const overlays = VMap.map.map.getOverlays()
     if (overlays) {
       const existOverlays = []

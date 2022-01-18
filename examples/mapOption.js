@@ -261,6 +261,45 @@ export default {
       position: undefined
     }
   ],
+  // todo 轨迹动画
+  track: [
+    {
+      id: 'track1',
+      speed: 45,
+      routes: [
+        [118.171545, 24.460156],
+        [118.169381, 24.459420],
+        [118.167310, 24.457971],
+        [118.166292, 24.456996],
+        [118.165197, 24.456315],
+        [118.163195, 24.455480],
+        [118.161864, 24.454370],
+        [118.161154, 24.454048],
+        [118.159665, 24.454158],
+        [118.157046, 24.453941]
+      ],
+      start: {
+        icon: {
+          scale: 0.05,
+          src: require('@/assets/img/point_start.png')
+        }
+      },
+      end: {
+        icon: {
+          scale: 0.05,
+          src: require('@/assets/img/point_end.png')
+        }
+      },
+      geoMarker: {
+        icon: {
+          scale: 0.1,
+          src: require('@/assets/img/car.png'),
+          rotation: 180
+        }
+      },
+      state: ''// start、pause、continue、stop
+    }
+  ],
   /**
    * 除去默认的 https://openlayers.org/en/latest/apidoc/module-ol_interaction.html#~DefaultsOptions
    * 要新加的交互类型集合

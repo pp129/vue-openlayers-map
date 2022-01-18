@@ -38,6 +38,8 @@
         维度：<input class="btn-input" type="number" v-model="option.view.animate.center[1]">
         层级：<input class="btn-input" type="number" v-model="option.view.animate.zoom">
       </span>
+      <!-- todo 轨迹动画 -->
+<!--      <button class="btn" @click="startTrack">出发</button>-->
     </div>
     <v-map
       ref="map"
@@ -343,6 +345,9 @@ export default {
       if (index > -1) {
         this.option.layers[index].source.features = data
       }
+    },
+    startTrack () {
+      this.option.track[0].state = 'start'
     }
   }
 }

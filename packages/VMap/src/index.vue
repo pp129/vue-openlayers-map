@@ -4,6 +4,9 @@
 
 <script>
 import { VMap } from '~/VMap/src/VMap.js'
+// todo 轨迹动画
+// import track from '~/VMap/src/utils/track'
+// import track from '~/VMap/src/utils/trackAnimation'
 
 export default {
   name: 'v-map',
@@ -48,6 +51,9 @@ export default {
     measure () {
       return this.option.measure
     }
+    // track () {
+    //   return this.option.track
+    // }
   },
   watch: {
     animate: {
@@ -124,6 +130,24 @@ export default {
         this.setMeasure(value)
       }
     }
+    // track: {
+    //   handler (value) {
+    //     if (value) {
+    //       console.log('track change', value)
+    //       value.forEach(item => {
+    //         if (item.state) {
+    //           switch (item.state) {
+    //             case 'start':
+    //               track.start(item.speed)
+    //               break
+    //           }
+    //         }
+    //       })
+    //     }
+    //   },
+    //   deep: true,
+    //   immediate: false
+    // }
   },
   data () {
     return {
@@ -146,6 +170,12 @@ export default {
           this.zoomEnd(evt)
         })
       })
+      // this.option.track.forEach(item => {
+      //   const option = Object.assign({}, item, {
+      //     map: this.map
+      //   })
+      //   track.init(option)
+      // })
     },
     zoomEnd (evt) {
       this.$emit('changeZoom', evt, this.map)
