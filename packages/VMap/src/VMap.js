@@ -367,11 +367,16 @@ function setVectorLayer (option, map) {
     return layer
   } else {
     // 元素图层
-    const source = addVectorSource(option, map)
+    let sourceOption
+    if (validObjKey(option, 'source')) {
+      sourceOption = option.source
+    }
+    const source = addVectorSource(sourceOption, map)
     const layerOptions = Object.assign({
-      source: source,
       visible: true
-    }, option)
+    }, option, {
+      source: source
+    })
     const layer = new VectorLayer(layerOptions)
     layer.setStyle(function (feature) {
       if (feature.get('style')) {
@@ -555,39 +560,27 @@ function setPointFeature (option, map) {
     geometry: new Point(coordinates)
   })
   // newFeaturePrototype(feature)
-  const featureStyle = new Style({})
   if (validObjKey(option, 'style')) {
-    feature.setStyle(function (feature, resolution) {
-      const viewZoom = map.getView().getZoom()
-      const optionStyle = option.style
-      let minZoom = 0
-      let maxZoom = 28
-      if (validObjKey(optionStyle, 'minZoom')) {
-        minZoom = optionStyle.minZoom
-      }
-      if (validObjKey(optionStyle, 'maxZoom')) {
-        maxZoom = optionStyle.maxZoom
-      }
-      if (validObjKey(optionStyle, 'icon')) {
-        const imageStyle = new Icon(optionStyle.icon)
-        featureStyle.setImage(imageStyle)
-      }
-      if (validObjKey(optionStyle, 'text')) {
-        const optionText = optionStyle.text
-        const textStyle = setText(optionText)
-        let minTextZoom = 0
-        let maxTextZoom = 28
-        if (validObjKey(optionText, 'minZoom')) {
-          minTextZoom = optionText.minZoom
-        }
-        if (validObjKey(optionText, 'maxZoom')) {
-          maxTextZoom = optionText.maxZoom
-        }
-        featureStyle.setText(minTextZoom <= viewZoom && viewZoom <= maxTextZoom ? textStyle : null)
-      }
-      // feature.setStyle(featureStyle)
-      return minZoom <= viewZoom && viewZoom <= maxZoom ? featureStyle : null
-    })
+    const optionStyle = option.style
+    const featureStyle = new Style()
+    let imageStyle
+    let textStyle
+    if (validObjKey(optionStyle, 'icon')) {
+      imageStyle = new Icon(optionStyle.icon)
+      featureStyle.setImage(imageStyle)
+    }
+    if (validObjKey(optionStyle, 'text')) {
+      const optionText = optionStyle.text
+      textStyle = setText(optionText)
+      featureStyle.setText(textStyle)
+    }
+    if (validObjKey(optionStyle, 'styleFunction')) {
+      feature.setStyle(function (feature, resolution) {
+        return optionStyle.styleFunction(feature, resolution, map, featureStyle)
+      })
+    } else {
+      feature.setStyle(featureStyle)
+    }
   }
   if (validObjKey(option, 'id')) {
     feature.setId(option.id)
@@ -850,7 +843,7 @@ function addHeatmapLayer (option, map) {
  * WebGL图层样式
  * @type {{size: number, color: string, opacity: number, rotateWithView: boolean, symbolType: string}}
  */
-const defaultWebGLPointStyle = {
+const defaultWebGLPointStyleSymbol = {
   symbolType: 'circle',
   size: 18,
   color: '#006688',
@@ -865,19 +858,23 @@ const defaultWebGLPointStyle = {
  * @returns {WebGLPointsLayer<VectorSourceType>}
  */
 function addWebGLPointsLayer (option, map) {
-  const layer = new WebGLPointsLayer({
-    source: addVectorSource(option, map),
-    style: {
-      symbol: Object.assign(defaultWebGLPointStyle, option.style)
-    },
-    disableHitDetection: false // 将此设置为true会稍微提高性能，但会阻止在图层上进行所有命中检测，需要交互的话，设置false
-  })
-  for (const i in option) {
-    if (Object.prototype.hasOwnProperty.call(option, i)) {
-      layer.set(i, option[i])
-    }
+  let sourceOption
+  if (validObjKey(option, 'source')) {
+    sourceOption = option.source
   }
-  return layer
+  let symbol = defaultWebGLPointStyleSymbol
+  if (validObjKey(option, 'symbol')) {
+    symbol = option.symbol
+  }
+  const source = addVectorSource(sourceOption, map)
+  return new WebGLPointsLayer(Object.assign({
+    disableHitDetection: false // 将此设置为true会稍微提高性能，但会阻止在图层上进行所有命中检测，需要交互的话，设置false
+  }, option, {
+    style: {
+      symbol: symbol
+    },
+    source: source
+  }))
 }
 
 /**
@@ -1320,10 +1317,7 @@ export class VMap {
       const animate = Object.assign({
         center: [0, 0], // 中心点
         zoom: 12, // 级别
-        resolution: undefined, // zoom设置了，这个被忽略
-        rotation: undefined, // 缩放完成view视图旋转弧度
-        anchor: undefined, // 在旋转或分辨率动画期间保持固定的可选锚点 不需要设置，
-        duration: 1000 // 缩放持续时间，默认不需要设置
+        duration: 1000 // 缩放持续时间
       }, viewOption.animate)
       view.animate(animate)
     }

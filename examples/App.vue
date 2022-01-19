@@ -220,7 +220,9 @@ export default {
       this.newLayer = Object.assign({}, {
         id: 'layer2',
         visible: true,
-        features: features,
+        source: {
+          features: features
+        },
         extent: [117.882223, 24.386902, 118.373857, 24.90727]
       })
       if (this.option.updateLayers.indexOf('layer2') < 0) {
@@ -240,12 +242,22 @@ export default {
           coordinates: val
         })
       })
-      const option = Object.assign({}, {
+      const option = {
         id: 'webGLPoints',
         type: 'webGLPoints',
         visible: true,
-        features: features
-      })
+        source: {
+          features: features
+        },
+        symbol: {
+          symbolType: 'image',
+          src: require('@/assets/img/car.png'),
+          size: [18, 28],
+          color: 'lightyellow',
+          rotateWithView: false,
+          offset: [0, 9]
+        }
+      }
       if (this.option.updateLayers.indexOf('webGLPoints') < 0) {
         this.option.updateLayers.push('webGLPoints')
       }
@@ -269,12 +281,12 @@ export default {
     },
     moveFeature () {
       const newFeatures = []
-      this.option.layers[0].features.forEach(feature => {
+      this.option.layers[0].source.features.forEach(feature => {
         feature.coordinates[0] = feature.coordinates[0] + (this.getMockNumber().a / 100)
         feature.coordinates[1] = feature.coordinates[1] + (this.getMockNumber().a / 100)
         newFeatures.push(feature)
       })
-      this.option.layers[0].features = newFeatures
+      this.option.layers[0].source.features = newFeatures
     },
     changeTile () {
       this.option.visibleTile = this.selectedTile
