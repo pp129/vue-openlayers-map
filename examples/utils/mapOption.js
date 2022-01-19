@@ -140,7 +140,7 @@ export default {
                */
               styleFunction: function (feature, resolution, map, style) {
                 const viewZoom = map.getView().getZoom()
-                const minZoom = 10
+                const minZoom = 12
                 const maxZoom = 16
                 const textStyle = style.getText()
                 if (viewZoom >= 14) {

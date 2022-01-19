@@ -1305,9 +1305,13 @@ export class VMap {
       visibleTile = baseTiles[0]
     }
 
+    let target = 'map'
+    if (validObjKey(option, 'target')) {
+      target = option.target
+    }
     // 生成地图
     this.map = new Map({
-      target: option.target || 'map',
+      target: target,
       view: view,
       controls: controls
     })

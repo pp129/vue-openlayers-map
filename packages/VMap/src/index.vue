@@ -27,32 +27,52 @@ export default {
     }
   },
   computed: {
+    mapOption () {
+      return Object.assign({
+        target: 'map',
+        controls: {},
+        baseTile: ['td'],
+        visibleTile: 'td',
+        overview: false,
+        view: {
+          center: [0, 0],
+          zoom: 10,
+          animate: null
+        },
+        layers: [],
+        overlays: [],
+        track: [],
+        interaction: [],
+        measure: false,
+        updateLayers: []
+      }, this.option)
+    },
     map () {
       return VMap.map.map
     },
     target () {
-      return this.option.target || 'map'
+      return this.mapOption.target
     },
     animate () {
-      return this.option.view.animate
+      return this.mapOption.view.animate
     },
     layers () {
-      return this.option.layers
+      return this.mapOption.layers
     },
     overlays () {
-      return this.option.overlays
+      return this.mapOption.overlays
     },
     visibleTile () {
-      return this.option.visibleTile
+      return this.mapOption.visibleTile
     },
     interaction () {
-      return this.option.interaction
+      return this.mapOption.interaction
     },
     measure () {
-      return this.option.measure
+      return this.mapOption.measure
     },
     track () {
-      return this.option.track
+      return this.mapOption.track
     }
   },
   watch: {
@@ -72,9 +92,9 @@ export default {
       handler (value) {
         console.log('layers change', value)
         if (value) {
-          if (this.option.updateLayers && this.option.updateLayers.length > 0) {
+          if (this.mapOption.updateLayers && this.mapOption.updateLayers.length > 0) {
             // 局部更新图层
-            this.option.updateLayers.forEach(updateLayer => {
+            this.mapOption.updateLayers.forEach(updateLayer => {
               const index = value.findIndex(x => x.id === updateLayer)
               console.log(index, updateLayer)
               if (index > -1) {
@@ -85,8 +105,8 @@ export default {
                 })
               } else {
                 this.removeLayerById(updateLayer)
-                const indexUpdate = this.option.updateLayers.map(item => item.id).indexOf(updateLayer)
-                this.option.updateLayers.splice(indexUpdate, 1)
+                const indexUpdate = this.mapOption.updateLayers.map(item => item.id).indexOf(updateLayer)
+                this.mapOption.updateLayers.splice(indexUpdate, 1)
               }
             })
           } else {
@@ -111,7 +131,7 @@ export default {
     visibleTile: {
       handler (value, oldValue) {
         console.log('visibleTile change', value, oldValue)
-        if (this.option.baseTile.length > 1 && value !== oldValue) { // 理论上有多基础图层的情况下才有必要走这一步
+        if (this.mapOption.baseTile.length > 1 && value !== oldValue) { // 理论上有多基础图层的情况下才有必要走这一步
           this.restVisibleBaseTile(value)
         }
       },
@@ -158,6 +178,9 @@ export default {
     this.init()
   },
   methods: {
+    validObjKey (obj, key) {
+      return obj && Object.prototype.hasOwnProperty.call(obj, key) && Object.keys(obj).length > 0
+    },
     init () {
       VMap.map = new VMap(this.option)
       // 点击事件
@@ -171,7 +194,7 @@ export default {
         })
       })
       // 初始化轨迹图层
-      this.option.track.forEach(item => {
+      this.mapOption.track.forEach(item => {
         const option = Object.assign({}, item, {
           map: this.map
         })
