@@ -1,6 +1,49 @@
 # vue-openlayers-map
 > 一个基于[OpenLayers](https://openlayers.org/) 的vue组件
 
+## Features
+
+- [x] 生成地图 Map
+  - [x] 视图 View
+    - [x] 动画 animation
+  - [x] 地图控件 control
+  - [x] 鹰眼 overview
+- [x] 切片图层 Tile
+  - [x] 加载天地图
+  - [x] 加载百度地图
+  - [x] 自定义路径加载XYZ规则切片
+- [x] 矢量图层 VectorLayer
+  - [x] 热力图 Heatmap
+  - [x] 聚合 Cluster
+  - [x] WebGL WebGLPointsLayer
+  - [x] 要素 Feature
+    - [x] 点 Point
+    - [x] 多边形 Polygon
+    - [x] 线 LineString
+    - [x] 圆 Circle
+      - [x] 自定义样式 Style
+- [x] 弹框 Overlay
+- [x] 交互 Interaction
+  - [x] 编辑 modify
+  - [x] 选中 select
+  - [x] 绘制 draw
+- [x] 测量 Measure
+- [x] 经纬度转换 Coordinates convert
+- [x] 事件回调 eventListener
+  - [x] 点击事件 click
+  - [x] 层级变化事件 changeZoom
+  - [x] 绘制事件
+    - [x] 绘制开始 drawstart
+    - [x] 绘制结束 drawend
+  - [x] 编辑事件
+    - [x] 编辑开始 modifystart
+    - [x] 编辑结束 modifyend
+  - [x] 测量事件
+    - [x] 测量开始 measurestart
+    - [x] 测量结束 measureend
+  
+
+
 ## 安装
 ```bash
 npm install vue-openlayers-map

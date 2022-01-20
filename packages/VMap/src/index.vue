@@ -170,9 +170,7 @@ export default {
     }
   },
   data () {
-    return {
-      users: []
-    }
+    return {}
   },
   mounted () {
     this.init()
@@ -298,6 +296,9 @@ export default {
           this.$emit('measureend', evt, this.map)
         })
       }
+    },
+    setFeature (option) {
+      return VMap.setFeature(option)
     }
   }
 }

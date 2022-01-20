@@ -1282,6 +1282,10 @@ export class VMap {
     return panTo(VMap.map.map, center, zoom)
   }
 
+  static setFeature (option) {
+    return setFeature(option, VMap.map.map)
+  }
+
   constructor (option = {}) {
     // view
     const viewOption = Object.assign({
