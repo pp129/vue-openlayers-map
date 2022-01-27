@@ -402,7 +402,9 @@ function setVectorLayer (option, map) {
     if (option.type === 'draw') {
 
     }
-    layer.set('users', true)
+    if (option.id !== '_draw') {
+      layer.set('users', true)
+    }
     return layer
   }
 }
@@ -706,11 +708,10 @@ function addDrawLayer (id = '_draw', map, style) {
   map.addLayer(layer)
 }
 
-function clearDrawLayer (map) {
+function clearDrawLayer (map, layer = '_draw') {
   const layers = map.getLayers()
   layers.forEach(item => {
-    if (item && item.get('id') === '_draw') {
-      console.log(item)
+    if (item && item.get('id') === layer) {
       item.getSource().clear()
     }
   })
@@ -892,7 +893,6 @@ function addWebGLPointsLayer (option, map) {
  * @param value
  */
 function setInteraction (map, value) {
-  console.log(value)
   map.getInteractions().forEach(interaction => {
     if (interaction && interaction.get('type')) {
       if (interaction.get('type') === 'draw' || interaction.get('type') === 'select' || interaction.get('type') === 'modify') {
@@ -908,7 +908,6 @@ function setInteraction (map, value) {
   let editable = false
   if (value && value.length > 0) {
     value.forEach(item => {
-      console.log(item)
       if (item.type === 'draw') {
         addDrawLayer(item.layer, map, item.style)
         draw = new Draw({
@@ -919,7 +918,7 @@ function setInteraction (map, value) {
         draw.set('type', 'draw')
         draw.on('drawend', evt => {
           if (validObjKey(item, 'clear') && item.clear) {
-            clearDrawLayer(map)
+            clearDrawLayer(map, item.layer)
           }
         })
         map.addInteraction(draw)
@@ -931,7 +930,6 @@ function setInteraction (map, value) {
         }
         if (endRight) {
           map.on('contextmenu', evt => {
-            evt.preventDefault()
             draw.setActive(false)
           })
         }
@@ -1379,6 +1377,10 @@ export class VMap {
       const pixel = this.map.getEventPixel(evt.originalEvent)
       const hit = this.map.hasFeatureAtPixel(pixel)
       this.map.getTargetElement().style.cursor = hit ? 'pointer' : ''
+    })
+
+    this.map.on('contextmenu', evt => {
+      evt.preventDefault()
     })
 
     // 基础图层

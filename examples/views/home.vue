@@ -56,7 +56,7 @@
       <span @click="closeOverlay('overlay1')">close</span>
     </div>
     <div id="drawEnd">
-      <button>保存</button>
+      <button @click="save">保存</button>
       <button @click="clearDraw">删除</button>
     </div>
     <map-overlay id="overlay2" ref="overlay2" @close="closeOverlay('overlay2')"></map-overlay>
@@ -114,7 +114,8 @@ export default {
       animate: {
         zoom: 0,
         center: [0, 0]
-      }
+      },
+      drawCoors: []
     }
   },
   watch: {
@@ -153,6 +154,7 @@ export default {
     },
     drawEnd (evt) {
       console.log('on draw end', evt)
+      this.drawCoors = evt.feature.getGeometry().getCoordinates()[0]
       const center = this.$refs.map.getCenterByExtent(evt.feature.getGeometry().getExtent())
       const index = this.option.overlays.findIndex(x => x.id === 'drawEnd')
       if (index > -1) {
@@ -352,7 +354,26 @@ export default {
           freehand: true,
           clear: true,
           endRight: true,
-          editable: true
+          editable: false
+        })
+      }
+    },
+    save () {
+      const index = this.option.layers.findIndex(x => x.id === 'polygon')
+      if (index > -1) {
+        this.option.layers[index].source.features.push({
+          type: 'polygon', // 除了普通icon点位，其他元素需注明元素类型
+          style: {
+            fill: {
+              color: 'rgba(167,26,12,0.15)'
+            },
+            stroke: {
+              color: 'rgba(67,126,255,1)',
+              width: 1,
+              lineDash: [20, 10, 20, 10]
+            }
+          },
+          coordinates: this.drawCoors
         })
       }
     },
