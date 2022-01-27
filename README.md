@@ -27,6 +27,9 @@
   - [x] 编辑 modify
   - [x] 选中 select
   - [x] 绘制 draw
+    - [x] 自定义参数clear-清除上一次绘制
+    - [x] 自定义参数endRight-鼠标右键结束绘制
+    - [x] 自定义参数editable-结束绘制后可选中编辑
 - [x] 测量 Measure
 - [x] 经纬度转换 Coordinates convert
 - [x] 事件回调 eventListener
@@ -41,7 +44,9 @@
   - [x] 测量事件
     - [x] 测量开始 measurestart
     - [x] 测量结束 measureend
-  
+- [x] 可调用方法
+  - [x] 主动生成元素 setFeature
+  - [x] 获取经纬度集合中心点 getCenterByExtent
 
 
 ## 安装
