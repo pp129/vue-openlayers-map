@@ -51,9 +51,13 @@
       @click="onClick"
       @changeZoom="onChangeZoom">
     </v-map>
-    <div ref="overlay" id="overlay1" class="overlay">
+    <div ref="overlay1" id="overlay1" class="overlay">
       <p>overlay1</p>
       <span @click="closeOverlay('overlay1')">close</span>
+    </div>
+    <div id="drawEnd">
+      <button>保存</button>
+      <button @click="clearDraw">删除</button>
     </div>
     <map-overlay id="overlay2" ref="overlay2" @close="closeOverlay('overlay2')"></map-overlay>
   </div>
@@ -134,7 +138,6 @@ export default {
     }
   },
   created () {
-    this.option.overlays = []
     this.option.overlays.push({
       id: 'overlay2',
       element: 'overlay2', // dom元素id
@@ -150,6 +153,11 @@ export default {
     },
     drawEnd (evt) {
       console.log('on draw end', evt)
+      const center = this.$refs.map.getCenterByExtent(evt.feature.getGeometry().getExtent())
+      const index = this.option.overlays.findIndex(x => x.id === 'drawEnd')
+      if (index > -1) {
+        this.option.overlays[index].position = center
+      }
     },
     measureEnd (evt) {
       console.log('on measure end', evt)
@@ -200,7 +208,6 @@ export default {
     },
     showOverlay (properties, id, element, coordinate) {
       this.option.overlays.forEach((overlay, index) => {
-        console.log(overlay)
         if (overlay.id === id) {
           overlay.position = coordinate
           overlay.properties = properties
@@ -246,7 +253,27 @@ export default {
       const mockData = this.setMockData(200000)
       mockData.array.forEach(val => {
         features.push({
-          coordinates: val
+          coordinates: val,
+          text: {
+            text: 'webGLPoints',
+            font: '13px sans-serif',
+            fill: {
+              color: '#3d73e8'
+            },
+            backgroundFill: {
+              color: '#ffffff'
+            },
+            stroke: {
+              color: '#ffffff',
+              width: 1
+            },
+            backgroundStroke: {
+              color: '#000000',
+              width: 1
+            },
+            offsetX: 0,
+            offsetY: 30
+          }
         })
       })
       const option = {
@@ -322,9 +349,27 @@ export default {
         this.option.interaction.push({
           type: 'draw',
           value: this.drawType,
-          freehand: false
+          freehand: true,
+          clear: true,
+          endRight: true,
+          editable: true
         })
       }
+    },
+    clearDraw () {
+      const index = this.option.interaction.findIndex(x => x.type === 'draw')
+      if (index > -1) {
+        this.option.interaction.splice(index, 1)
+        this.hideOverlayById('drawEnd')
+        this.drawType = 'none'
+      }
+    },
+    hideOverlayById (id) {
+      this.option.overlays.forEach(overlay => {
+        if (overlay.id === id) {
+          overlay.position = undefined
+        }
+      })
     },
     setModify () {
       this.modifyStatus = !this.modifyStatus

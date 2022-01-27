@@ -11,11 +11,10 @@ import { OverviewMap, defaults as defaultControls } from 'ol/control'
 import { Draw, Modify, Select } from 'ol/interaction'
 import TileGrid from 'ol/tilegrid/TileGrid'
 import { addCoordinateTransforms, addProjection, Projection } from 'ol/proj'
-// import { applyTransform } from 'ol/extent'
-// import { defaults as defaultControls } from 'ol/control'
 import projzh from '~/VMap/src/utils/projConvert'
 import coordtransform from '~/VMap/src/utils/coordtransform'
 import { getArea, getLength } from 'ol/sphere'
+import { getCenter } from 'ol/extent'
 
 function validObjKey (obj, key) {
   return obj && Object.prototype.hasOwnProperty.call(obj, key) && Object.keys(obj).length > 0
@@ -698,7 +697,7 @@ function addVectorSource (option, map) {
  * @param map
  * @param style
  */
-function addDrawLayer (id = 'draw', map, style) {
+function addDrawLayer (id = '_draw', map, style) {
   removeLayerById(id, map)
   const layer = setVectorLayer({ id: id, type: 'draw' }, map)
   if (style) {
@@ -707,13 +706,23 @@ function addDrawLayer (id = 'draw', map, style) {
   map.addLayer(layer)
 }
 
+function clearDrawLayer (map) {
+  const layers = map.getLayers()
+  layers.forEach(item => {
+    if (item && item.get('id') === '_draw') {
+      console.log(item)
+      item.getSource().clear()
+    }
+  })
+}
+
 /**
  * 根据图层id获取图层来源
  * @param id
  * @param map
  * @returns {*}
  */
-function getSourceByLayerId (id = 'draw', map) {
+function getSourceByLayerId (id, map) {
   const layer = getLayerById(id, map)
   return layer.getSource()
 }
@@ -883,6 +892,7 @@ function addWebGLPointsLayer (option, map) {
  * @param value
  */
 function setInteraction (map, value) {
+  console.log(value)
   map.getInteractions().forEach(interaction => {
     if (interaction && interaction.get('type')) {
       if (interaction.get('type') === 'draw' || interaction.get('type') === 'select' || interaction.get('type') === 'modify') {
@@ -894,17 +904,47 @@ function setInteraction (map, value) {
   select.set('type', 'select')
   let draw
   let modify
+  let endRight = false
+  let editable = false
   if (value && value.length > 0) {
     value.forEach(item => {
+      console.log(item)
       if (item.type === 'draw') {
         addDrawLayer(item.layer, map, item.style)
         draw = new Draw({
-          source: getSourceByLayerId(item.layer, map),
+          source: getSourceByLayerId(item.layer || '_draw', map),
           type: item.value,
           freehand: item.freehand
         })
         draw.set('type', 'draw')
+        draw.on('drawend', evt => {
+          if (validObjKey(item, 'clear') && item.clear) {
+            clearDrawLayer(map)
+          }
+        })
         map.addInteraction(draw)
+        if (validObjKey(item, 'endRight') && item.endRight) {
+          endRight = item.endRight
+        }
+        if (validObjKey(item, 'editable') && item.editable) {
+          editable = item.editable
+        }
+        if (endRight) {
+          map.on('contextmenu', evt => {
+            evt.preventDefault()
+            draw.setActive(false)
+          })
+        }
+        if (editable) {
+          draw.on('drawend', evt => {
+            map.addInteraction(select)
+            modify = new Modify({
+              features: select.getFeatures()
+            })
+            modify.set('type', 'modify')
+            map.addInteraction(modify)
+          })
+        }
       }
       if (item.type === 'select') {
         map.addInteraction(select)
@@ -1284,6 +1324,10 @@ export class VMap {
 
   static setFeature (option) {
     return setFeature(option, VMap.map.map)
+  }
+
+  static getCenterByExtent (extent) {
+    return getCenter(extent)
   }
 
   constructor (option = {}) {

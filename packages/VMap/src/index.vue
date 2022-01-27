@@ -299,6 +299,9 @@ export default {
     },
     setFeature (option) {
       return VMap.setFeature(option)
+    },
+    getCenterByExtent (extent) {
+      return VMap.getCenterByExtent(extent)
     }
   }
 }
