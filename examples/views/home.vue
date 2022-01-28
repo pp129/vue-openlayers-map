@@ -146,6 +146,7 @@ export default {
     })
   },
   mounted () {
+    this.$refs.map.panTo({ center: [118.118033, 24.478697], zoom: 12 })
     this.getHeatmapData()
   },
   methods: {

@@ -1,13 +1,12 @@
 {
   "name": "vue-openlayers-map",
-  "version": "1.0.24",
+  "version": "1.0.25",
   "private": false,
   "main": "lib/vue-openlayers-map.umd.min.js",
   "scripts": {
     "serve": "vue-cli-service serve",
     "build": "vue-cli-service build",
     "clean:lib": "rimraf lib",
-    "clean:dist": "rimraf dist",
     "build:lib": "vue-cli-service build --target lib --name vue-openlayers-map --dest lib packages/index.js",
     "lint": "vue-cli-service lint"
   },

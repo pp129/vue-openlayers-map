@@ -58,17 +58,7 @@ export default {
   view: {
     center: [118.045456, 24.567489],
     zoom: 10,
-    constrainResolution: true, // 设置视图是否应允许中间缩放级别。true:鼠标缩放地图,每次缩放级别为整数1
-    /**
-     * 地图加载初始动画
-     * 继承AnimationOptions： https://openlayers.org/en/latest/apidoc/module-ol_View.html#~AnimationOptions
-     * 可选
-     * @param {Object} [animate={center: [0, 0], zoom: 12, duration: 1000}]
-     */
-    animate: {
-      center: [118.085428, 24.519409], // 中心点
-      zoom: 12 // 级别
-    }
+    constrainResolution: true // 设置视图是否应允许中间缩放级别。true:鼠标缩放地图,每次缩放级别为整数1
   },
   /**
    * 图层集合

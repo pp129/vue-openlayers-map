@@ -302,6 +302,9 @@ export default {
     },
     getCenterByExtent (extent) {
       return VMap.getCenterByExtent(extent)
+    },
+    panTo (option) {
+      VMap.panTo(option.center, option.zoom)
     }
   }
 }

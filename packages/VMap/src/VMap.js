@@ -916,11 +916,6 @@ function setInteraction (map, value) {
           freehand: item.freehand
         })
         draw.set('type', 'draw')
-        draw.on('drawend', evt => {
-          if (validObjKey(item, 'clear') && item.clear) {
-            clearDrawLayer(map, item.layer)
-          }
-        })
         map.addInteraction(draw)
         if (validObjKey(item, 'endRight') && item.endRight) {
           endRight = item.endRight
@@ -930,7 +925,8 @@ function setInteraction (map, value) {
         }
         if (endRight) {
           map.on('contextmenu', evt => {
-            draw.setActive(false)
+            map.removeInteraction(draw)
+            clearDrawLayer(map, item.layer)
           })
         }
         if (editable) {
@@ -943,6 +939,11 @@ function setInteraction (map, value) {
             map.addInteraction(modify)
           })
         }
+        draw.on('drawend', evt => {
+          if (validObjKey(item, 'clear') && item.clear) {
+            clearDrawLayer(map, item.layer)
+          }
+        })
       }
       if (item.type === 'select') {
         map.addInteraction(select)
@@ -1363,16 +1364,6 @@ export class VMap {
       view: view,
       controls: controls
     })
-
-    // 移动动画
-    if (validObjKey(viewOption, 'animate')) {
-      const animate = Object.assign({
-        center: [0, 0], // 中心点
-        zoom: 12, // 级别
-        duration: 1000 // 缩放持续时间
-      }, viewOption.animate)
-      view.animate(animate)
-    }
 
     // 鼠标悬浮
     this.map.on('pointermove', evt => {
