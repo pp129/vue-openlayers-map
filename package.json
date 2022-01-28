@@ -1,6 +1,6 @@
 {
   "name": "vue-openlayers-map",
-  "version": "1.0.23",
+  "version": "1.0.24",
   "private": false,
   "main": "lib/vue-openlayers-map.umd.min.js",
   "scripts": {

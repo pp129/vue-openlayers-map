@@ -957,6 +957,8 @@ function setInteraction (map, value) {
         }
       }
     })
+  } else {
+    clearDrawLayer(map, '_draw')
   }
 }
 

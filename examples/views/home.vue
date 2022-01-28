@@ -376,6 +376,7 @@ export default {
           coordinates: this.drawCoors
         })
       }
+      this.hideOverlayById('drawEnd')
     },
     clearDraw () {
       const index = this.option.interaction.findIndex(x => x.type === 'draw')
