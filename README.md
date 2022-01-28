@@ -1,11 +1,11 @@
 # vue-openlayers-map
+
 > 一个基于[OpenLayers](https://openlayers.org/) 的vue组件
 
 ## Features
 
 - [x] 生成地图 Map
   - [x] 视图 View
-    - [x] 动画 animation
   - [x] 地图控件 control
   - [x] 鹰眼 overview
 - [x] 切片图层 Tile
@@ -45,9 +45,9 @@
     - [x] 测量开始 measurestart
     - [x] 测量结束 measureend
 - [x] 可调用方法
+  - [x] 移动动画 panTo
   - [x] 主动生成元素 setFeature
   - [x] 获取经纬度集合中心点 getCenterByExtent
-
 
 ## 安装
 ```bash
@@ -155,17 +155,7 @@ option = {
   view: {
     center: [118.045456, 24.567489],
     zoom: 10,
-    constrainResolution: true, // 设置视图是否应允许中间缩放级别。true:鼠标缩放地图,每次缩放级别为整数1
-    /**
-     * 地图加载初始动画
-     * 继承AnimationOptions： https://openlayers.org/en/latest/apidoc/module-ol_View.html#~AnimationOptions
-     * 可选
-     * @param {Object} [animate={center: [0, 0], zoom: 12, duration: 1000}]
-     */
-    animate: {
-      center: [118.085428, 24.519409], // 中心点
-      zoom: 12 // 级别
-    }
+    constrainResolution: true // 设置视图是否应允许中间缩放级别。true:鼠标缩放地图,每次缩放级别为整数1
   },
   /**
    * 图层集合
