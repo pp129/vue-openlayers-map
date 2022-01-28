@@ -118,18 +118,50 @@ option = {
   baseTile: [
     'td', // 天地图-矢量
     {
+      name: 'td_img',
       type: 'td_img'// 天地图-影像
     },
     /**
      * 自定义图层 以天地图地形图为例
      * @param {String} [type]
-     * @param {Array} [url]
+     * @param {String} [name]
+     * @param {Array} [option]
      */
     {
       type: 'xyz',
-      // 图层加载路径需符合XYZ规则
-      url: [
-        'http://t4.tianditu.com/DataServer?T=ter_w&x={x}&y={y}&l={z}&tk=88e2f1d5ab64a7477a7361edd6b5f68a'
+      name: 'td_ter',
+      option: [
+        {
+          url: 'http://t4.tianditu.com/DataServer?T=ter_w&x={x}&y={y}&l={z}&tk=88e2f1d5ab64a7477a7361edd6b5f68a'
+        }
+      ]
+    },
+    /**
+     * 自定义图层 接受完整XYZ参数
+     * 继承 https://openlayers.org/en/latest/apidoc/module-ol_source_XYZ-XYZ.html
+     */
+    {
+      type: 'xyz',
+      name: 'xyz_bd',
+      option: [
+        {
+          projection: 'baidu',
+          tileGrid: {
+            origin: [0, 0], // 设置原点坐标
+            resolutions: resolutions // 设置分辨率
+          },
+          tileUrlFunction: function (tileCoord, pixelRatio, proj) {
+            if (!tileCoord) {
+              return ''
+            }
+            const z = tileCoord[0]
+            const x = tileCoord[1]
+            const y = -tileCoord[2] - 1
+            return 'https://maponline1.bdimg.com/tile/?qt=vtile&x=' +
+                    x + '&y=' + y + '&z=' + z +
+                    '&styles=pl&scaler=1&udt=20220113&from=jsapi2_0'
+          }
+        }
       ]
     },
     'bd'// 百度
