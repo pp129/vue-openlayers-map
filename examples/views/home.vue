@@ -19,10 +19,11 @@
       <button class="btn" @click="removeLayer">删除layer2</button>
       <button class="btn" @click="moveFeature">随机移动layer1中点位</button>
       <select id="changeLayer" class="btn" v-model="selectedTile" @change="changeTile">
-        <option value="td">天地图-矢量</option>
-        <option value="td_img">天地图-卫星</option>
-        <option value="xyz">天地图-地形</option>
-        <option value="bd">百度地图</option>
+        <option value="0">天地图-矢量</option>
+        <option value="1">天地图-卫星</option>
+        <option value="2">天地图-地形</option>
+        <option value="3">自定义参数的百度地图</option>
+        <option value="4">百度地图</option>
       </select>
       <div class="checkbox-group btn">
         <div v-for="(item,index) in checkbox" :key="index" class="checkbox-item">
@@ -84,7 +85,7 @@ export default {
       width: '100%',
       option: mapOption,
       newLayer: {},
-      selectedTile: 'td',
+      selectedTile: '0',
       checkbox: [
         {
           label: '点位',
@@ -326,7 +327,7 @@ export default {
       this.option.layers[0].source.features = newFeatures
     },
     changeTile () {
-      this.option.visibleTile = this.selectedTile
+      this.option.visibleTile = this.option.baseTile[Number(this.selectedTile)]
     },
     setMockData (count = 100) {
       const Random = Mock.Random

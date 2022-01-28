@@ -120,9 +120,9 @@ function baseTile (option, visible) {
 function getBaseTile (option, visible) {
   switch (option.type) {
     case 'td':
-      return getTDMap(visible, option.url)
+      return getTDMap(visible)
     case 'td_img':
-      return getTDImg(visible, option.url)
+      return getTDImg(visible)
     case 'xyz':
       option.base = true
       return getCustomerTileXYZ(option, visible)
@@ -136,17 +136,20 @@ function getBaseTile (option, visible) {
 /**
  * 天地图-矢量图
  * @param visible
- * @param XYZUrl
  * @returns {*[]}
  */
-function getTDMap (visible, XYZUrl) {
-  const urls = XYZUrl || [
-    'http://t4.tianditu.com/DataServer?T=vec_w&x={x}&y={y}&l={z}&tk=88e2f1d5ab64a7477a7361edd6b5f68a',
-    'http://t3.tianditu.com/DataServer?T=cva_w&x={x}&y={y}&l={z}&tk=88e2f1d5ab64a7477a7361edd6b5f68a'
-  ]
+function getTDMap (visible) {
   return getCustomerTileXYZ({
-    url: urls,
+    option: [
+      {
+        url: 'http://t4.tianditu.com/DataServer?T=vec_w&x={x}&y={y}&l={z}&tk=88e2f1d5ab64a7477a7361edd6b5f68a'
+      },
+      {
+        url: 'http://t3.tianditu.com/DataServer?T=cva_w&x={x}&y={y}&l={z}&tk=88e2f1d5ab64a7477a7361edd6b5f68a'
+      }
+    ],
     type: 'td',
+    name: 'td',
     base: true
   }, visible)
 }
@@ -154,20 +157,32 @@ function getTDMap (visible, XYZUrl) {
 /**
  * 天地图-影像图
  * @param visible
- * @param XYZUrl
  * @returns {*[]}
  */
-function getTDImg (visible, XYZUrl) {
-  const urls = XYZUrl || [
-    'http://t4.tianditu.com/DataServer?T=img_w&x={x}&y={y}&l={z}&tk=88e2f1d5ab64a7477a7361edd6b5f68a',
-    'http://t3.tianditu.com/DataServer?T=cia_w&x={x}&y={y}&l={z}&tk=88e2f1d5ab64a7477a7361edd6b5f68a'
-  ]
+function getTDImg (visible) {
   return getCustomerTileXYZ({
-    url: urls,
+    option: [
+      {
+        url: 'http://t4.tianditu.com/DataServer?T=img_w&x={x}&y={y}&l={z}&tk=88e2f1d5ab64a7477a7361edd6b5f68a'
+      },
+      {
+        url: 'http://t3.tianditu.com/DataServer?T=cia_w&x={x}&y={y}&l={z}&tk=88e2f1d5ab64a7477a7361edd6b5f68a'
+      }
+    ],
     type: 'td_img',
+    name: 'td_img',
     base: true
   }, visible)
 }
+const baiduMercatorProj = new Projection({
+  code: 'baidu',
+  // extent: applyTransform(extent, projzh.ll2bmerc),
+  units: 'm'
+})
+
+addProjection(baiduMercatorProj)
+addCoordinateTransforms('EPSG:4326', baiduMercatorProj, projzh.ll2bmerc, projzh.bmerc2ll)
+addCoordinateTransforms('EPSG:3857', baiduMercatorProj, projzh.smerc2bmerc, projzh.bmerc2smerc)
 
 /**
  * 百度地图
@@ -177,16 +192,6 @@ function getTDImg (visible, XYZUrl) {
  */
 function getBDMap (option, visible) {
   // const extent = [72.004, 0.8293, 137.8347, 55.8271]//中国范围
-
-  const baiduMercatorProj = new Projection({
-    code: 'baidu',
-    // extent: applyTransform(extent, projzh.ll2bmerc),
-    units: 'm'
-  })
-
-  addProjection(baiduMercatorProj)
-  addCoordinateTransforms('EPSG:4326', baiduMercatorProj, projzh.ll2bmerc, projzh.bmerc2ll)
-  addCoordinateTransforms('EPSG:3857', baiduMercatorProj, projzh.smerc2bmerc, projzh.bmerc2smerc)
   // 计算百度使用的分辨率
   const resolutions = []
   for (let i = 0; i < 19; i++) {
@@ -205,6 +210,7 @@ function getBDMap (option, visible) {
       if (!tileCoord) {
         return ''
       }
+      console.log(tileCoord)
       const z = tileCoord[0]
       const x = tileCoord[1]
       const y = -tileCoord[2] - 1
@@ -229,6 +235,7 @@ function getBDMap (option, visible) {
     layer.setVisible(true)
   }
   layer.set('type', option.type || 'bd')
+  layer.set('name', option.name || 'bd')
   layer.set('base', true)
   return [layer]
 }
@@ -241,12 +248,17 @@ function getBDMap (option, visible) {
  */
 function getCustomerTileXYZ (option, visible) {
   const tiles = []
-  option.url.forEach(val => {
+  option.option.forEach(val => {
+    let tileGrid
+    if (validObjKey(val, 'tileGrid')) {
+      tileGrid = new TileGrid(val.tileGrid)
+    }
+    const xyzOpt = Object.assign({}, val, {
+      tileGrid: tileGrid
+    })
     const layer = new TileLayer({
       visible: false,
-      source: new XYZ({
-        url: val
-      })
+      source: new XYZ(xyzOpt)
     })
     let visibleTile = ''
     if (typeof visible === 'string') {
@@ -258,6 +270,7 @@ function getCustomerTileXYZ (option, visible) {
       layer.setVisible(true)
     }
     layer.set('type', option.type || '')
+    layer.set('name', option.name || '')
     if (validObjKey(option, 'base')) {
       layer.set('base', option.base)
     }
@@ -271,13 +284,19 @@ function getCustomerTileXYZ (option, visible) {
  * @param map
  * @param name
  */
-function restVisibleBaseTile (map, name) {
+function restVisibleBaseTile (map, tile) {
   const layers = map.getLayers()
   layers.forEach(layer => {
     if (layer.get('base') === true) {
       layer.setVisible(false)
-      if (layer.get('type') === name) {
-        layer.setVisible(true)
+      if (typeof tile === 'string') {
+        if (layer.get('name') === tile) {
+          layer.setVisible(true)
+        }
+      } else {
+        if (layer.get('name') === tile.name) {
+          layer.setVisible(true)
+        }
       }
     }
   })

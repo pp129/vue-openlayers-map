@@ -53,9 +53,6 @@ export default {
     target () {
       return this.mapOption.target
     },
-    animate () {
-      return this.mapOption.view.animate
-    },
     layers () {
       return this.mapOption.layers
     },
@@ -76,18 +73,6 @@ export default {
     }
   },
   watch: {
-    animate: {
-      handler (value) {
-        if (value) {
-          console.log('view animate change', value)
-          const center = value.center
-          const zoom = value.zoom
-          VMap.panTo(center, zoom)
-        }
-      },
-      deep: true,
-      immediate: false
-    },
     layers: {
       handler (value) {
         console.log('layers change', value)
