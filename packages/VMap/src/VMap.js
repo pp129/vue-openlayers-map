@@ -259,9 +259,9 @@ function getBDMap (option, visible) {
   if (typeof visible === 'string') {
     visibleTile = visible
   } else if (typeof visible === 'object') {
-    visibleTile = visible.type
+    visibleTile = visible.name
   }
-  if (option.type === visibleTile) {
+  if (option.name === visibleTile) {
     layer.setVisible(true)
   }
   layer.set('type', option.type || 'bd')
@@ -294,7 +294,7 @@ function getCustomerTileXYZ (option, visible) {
     if (typeof visible === 'string') {
       visibleTile = visible
     } else if (typeof visible === 'object') {
-      visibleTile = visible.type
+      visibleTile = visible.name
     }
     if (option.name === visibleTile) {
       layer.setVisible(true)
