@@ -24,22 +24,20 @@ export default {
    */
   baseTile: [
     'td', // 天地图-矢量
-    {
-      name: 'td_img',
-      type: 'td_img'// 天地图-影像
-    },
+    'td_img', // 天地图-影像
+    'bd', // 百度
     /**
-     * 自定义图层 以天地图地形图为例
+     * 自定义图层 以高德地图为例
      * @param {String} [type]
      * @param {String} [name]
      * @param {Array} [option]
      */
     {
       type: 'xyz',
-      name: 'td_ter',
+      name: 'gd',
       option: [
         {
-          url: 'http://t4.tianditu.com/DataServer?T=ter_w&x={x}&y={y}&l={z}&tk=88e2f1d5ab64a7477a7361edd6b5f68a'
+          url: 'http://wprd0{1-4}.is.autonavi.com/appmaptile?x={x}&y={y}&z={z}&lang=zh_cn&size=1&scl=1&style=7'
         }
       ]
     },
@@ -70,8 +68,7 @@ export default {
           }
         }
       ]
-    },
-    'bd'// 百度
+    }
   ],
   /**
    * 默认可视切片

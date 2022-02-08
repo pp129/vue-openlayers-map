@@ -11,10 +11,13 @@ import { OverviewMap, defaults as defaultControls } from 'ol/control'
 import { Draw, Modify, Select } from 'ol/interaction'
 import TileGrid from 'ol/tilegrid/TileGrid'
 import { addCoordinateTransforms, addProjection, Projection } from 'ol/proj'
-import projzh from '~/VMap/src/utils/projConvert'
-import coordtransform from '~/VMap/src/utils/coordtransform'
 import { getArea, getLength } from 'ol/sphere'
 import { getCenter } from 'ol/extent'
+
+import { point, lineString, distance, length } from '@turf/turf'
+
+import projzh from '~/VMap/src/utils/projConvert'
+import coordtransform from '~/VMap/src/utils/coordtransform'
 
 function validObjKey (obj, key) {
   return obj && Object.prototype.hasOwnProperty.call(obj, key) && Object.keys(obj).length > 0
@@ -61,6 +64,33 @@ export class FeatureExt extends Feature {
       setPosition(this, value)
     }
   }
+}
+
+/**
+ * 用turf计算两点距离
+ * @param from {Array} [经度,纬度]
+ * @param to {Array} [经度,纬度]
+ * @param units 单位为千米kilometers，单位还可以设置为degrees, radians, miles
+ * @returns {number}
+ */
+function getDistancePoint (from, to, units = 'kilometers') {
+  const fromPoint = point(from)
+  const toPoint = point(to)
+  const options = { units: units }
+
+  return distance(fromPoint, toPoint, options)
+}
+
+/**
+ * 用turf计算折线长度
+ * @param lines {Array} [[经度,纬度]...]
+ * @param units 单位为千米kilometers，单位还可以设置为degrees, radians, miles
+ * @returns {number}
+ */
+function getDistanceString (lines, units = 'kilometers') {
+  const line = lineString(lines)
+  const options = { units: units }
+  return length(line, options)
 }
 
 /**
@@ -129,7 +159,7 @@ function getBaseTile (option, visible) {
     case 'bd':
       return getBDMap(option, visible)
     default:
-      return getTDMap(visible, option.url)
+      return getTDMap(visible)
   }
 }
 
@@ -266,7 +296,7 @@ function getCustomerTileXYZ (option, visible) {
     } else if (typeof visible === 'object') {
       visibleTile = visible.type
     }
-    if (option.type === visibleTile) {
+    if (option.name === visibleTile) {
       layer.setVisible(true)
     }
     layer.set('type', option.type || '')
@@ -1348,6 +1378,14 @@ export class VMap {
 
   static getCenterByExtent (extent) {
     return getCenter(extent)
+  }
+
+  static getDistancePoint (from, to, units) {
+    return getDistancePoint(from, to, units)
+  }
+
+  static getDistanceString (lines, units) {
+    return getDistanceString(lines, units)
   }
 
   constructor (option = {}) {

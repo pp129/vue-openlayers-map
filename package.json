@@ -1,6 +1,6 @@
 {
   "name": "vue-openlayers-map",
-  "version": "1.0.26",
+  "version": "1.0.27",
   "private": false,
   "main": "lib/vue-openlayers-map.umd.min.js",
   "scripts": {
@@ -11,6 +11,7 @@
     "lint": "vue-cli-service lint"
   },
   "dependencies": {
+    "@turf/turf": "^6.5.0",
     "core-js": "^3.6.5",
     "ol": "^6.10.0",
     "vue": "^2.6.11"

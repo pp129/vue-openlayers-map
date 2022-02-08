@@ -48,6 +48,8 @@
   - [x] 移动动画 panTo
   - [x] 主动生成元素 setFeature
   - [x] 获取经纬度集合中心点 getCenterByExtent
+  - [x] 获取两点距离方法 getDistancePoint
+  - [x] 获取折线长度方法 getDistanceString
 
 ## 安装
 ```bash

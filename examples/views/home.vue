@@ -19,11 +19,11 @@
       <button class="btn" @click="removeLayer">删除layer2</button>
       <button class="btn" @click="moveFeature">随机移动layer1中点位</button>
       <select id="changeLayer" class="btn" v-model="selectedTile" @change="changeTile">
-        <option value="0">天地图-矢量</option>
-        <option value="1">天地图-卫星</option>
-        <option value="2">天地图-地形</option>
-        <option value="3">自定义参数的百度地图</option>
-        <option value="4">百度地图</option>
+        <option value="0">天地图-街道+注记</option>
+        <option value="1">天地图-影像+注记</option>
+        <option value="2">百度</option>
+        <option value="3">高德</option>
+        <option value="4">自定义参数的百度地图</option>
       </select>
       <div class="checkbox-group btn">
         <div v-for="(item,index) in checkbox" :key="index" class="checkbox-item">
@@ -34,10 +34,10 @@
       <span class="btn">点击位置经纬度：{{currentCoordinates}}</span>
       <span class="btn">当前层级：{{currentZoom}}</span>
       <span class="btn">
-        <button @click="panTo">移动到</button>
         经度：<input class="btn-input" type="number" v-model="animate.center[0]">
-        维度：<input class="btn-input" type="number" v-model="animate.center[1]">
+        纬度：<input class="btn-input" type="number" v-model="animate.center[1]">
         层级：<input class="btn-input" type="number" v-model="animate.zoom">
+        <button @click="panTo">移动到</button>
       </span>
       <button class="btn" @click="startTrack">出发</button>
     </div>
@@ -149,6 +149,8 @@ export default {
   mounted () {
     this.$refs.map.panTo({ center: [118.118033, 24.478697], zoom: 12 })
     this.getHeatmapData()
+    const distance = this.$refs.map.getDistancePoint([118.118033, 24.478697], [118.136562, 24.500419])
+    console.log(distance)
   },
   methods: {
     modifyEnd (evt, map) {
@@ -433,10 +435,10 @@ export default {
       this.option.track[0].state = 'start'
     },
     panTo () {
-      this.option.view.animate = {
+      this.$refs.map.panTo({
         center: this.animate.center,
         zoom: this.animate.zoom
-      }
+      })
     }
   }
 }

@@ -290,6 +290,12 @@ export default {
     },
     panTo (option) {
       VMap.panTo(option.center, option.zoom)
+    },
+    getDistancePoint (from, to, units) {
+      return VMap.getDistancePoint(from, to, units)
+    },
+    getDistanceString (lines, units) {
+      return VMap.getDistanceString(lines, units)
     }
   }
 }
