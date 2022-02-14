@@ -208,12 +208,19 @@ export default {
             type: 'polygon', // 除了普通icon点位，其他元素需注明元素类型
             style: {
               fill: {
-                color: 'rgba(167,26,12,0.15)'
+                color: 'rgba(67,126,152,0.15)'
               },
               stroke: {
                 color: 'rgba(67,126,255,1)',
                 width: 1,
                 lineDash: [20, 10, 20, 10]
+              },
+              text: {
+                text: '多边形',
+                font: '13px sans-serif',
+                fill: {
+                  color: '#3d73e8'
+                }
               }
             },
             updateStyle: {
@@ -240,7 +247,12 @@ export default {
           {
             type: 'circle',
             center: [118.25945470514871, 24.608883531726836],
-            radius: 500
+            radius: 500,
+            style: {
+              text: {
+                text: '圆形'
+              }
+            }
           }
         ]
       }

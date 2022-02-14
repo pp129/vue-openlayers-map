@@ -715,12 +715,27 @@ function setStyle (option) {
   const style = new Style()
   if (validObjKey(option, 'fill')) {
     style.setFill(new Fill(option.fill))
+  } else {
+    style.setFill(new Fill({
+      color: 'rgba(67,126,255,0.15)'
+    }))
   }
   if (validObjKey(option, 'stroke')) {
     style.setStroke(new Stroke(option.stroke))
+  } else {
+    style.setStroke(new Stroke({
+      color: 'rgba(67,126,255,1)',
+      width: 1
+      // lineDash: [20, 10, 20, 10]
+    }))
   }
   if (validObjKey(option, 'icon')) {
     style.setImage(new Icon(option.icon))
+  }
+  if (validObjKey(option, 'text')) {
+    const optionText = option.text
+    const textStyle = setText(optionText)
+    style.setText(textStyle)
   }
   return style
 }
