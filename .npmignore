@@ -1,9 +1,18 @@
-# 忽略目录
-examples/
-packages/
-public/
-
-# 忽略指定文件
+build
+examples
+docs
+dist
+test
+packages
+public
+.babelrc
+.eslintrc.js
+.travis.yml
+yarn.lock
+node_modules
+yarn-error.log
+npm-debug.log
 vue.config.js
 babel.config.js
 *.map
+*.zip
