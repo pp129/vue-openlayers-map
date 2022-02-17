@@ -240,7 +240,6 @@ function getBDMap (option, visible) {
       if (!tileCoord) {
         return ''
       }
-      console.log(tileCoord)
       const z = tileCoord[0]
       const x = tileCoord[1]
       const y = -tileCoord[2] - 1
@@ -312,7 +311,7 @@ function getCustomerTileXYZ (option, visible) {
 /**
  * 更新可视的基础切片图层
  * @param map
- * @param name
+ * @param tile
  */
 function restVisibleBaseTile (map, tile) {
   const layers = map.getLayers()
@@ -341,8 +340,18 @@ function setLayer (option, map) {
   removeLayerById(option.id, map)
   // 启动计时器
   console.time('layer render')
-  const layer = setVectorLayer(option, map)
-  map.addLayer(layer)
+  if (option.type === 'tile') {
+    const tiles = getCustomerTileXYZ(option.tile, option.tile.name)
+    tiles.forEach(layer => {
+      layer.set('id', option.id || '')
+      layer.set('type', option.type)
+      layer.set('users', true)
+      map.addLayer(layer)
+    })
+  } else {
+    const layer = setVectorLayer(option, map)
+    map.addLayer(layer)
+  }
   // 停止计时，输出时间
   console.timeEnd('layer render')
 }

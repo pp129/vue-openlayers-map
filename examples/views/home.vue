@@ -15,15 +15,12 @@
         <option value="LineString">Length (LineString)</option>
         <option value="Polygon">Area (Polygon)</option>
       </select>
+      <button class="btn" @click="addTileLayer">新增切片图层</button>
       <button class="btn" @click="addLayer">新增/更新layer2</button>
       <button class="btn" @click="removeLayer">删除layer2</button>
       <button class="btn" @click="moveFeature">随机移动layer1中点位</button>
       <select id="changeLayer" class="btn" v-model="selectedTile" @change="changeTile">
-        <option value="0">天地图-街道+注记</option>
-        <option value="1">天地图-影像+注记</option>
-        <option value="2">百度</option>
-        <option value="3">高德</option>
-        <option value="4">自定义参数的百度地图</option>
+        <option v-for="(item,index) in baseTile" :key="index" :value="item.value">{{item.name}}</option>
       </select>
       <div class="checkbox-group btn">
         <div v-for="(item,index) in checkbox" :key="index" class="checkbox-item">
@@ -83,9 +80,31 @@ export default {
       mapId: 'map',
       height: '100%',
       width: '100%',
+      baseTile: [
+        {
+          name: '天地图-街道+注记',
+          value: 'td'
+        },
+        {
+          name: '天地图-影像+注记',
+          value: 'td_img'
+        },
+        {
+          name: '百度',
+          value: 'bd'
+        },
+        {
+          name: '高德',
+          value: 'gd'
+        },
+        {
+          name: '自定义参数的百度地图',
+          value: 'xyz_bd'
+        }
+      ],
       option: mapOption,
       newLayer: {},
-      selectedTile: '0',
+      selectedTile: 'td',
       checkbox: [
         {
           label: '点位',
@@ -254,6 +273,27 @@ export default {
       }
       this.option.layers.push(this.newLayer)
     },
+    addTileLayer () {
+      const index = this.option.layers.map(item => item.id).indexOf('tile')
+      if (index > -1) {
+        this.option.layers.splice(index, 1)
+      } else {
+        this.option.layers.push({
+          id: 'tile',
+          visible: true,
+          type: 'tile',
+          tile: {
+            type: 'xyz',
+            name: 'gd',
+            option: [
+              {
+                url: 'http://wprd0{1-4}.is.autonavi.com/appmaptile?x={x}&y={y}&z={z}&lang=zh_cn&size=1&scl=1&style=7'
+              }
+            ]
+          }
+        })
+      }
+    },
     webGlPoint () {
       const features = []
       const mockData = this.setMockData(200000)
@@ -329,7 +369,11 @@ export default {
       this.option.layers[0].source.features = newFeatures
     },
     changeTile () {
-      this.option.visibleTile = this.option.baseTile[Number(this.selectedTile)]
+      if (typeof this.selectedTile === 'string') {
+        this.option.visibleTile = this.selectedTile
+      } else if (typeof this.selectedTile === 'object') {
+        this.option.visibleTile = this.selectedTile.value
+      }
     },
     setMockData (count = 100) {
       const Random = Mock.Random
