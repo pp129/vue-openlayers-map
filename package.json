@@ -1,6 +1,6 @@
 {
   "name": "vue-openlayers-map",
-  "version": "1.0.33",
+  "version": "1.0.35",
   "private": false,
   "main": "lib/vue-openlayers-map.umd.min.js",
   "scripts": {
@@ -10,12 +10,10 @@
     "build:lib": "vue-cli-service build --target lib --name vue-openlayers-map --dest lib packages/index.js",
     "lint": "vue-cli-service lint"
   },
-  "dependencies": {
-    "@turf/turf": "^6.5.0",
-    "ol": "^6.10.0"
-  },
   "devDependencies": {
+    "@turf/turf": "^6.5.0",
     "core-js": "^3.6.5",
+    "ol": "^6.10.0",
     "vue": "^2.6.11",
     "@vue/cli-plugin-babel": "~4.5.0",
     "@vue/cli-plugin-eslint": "~4.5.0",

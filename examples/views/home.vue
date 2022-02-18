@@ -235,6 +235,7 @@ export default {
       this.option.overlays.forEach((overlay, index) => {
         if (overlay.id === id) {
           overlay.position = coordinate
+          overlay.offset = [20, -50]
           overlay.properties = properties
         }
       })

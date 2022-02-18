@@ -510,6 +510,15 @@ function setOverlayPosition (overlay, position) {
   overlay.setPosition(position)
 }
 
+function updateOverlay (overlay, option) {
+  if (validObjKey(option, 'position')) {
+    overlay.setPosition(option.position)
+  }
+  if (validObjKey(option, 'offset')) {
+    overlay.setOffset(option.offset)
+  }
+}
+
 /**
  * 设置文本样式
  * @param option
@@ -1353,7 +1362,7 @@ export class VMap {
       if (existOverlays.length > 0) {
         existOverlays.forEach(overlay => {
           if (overlay.getId() === option.id) {
-            setOverlayPosition(overlay, option.position)
+            updateOverlay(overlay, option)
           }
         })
       } else {
