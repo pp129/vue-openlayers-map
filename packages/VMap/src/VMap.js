@@ -40,6 +40,33 @@ Map.prototype.getFeaturesByLayerId = function (id) {
 }
 
 /**
+ * 对Map进行扩展，根据图层id获取当前图层下制定id的要素
+ * @param layerId
+ * @param featureId
+ * @returns {*}
+ */
+Map.prototype.getFeatureById = function (layerId, featureId) {
+  const layers = this.getLayers()
+  let feature
+  layers.forEach(layer => {
+    if (layer.get('id') === layerId) {
+      feature = layer.getSource().getFeatureById(featureId)
+    }
+  })
+  return feature
+}
+
+/**
+ * 对VectorLayer扩展，获取当前layer下制定id的要素
+ * @param id
+ * @returns {*}
+ */
+VectorLayer.prototype.getFeatureById = function (id) {
+  const source = this.getSource()
+  return source.getFeatureById(id)
+}
+
+/**
  * 对Feature扩展
  */
 export class FeatureExt extends Feature {

@@ -296,6 +296,9 @@ export default {
     },
     getDistanceString (lines, units) {
       return VMap.getDistanceString(lines, units)
+    },
+    getFeatureById (layerId, featureId) {
+      return this.map.getFeatureById(layerId, featureId)
     }
   }
 }

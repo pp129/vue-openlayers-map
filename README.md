@@ -97,8 +97,10 @@ export default {
 </script>
 ```
 
-## 配置及说明
-###[完整配置及说明](https://gitee.com/ayos-team/vue-openlayers-map/wikis/%E5%AE%8C%E6%95%B4%E9%85%8D%E7%BD%AE)
+## docs
+
+### [参考配置](OPTION.md)
+### [说明文档](DEV.md)
 
 ## demo
 

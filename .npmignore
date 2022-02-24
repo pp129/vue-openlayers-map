@@ -20,3 +20,4 @@ babel.config.js
 jsconfig.json
 *.map
 *.zip
+.md

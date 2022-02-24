@@ -1,17 +1,22 @@
+/**
+ * 配置项
+ * @module Page-option
+ */
 const resolutions = []
 for (let i = 0; i < 19; i++) {
   resolutions[i] = Math.pow(2, 18 - i)
 }
 export default {
   /**
-   * 地图容器id
+   * @key target
+   * @description 地图容器id
    * 可选
    * 单页面生成多地图时必填且不重复
    * @param {String} [target='map']
    */
   target: 'map',
   /**
-   * 操作栏
+   * @description 控件
    * 可选
    * 继承control：https://openlayers.org/en/latest/apidoc/module-ol_control.html
    * @param {Object} [controls={zoom: false, rotate: false}]
@@ -117,6 +122,7 @@ export default {
       source: {
         features: [
           {
+            id: 'point1',
             coordinates: [118.140448, 24.512917],
             convert: 'bd-84', // 特殊属性，经纬度转化。支持：百度(bd)、高德(gd)、wgs84(84)互转
             /**
@@ -182,6 +188,7 @@ export default {
             }
           },
           {
+            id: 'point2',
             coordinates: [118.0501900989113, 24.58279368463898],
             style: {
               icon: {

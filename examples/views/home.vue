@@ -170,6 +170,8 @@ export default {
     this.getHeatmapData()
     const distance = this.$refs.map.getDistancePoint([118.118033, 24.478697], [118.136562, 24.500419])
     console.log(distance)
+    const feature = this.$refs.map.getFeatureById('layer1', 'point1')
+    console.log(feature)
   },
   methods: {
     modifyEnd (evt, map) {
