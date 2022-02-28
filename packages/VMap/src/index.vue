@@ -21,7 +21,7 @@ export default {
     },
     option: {
       type: Object,
-      default: () => {
+      default () {
         return {}
       }
     }
@@ -76,29 +76,31 @@ export default {
     layers: {
       handler (value) {
         console.log('layers change', value)
-        if (value) {
-          if (this.mapOption.updateLayers && this.mapOption.updateLayers.length > 0) {
-            // 局部更新图层
-            this.mapOption.updateLayers.forEach(updateLayer => {
-              const index = value.findIndex(x => x.id === updateLayer)
-              console.log(index, updateLayer)
-              if (index > -1) {
-                value.forEach(layer => {
-                  if (layer.id === updateLayer) {
-                    this.setLayer(layer)
-                  }
-                })
-              } else {
-                this.removeLayerById(updateLayer)
-                const indexUpdate = this.mapOption.updateLayers.map(item => item.id).indexOf(updateLayer)
-                this.mapOption.updateLayers.splice(indexUpdate, 1)
-              }
-            })
-          } else {
-            // 全量更新
-            this.setLayers(value)
+        this.$nextTick(() => {
+          if (value) {
+            if (this.mapOption.updateLayers && this.mapOption.updateLayers.length > 0) {
+              // 局部更新图层
+              this.mapOption.updateLayers.forEach(updateLayer => {
+                const index = value.findIndex(x => x.id === updateLayer)
+                console.log(index, updateLayer)
+                if (index > -1) {
+                  value.forEach(layer => {
+                    if (layer.id === updateLayer) {
+                      this.setLayer(layer)
+                    }
+                  })
+                } else {
+                  this.removeLayerById(updateLayer)
+                  const indexUpdate = this.mapOption.updateLayers.map(item => item.id).indexOf(updateLayer)
+                  this.mapOption.updateLayers.splice(indexUpdate, 1)
+                }
+              })
+            } else {
+              // 全量更新
+              this.setLayers(value)
+            }
           }
-        }
+        })
       },
       deep: true,
       immediate: false
@@ -155,33 +157,51 @@ export default {
     }
   },
   data () {
-    return {}
+    return {
+      load: false,
+      changeObj: {
+        layers: [],
+        overlays: []
+      }
+    }
   },
   mounted () {
-    this.init()
+    this.init().then(res => {
+      if (res === 'success') {
+        this.load = true
+        // 点击事件
+        this.map.on('click', evt => {
+          this.$emit('click', evt, this.map)
+        })
+        // 层级变化
+        this.map.getView().once('change:resolution', () => {
+          this.map.once('moveend', (evt) => {
+            this.zoomEnd(evt)
+          })
+        })
+        // 初始化轨迹图层
+        this.mapOption.track.forEach(item => {
+          const option = Object.assign({}, item, {
+            map: this.map
+          })
+          track.init(option)
+        })
+        this.$emit('load')
+      }
+    })
   },
   methods: {
     validObjKey (obj, key) {
       return obj && Object.prototype.hasOwnProperty.call(obj, key) && Object.keys(obj).length > 0
     },
     init () {
-      VMap.map = new VMap(this.option)
-      // 点击事件
-      this.map.on('click', evt => {
-        this.$emit('click', evt, this.map)
-      })
-      // 层级变化
-      this.map.getView().once('change:resolution', () => {
-        this.map.once('moveend', (evt) => {
-          this.zoomEnd(evt)
-        })
-      })
-      // 初始化轨迹图层
-      this.mapOption.track.forEach(item => {
-        const option = Object.assign({}, item, {
-          map: this.map
-        })
-        track.init(option)
+      return new Promise((resolve, reject) => {
+        VMap.map = new VMap(this.option)
+        if (VMap.map.map) {
+          resolve('success')
+        } else {
+          reject(new Error('fail'))
+        }
       })
     },
     zoomEnd (evt) {
@@ -197,9 +217,10 @@ export default {
       return VMap.map
     },
     setLayer (layer) {
-      VMap.setLayer(layer)
+      return VMap.setLayer(layer)
     },
     setLayers (layers) {
+      const output = []
       this.map.getLayers().forEach(layer => {
         let index = -1
         if (layer && layer.get('users')) {
@@ -213,7 +234,13 @@ export default {
           }
         }
       })
-      layers.forEach(layer => { this.setLayer(layer) })
+      layers.forEach(layer => {
+        output.push(this.setLayer(layer))
+      })
+      if (this.load) {
+        this.changeObj.layers = output
+        this.$emit('change', this.changeObj)
+      }
     },
     removeLayerById (id) {
       VMap.removeLayerById(id)
@@ -223,9 +250,14 @@ export default {
       VMap.restVisibleBaseTile(visibleTile)
     },
     setOverlays (overlays) {
+      let output = []
       overlays.forEach(val => {
-        VMap.addOverlay(val)
+        output = VMap.addOverlay(val)
       })
+      if (this.load) {
+        this.changeObj.overlays = output.getArray()
+        this.$emit('change', this.changeObj)
+      }
     },
     setOverlayPosition (overlays) {
       overlays.forEach(overlay => {

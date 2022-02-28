@@ -375,12 +375,16 @@ function setLayer (option, map) {
       layer.set('users', true)
       map.addLayer(layer)
     })
+    // 停止计时，输出时间
+    console.timeEnd('layer render')
+    return tiles
   } else {
     const layer = setVectorLayer(option, map)
     map.addLayer(layer)
+    // 停止计时，输出时间
+    console.timeEnd('layer render')
+    return layer
   }
-  // 停止计时，输出时间
-  console.timeEnd('layer render')
 }
 
 /**
@@ -1397,6 +1401,7 @@ export class VMap {
         VMap.map.map.addOverlay(overlay)
       }
     }
+    return overlays
   }
 
   static getOverlays () {

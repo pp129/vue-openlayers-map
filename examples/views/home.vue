@@ -1,5 +1,6 @@
 <template>
   <div class="home">
+    <!-- tools -->
     <div class="tools">
       <button class="btn" @click="webGlPoint">添加海量点</button>
       <button class="btn" @click="setModify">{{modifyStatus?'结束':'开始'}}编辑矢量元素</button>
@@ -38,17 +39,21 @@
       </span>
       <button class="btn" @click="startTrack">出发</button>
     </div>
+    <!-- map -->
     <v-map
       ref="map"
       class="map"
       :height="height"
       :width="width"
       :option="option"
+      @load="onLoad"
+      @change="onChange"
       @drawend="drawEnd"
       @measureend="measureEnd"
       @click="onClick"
       @changeZoom="onChangeZoom">
     </v-map>
+    <!-- overlays -->
     <div ref="overlay1" id="overlay1" class="overlay">
       <p>overlay1</p>
       <span @click="closeOverlay('overlay1')">close</span>
@@ -102,7 +107,7 @@ export default {
           value: 'xyz_bd'
         }
       ],
-      option: mapOption,
+      option: {},
       newLayer: {},
       selectedTile: 'td',
       checkbox: [
@@ -159,23 +164,35 @@ export default {
     }
   },
   created () {
-    this.option.overlays.push({
-      id: 'overlay2',
-      element: 'overlay2', // dom元素id
-      position: undefined
-    })
+
   },
   mounted () {
-    this.$refs.map.panTo({ center: [118.118033, 24.478697], zoom: 12 })
-    this.getHeatmapData()
-    const distance = this.$refs.map.getDistancePoint([118.118033, 24.478697], [118.136562, 24.500419])
-    console.log(distance)
-    const feature = this.$refs.map.getFeatureById('layer1', 'point1')
-    console.log(feature)
+
   },
   methods: {
     modifyEnd (evt, map) {
       console.log('modifyEnd', evt)
+    },
+    onLoad () {
+      console.log('on load')
+      this.option = Object.assign({}, mapOption)
+      this.option.overlays.push({
+        id: 'overlay2',
+        element: 'overlay2', // dom元素id
+        position: undefined
+      })
+      this.$refs.map.panTo({ center: [118.118033, 24.478697], zoom: 12 })
+      this.getHeatmapData()
+      const distance = this.$refs.map.getDistancePoint([118.118033, 24.478697], [118.136562, 24.500419])
+      console.log(distance)
+      // setInterval(() => {
+      //   this.addLayer()
+      // }, 300)
+    },
+    onChange (data) {
+      console.log('on change', data)
+      const feature = this.$refs.map.getFeatureById('layer1', 'point1')
+      console.log(feature)
     },
     drawEnd (evt) {
       console.log('on draw end', evt)
@@ -378,7 +395,7 @@ export default {
         this.option.visibleTile = this.selectedTile.value
       }
     },
-    setMockData (count = 100) {
+    setMockData (count = 600) {
       const Random = Mock.Random
       const option = {}
       option[`array|${count}`] = [
