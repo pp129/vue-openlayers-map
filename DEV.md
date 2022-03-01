@@ -208,11 +208,115 @@ this.option.overview = 'td'
 
 layer参数详见 [LAYER.md](LAYER.md)
 
+## overlays
+
+| 说明             | 是否必填 | 类型  | 可选值 | 默认值 |
+| ---------------- | -------- | ----- | ------ | ------ |
+| 叠加（弹框）集合 | 否       | Array | -      | -      |
+
+### overlay
+
+继承 ol/overlay
+
+官方文档：https://openlayers.org/en/latest/apidoc/module-ol_Overlay-Overlay.html
+
+```vue
+<template>
+	<div>
+    <v-map class="map" :height="height" :width="width" :option="option" @click="onClick"></v-map>
+    <div id='overlay'>overlay <span @click='close'>close overlay</span></div>
+  </div>
+</template>
+<script>
+export default{
+  data(){
+    return {
+      width:'100%',
+      height:'100%',
+      option:{
+        layers:[
+          {
+            source:{
+              features:[
+                {
+                  id:'point',
+                  corrdinates:[0,0]
+                }
+              ]
+            }
+          }
+        ],
+        overlays:[
+          {
+            id: 'overlay1',
+            element: 'overlay1', // 仅支持dom元素id，不支持直接设置HTMLElement
+            position: undefined
+          }
+        ]
+      }
+    }
+  },
+  methods:{
+    // 地图点击事件
+    onClick(evt,map){
+      const pixel = map.getEventPixel(evt.originalEvent)
+      const hit = map.hasFeatureAtPixel(pixel)
+      // 判断当前位置是否有要素
+      if (hit) {
+        const features = map.getFeaturesAtPixel(evt.pixel)
+        if (features && features.length > 0) {
+          features.forEach(feature=>{
+            if(feature.get('id') === 'point'){
+              this.option.overlays.forEach((overlay, index) => {
+                if (overlay.id === 'overlay1') {
+                  // 显示弹框
+                  overlay.position = coordinate
+                }
+              })
+            }
+          })
+        }
+      }
+    },
+    close(){
+      this.option.overlays.forEach((overlay, index) => {
+        if (overlay.id === 'overlay1') {
+          // 隐藏弹框
+          overlay.position = undefined
+        }
+      })
+    }
+  }
+}
+</script>
+```
+
+
+
 # events
 
 ## load
 
 地图对象生成完成事件
+
+```vue
+<template>
+	<div>
+    <v-map @load="onLoad"></v-map>
+  </div>
+</template>
+<script>
+  export default{
+    methods:{
+      onLoad(){
+        console.log('map loaded')
+      }
+    }
+  }
+</script>
+```
+
+
 
 ## change
 
@@ -222,9 +326,48 @@ layer参数详见 [LAYER.md](LAYER.md)
 
 点击事件
 
+```vue
+<template>
+	<div>
+    <v-map @click="onClick"></v-map>
+  </div>
+</template>
+<script>
+  export default{
+    methods:{
+      onClick(evt, map){
+        console.log(evt.coordinate)
+        console.log(map.getEventPixel(evt.originalEvent))
+      }
+    }
+  }
+</script>
+```
+
+
+
 ## changeZoom
 
 层级变化事件
+
+```vue
+<template>
+	<div>
+    <v-map @changeZoom="onChangeZoom"></v-map>
+  </div>
+</template>
+<script>
+  export default{
+    methods:{
+      onChangeZoom(evt,map){
+        console.log(evt.map.getView().getZoom())
+      }
+    }
+  }
+</script>
+```
+
+
 
 ## drawstart
 
