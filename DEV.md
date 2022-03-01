@@ -1,6 +1,6 @@
-# 起步
+# start
 
-## 安装
+## install
 
 ~~~bash
 ```
@@ -8,7 +8,7 @@ npm install vue-openlayers-map
 ```
 ~~~
 
-## 使用
+## use
 
 全局引用
 
@@ -49,7 +49,8 @@ export default {
 }
 </script>
 ```
-# 配置 option
+
+# option
 
 ## target
 
@@ -207,7 +208,7 @@ this.option.overview = 'td'
 
 layer参数详见 [LAYER.md](LAYER.md)
 
-# 事件 events
+# events
 
 ## load
 
@@ -249,7 +250,7 @@ layer参数详见 [LAYER.md](LAYER.md)
 
 测量完成事件
 
-# 方法 methods
+# methods
 
 ## panTo
 
@@ -308,5 +309,4 @@ const center = this.$refs.map.getCenterByExtent(polygonFeature)
  */
 const feature = this.$refs.map.getFeatureById(layerId,featureId)
 ```
-
 
