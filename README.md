@@ -100,7 +100,7 @@ export default {
 ## docs
 
 ### [参考配置](OPTION.md)
-### [说明文档](DEV.md)
+### [开发文档](DEV.md)
 
 ## demo
 

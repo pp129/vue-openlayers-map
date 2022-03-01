@@ -196,7 +196,7 @@ export default {
     },
     init () {
       return new Promise((resolve, reject) => {
-        VMap.map = new VMap(this.option)
+        VMap.map = new VMap(this.mapOption)
         if (VMap.map.map) {
           resolve('success')
         } else {
@@ -217,7 +217,7 @@ export default {
       return VMap.map
     },
     setLayer (layer) {
-      return VMap.setLayer(layer)
+      return VMap.setLayer(layer, this.map)
     },
     setLayers (layers) {
       const output = []
@@ -247,12 +247,12 @@ export default {
     },
     restVisibleBaseTile (visibleTile) {
       console.log('reset tile')
-      VMap.restVisibleBaseTile(visibleTile)
+      VMap.restVisibleBaseTile(visibleTile, this.map)
     },
     setOverlays (overlays) {
       let output = []
       overlays.forEach(val => {
-        output = VMap.addOverlay(val)
+        output = VMap.addOverlay(val, this.map)
       })
       if (this.load) {
         this.changeObj.overlays = output.getArray()

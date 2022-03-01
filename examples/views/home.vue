@@ -107,7 +107,7 @@ export default {
           value: 'xyz_bd'
         }
       ],
-      option: {},
+      option: mapOption,
       newLayer: {},
       selectedTile: 'td',
       checkbox: [
@@ -175,7 +175,6 @@ export default {
     },
     onLoad () {
       console.log('on load')
-      this.option = Object.assign({}, mapOption)
       this.option.overlays.push({
         id: 'overlay2',
         element: 'overlay2', // dom元素id

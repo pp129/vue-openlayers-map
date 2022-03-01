@@ -1365,8 +1365,8 @@ function setMeasure (map, value) {
 export class VMap {
   static map = VMap
 
-  static setLayer (val) {
-    return setLayer(val, VMap.map.map)
+  static setLayer (val, map) {
+    return setLayer(val, map)
   }
 
   static removeLayer (val) {
@@ -1377,12 +1377,12 @@ export class VMap {
     return removeLayerById(val, VMap.map.map)
   }
 
-  static restVisibleBaseTile (name) {
-    return restVisibleBaseTile(VMap.map.map, name)
+  static restVisibleBaseTile (name, map) {
+    return restVisibleBaseTile(map, name)
   }
 
-  static addOverlay (option) {
-    const overlays = VMap.map.map.getOverlays()
+  static addOverlay (option, target) {
+    const overlays = target.getOverlays()
     if (overlays) {
       const existOverlays = []
       overlays.forEach(overlay => {
@@ -1398,7 +1398,7 @@ export class VMap {
         })
       } else {
         const overlay = addOverlay(option)
-        VMap.map.map.addOverlay(overlay)
+        target.addOverlay(overlay)
       }
     }
     return overlays

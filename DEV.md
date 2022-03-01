@@ -47,8 +47,7 @@ export default {
 </script>
 ```
 
-
-# 配置与说明
+# 配置
 
 ## target
 
@@ -170,8 +169,96 @@ this.option.overview = 'td'
 
 例子：
 ```js
-{
+const feature = {
     coordinates: [118.140448, 24.512917],
     convert: 'bd-84' //百度转84
 }
+```
+
+# 事件 Events
+
+## load
+
+地图对象生成完成事件
+
+## change
+
+图层、弹框改变事件
+
+## click
+
+点击事件
+
+## changeZoom
+
+层级变化事件
+
+## drawstart
+
+绘制开始事件
+
+## drawend
+
+绘制完成事件
+
+## modifystart
+
+编辑开始事件
+
+## modifyend
+
+编辑结束事件
+
+## measurestart
+
+测量开始事件
+
+## measureend
+
+测量完成事件
+
+# 方法 Methods
+
+## panTo
+
+移动地图中心点
+
+```js
+this.$refs.map.panTo({center:[Lon,Lat],zoom:zoom})
+```
+
+## getDistancePoint
+
+获取两点之间距离
+
+```js
+const distance = this.$refs.map.getDistancePoint([118.118033, 24.478697], [118.136562, 24.500419])
+console.log(distance)
+```
+
+## getDistanceString
+
+获取两线之间距离
+
+## setFeature
+
+主动生成要素
+
+## getCenterByExtent
+
+获取区域中心点
+
+```js
+// 多边形经纬度集合
+const polygonFeature = feature.getGeometry().getExtent()
+// 多边形中心点
+const center = this.$refs.map.getCenterByExtent(polygonFeature)
+```
+
+## getFeatureById
+
+根据指定图层id获取该图层下指定id的要素
+
+```js
+this.$refs.map.getFeatureById(layerId,featureId)
 ```
