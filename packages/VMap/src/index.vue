@@ -32,7 +32,7 @@ export default {
         target: 'map',
         controls: {},
         baseTile: ['td'],
-        visibleTile: 'td',
+        visibleTile: '',
         overview: false,
         view: {
           center: [0, 0],

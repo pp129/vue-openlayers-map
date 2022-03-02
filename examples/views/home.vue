@@ -315,7 +315,7 @@ export default {
     },
     webGlPoint () {
       const features = []
-      const mockData = this.setMockData(200000)
+      const mockData = this.setMockData(50000)
       mockData.array.forEach(val => {
         features.push({
           coordinates: val,
