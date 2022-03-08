@@ -2,7 +2,8 @@
   <div class="home">
     <!-- tools -->
     <div class="tools">
-      <button class="btn" @click="webGlPoint">添加海量点</button>
+      <button class="btn" @click="webGlPoint">海量点(webGl)</button>
+      <button class="btn" @click="graphicLayer">海量点(canvas)</button>
       <button class="btn" @click="setModify">{{modifyStatus?'结束':'开始'}}编辑矢量元素</button>
       <select id="draw" class="btn" v-model="drawType" @change="changeInteractions">
         <option value="none">绘制图形</option>
@@ -213,6 +214,7 @@ export default {
       const polyFeatures = map.getFeaturesByLayerId('polygon')
       if (hit) {
         const features = map.getFeaturesAtPixel(evt.pixel)
+        console.log(features)
         if (features && features.length > 0) {
           let item = null
           let polygon = null
@@ -315,7 +317,7 @@ export default {
     },
     webGlPoint () {
       const features = []
-      const mockData = this.setMockData(50000)
+      const mockData = this.setMockData(60000)
       mockData.array.forEach(val => {
         features.push({
           coordinates: val,
@@ -348,8 +350,9 @@ export default {
         source: {
           features: features
         },
+        // disableHitDetection: true,
         symbol: {
-          symbolType: 'image',
+          symbolType: 'circle',
           src: require('@/assets/img/car.png'),
           size: [18, 28],
           color: 'lightyellow',
@@ -365,6 +368,90 @@ export default {
         this.option.layers.splice(index, 1)
       }
       this.option.layers.push(option)
+    },
+    VectorImageLayer () {
+      const features = []
+      const mockData = this.setMockData(20000)
+      mockData.array.forEach(val => {
+        features.push({
+          coordinates: val
+        })
+      })
+      console.log(features)
+      const index = this.option.layers.map(item => item.id).indexOf('VectorImageLayer')
+      if (index > -1) {
+        this.option.layers[index].source.features = features
+      }
+    },
+    graphicLayer () {
+      const features = []
+      const mockData = this.setMockData(600)
+      mockData.array.forEach(val => {
+        features.push({
+          coordinates: val,
+          style: {
+            icon: {
+              src: require('@/assets/img/point_blue.png'),
+              scale: 0.8
+            },
+            text: {
+              text: '百度转84',
+              font: '13px sans-serif',
+              fill: {
+                color: '#3d73e8'
+              },
+              backgroundFill: {
+                color: '#ffffff'
+              },
+              stroke: {
+                color: '#ffffff',
+                width: 1
+              },
+              backgroundStroke: {
+                color: '#000000',
+                width: 1
+              },
+              offsetX: 0,
+              offsetY: 30
+            },
+            /**
+             * 要素样式自定义方法
+             * @param feature
+             * @param resolution
+             * @param map
+             * @param style
+             * @returns {*|null}
+             */
+            styleFunction: function (feature, resolution, map, style) {
+              const viewZoom = map.getView().getZoom()
+              const minZoom = 12
+              const maxZoom = 16
+              const textStyle = style.getText()
+              if (viewZoom >= 14) {
+                textStyle.setText('百度转84')
+              }
+              if (viewZoom >= 15) {
+                textStyle.setText('根据层级显示不同内容')
+              }
+              style.setText(textStyle)
+              return minZoom <= viewZoom && viewZoom <= maxZoom ? style : null
+            }
+          }
+        })
+      })
+      console.log(features)
+      const index = this.option.layers.map(item => item.id).indexOf('graphicLayer')
+      if (index > -1) {
+        this.option.layers[index] = Object.assign(this.option.layers[index], {
+          source: {
+            features: features
+          },
+          onClick (evt) {
+            console.log('evt')
+          }
+        })
+        // this.option.layers[index].source.features = features
+      }
     },
     removeLayer () {
       const index = this.option.layers.map(item => item.id).indexOf('layer2')

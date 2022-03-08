@@ -264,6 +264,34 @@ export default {
         ]
       }
     },
+    {
+      id: 'VectorImageLayer',
+      type: 'VectorImage',
+      source: {
+        features: []
+      }
+    },
+    {
+      id: 'graphicLayer',
+      type: 'graphicLayer',
+      onClick: (e) => {
+        console.log('eeeeee', e)
+      },
+      source: {
+        features: [{
+          id: 'point2',
+          coordinates: [118.106671, 24.449304],
+          style: {
+            icon: {
+              src: require('@/assets/img/point_blue.png')
+            }
+          },
+          properties: {
+            name: 'feature2'
+          }
+        }]
+      }
+    },
     /**
      * 示例图层 继承layer
      * 聚合

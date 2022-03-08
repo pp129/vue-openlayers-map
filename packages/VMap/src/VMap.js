@@ -1,9 +1,11 @@
 import 'ol/ol.css'
 import { Map, View } from 'ol'
 import Overlay from 'ol/Overlay'
-import { Tile as TileLayer, Vector as VectorLayer, Heatmap as HeatmapLayer } from 'ol/layer'
+import { Tile as TileLayer, Vector as VectorLayer, VectorImage as VectorImageLayer, Heatmap as HeatmapLayer } from 'ol/layer'
+import ImageLayer from 'ol/layer/Image'
 import WebGLPointsLayer from 'ol/layer/WebGLPoints'
 import { Cluster, XYZ, Vector as VectorSource } from 'ol/source'
+import ImageCanvasSource from 'ol/source/ImageCanvas'
 import Feature from 'ol/Feature'
 import { Circle, LineString, Point, Polygon } from 'ol/geom'
 import { Fill, Icon, Stroke, Style, Text, Circle as CircleStyle, RegularShape } from 'ol/style'
@@ -13,11 +15,13 @@ import TileGrid from 'ol/tilegrid/TileGrid'
 import { addCoordinateTransforms, addProjection, Projection } from 'ol/proj'
 import { getArea, getLength } from 'ol/sphere'
 import { getCenter } from 'ol/extent'
-
+import { toContext } from 'ol/render'
 import { point, lineString, distance, length } from '@turf/turf'
 
 import projzh from '~/VMap/src/utils/projConvert'
 import coordtransform from '~/VMap/src/utils/coordtransform'
+import * as olExtent from 'ol/extent'
+// import LayerGroup from 'ol/layer/Group'
 
 function validObjKey (obj, key) {
   return obj && Object.prototype.hasOwnProperty.call(obj, key) && Object.keys(obj).length > 0
@@ -37,6 +41,31 @@ Map.prototype.getFeaturesByLayerId = function (id) {
     }
   })
   return features
+}
+const e = function (t, r, s, i, a, n) {
+  t.getSource()._forEachFeatureAtCoordinate && t.getSource()._forEachFeatureAtCoordinate(r, s,
+    function (e) {
+      return i(e, t)
+    },
+    a, n)
+}
+Map.prototype.forEachSmFeatureAtPixel = function (t, r, s, i) {
+  debugger
+  const a = s && s.layerFilter ? s.layerFilter : function () {
+    return !0
+  }
+  const n = this.getLayers().getArray()
+  const o = this.getView().getResolution()
+  const l = this.getCoordinateFromPixel(t)
+  for (let ss = 0; ss < n.length; ss++) {
+    const h = n[ss]
+    // console.log(h)
+    // eslint-disable-next-line no-useless-call
+    h.getVisible() && a.call(null, h) && e(h, l, o, r, t, i)
+  }
+  const output = this.forEachFeatureAtPixel(t, r, s)
+  console.log(output)
+  return output
 }
 
 /**
@@ -64,6 +93,39 @@ Map.prototype.getFeatureById = function (layerId, featureId) {
 VectorLayer.prototype.getFeatureById = function (id) {
   const source = this.getSource()
   return source.getFeatureById(id)
+}
+
+const getGraphicsInExtent = function (source, e) {
+  debugger
+  var t = []
+  return e ? (source.get('graphics').map(function (r) {
+    console.log(r)
+    // eslint-disable-next-line no-sequences
+    return olExtent.containsExtent(e, r.getGeometry().getExtent()) && t.push(r), r
+  }), t) : (source.get('graphics').map(function (e) {
+    // eslint-disable-next-line no-sequences
+    return t.push(e), e
+  }), t)
+}
+ImageCanvasSource.prototype._forEachFeatureAtCoordinate = function (e, r, s, i, a) {
+  var n = getGraphicsInExtent(this)
+  console.log(n)
+  for (var o = n.length - 1; o >= 0; o--) {
+    var l = n[o].getStyle()
+    if (!l) return
+    var h = n[o].getGeometry().getCoordinates()
+    var u = l.getImage()
+    var c = !1
+
+    var _t = []
+    // eslint-disable-next-line no-unused-expressions,no-sequences
+    _t[0] = h[0] - u.getAnchor()[0] * r, _t[2] = h[0] + u.getAnchor()[0] * r, _t[1] = h[1] - u.getAnchor()[1] * r,
+    _t[3] = h[1] + u.getAnchor()[1] * r,
+    olExtent.containsCoordinate(_t, e) && (c = !0)
+
+    // eslint-disable-next-line no-unused-expressions
+    !0 !== c ? _t.isHighLight && _t._highLightClose() : (_t.isHighLight && _t._highLight(h, u, n[o], i), this._forEachFeatureAtCoordinate && this._forEachFeatureAtCoordinate(n[o], a))
+  }
 }
 
 /**
@@ -427,7 +489,7 @@ function removeLayer (layer, map) {
 }
 
 /**
- * 设置矢量图层
+ * 设置图层
  * @param option
  * @param map
  * @returns {VectorLayer<VectorSourceType>|Heatmap}
@@ -449,9 +511,133 @@ function setVectorLayer (option, map) {
     return layer
   } else if (validObjKey(option, 'type') && option.type === 'webGLPoints') {
     const layer = addWebGLPointsLayer(option, map)
+    console.log(layer)
     layer.set('id', option.id || '')
     layer.set('type', option.type)
     layer.set('users', true)
+    return layer
+  } else if (validObjKey(option, 'type') && option.type === 'VectorImage') {
+    // 元素图层
+    let sourceOption
+    if (validObjKey(option, 'source')) {
+      sourceOption = option.source
+    }
+    const source = addVectorSource(sourceOption, map)
+    const layerOptions = Object.assign({
+      visible: true
+    }, option, {
+      source: source
+    })
+    const layer = new VectorImageLayer(layerOptions)
+    layer.setStyle(function (feature) {
+      if (feature.get('style')) {
+        return setStyle(feature.get('style'))
+      } else {
+        if (validObjKey(option, 'style')) {
+          return setStyle(option.style)
+        } else {
+          return setStyle({
+            fill: {
+              color: 'rgba(67,126,255,0.15)'
+            },
+            stroke: {
+              color: 'rgba(67,126,255,1)',
+              width: 1
+              // lineDash: [20, 10, 20, 10]
+            }
+          })
+        }
+      }
+    })
+    layer.set('id', option.id || '')
+    layer.set('type', option.type || 'VectorImage')
+    layer.set('users', true)
+    return layer
+  } else if (validObjKey(option, 'type') && option.type === 'graphicLayer') {
+    const geoms = []
+    const source = new ImageCanvasSource({
+      canvasFunction: function (extent, resolution, pixelRatio, size, projection) {
+        const canvas = document.createElement('canvas')
+        const width = size[0] / pixelRatio
+        const height = size[1] / pixelRatio
+        const vectorContext = toContext(canvas.getContext('2d'), { size: [width, height] })
+        // const fill = new Fill({ color: 'blue' })
+        // vectorContext.setStyle(style)
+        const mapsize = map.getSize()
+        const t = width
+        const r = height
+        const s = [(t - mapsize[0]) / 2, (r - mapsize[1]) / 2]
+        if (validObjKey(option, 'source')) {
+          if (validObjKey(option.source, 'features') && option.source.features.length > 0) {
+            option.source.features.forEach(feature => {
+              let style
+              if (validObjKey(feature, 'style')) {
+                style = setStyle(feature.style)
+              } else {
+                style = new Style({
+                  image: new CircleStyle({
+                    radius: 5,
+                    fill: new Fill({
+                      color: 'blue'
+                    })
+                  })
+                })
+              }
+              const r = feature.coordinates
+              const l = map.getPixelFromCoordinate(r)
+              const h = -map.getView().getRotation()
+              const u = map.getPixelFromCoordinate(map.getView().getCenter())
+              const c = (function (e, t, r) {
+                return [Math.cos(t) * (e[0] - r[0]) - Math.sin(t) * (e[1] - r[1]) + r[0], Math.sin(t) * (e[0] - r[0]) + Math.cos(t) * (e[1] - r[1]) + r[1]]
+              }((function (e, t, r) {
+                return [(e[0] - t[0]) * r + t[0], (e[1] - t[1]) * r + t[1]]
+              }(l, u, 1)), h, u))
+              const d = [c[0] + s[0], c[1] + s[1]]
+              const p = new Point(d, 'XY')
+              const geom = new Feature(p)
+              geoms.push(geom)
+              vectorContext.drawFeature(geom, style)
+            })
+          }
+        }
+
+        // canvas.width = size[0]
+        // canvas.height = size[1]
+        // const context = canvas.getContext('2d')
+        // context.fillStyle = 'blue'
+        // const mapsize = map.getSize()
+        // const delt = [((size[0] - mapsize[0]) / 2), ((size[1] - mapsize[1]) / 2)]
+        // if (validObjKey(option, 'source')) {
+        //   if (option.source.features.length > 0) {
+        //     option.source.features.forEach(feature => {
+        //       const pix = map.getPixelFromCoordinate(feature.coordinates)
+        //       context.beginPath()
+        //       context.arc(pix[0] + delt[0], pix[1] + delt[1], 10, 0, 2 * Math.PI)
+        //       context.closePath()
+        //       context.fill()
+        //       // context.fillRect(pix[0] + delt[0], pix[1] + delt[1], 10, 10)
+        //     })
+        //   }
+        // }
+        return canvas
+      }
+    })
+    source.set('graphics', geoms)
+    console.log(source)
+    const layerOptions = Object.assign({
+      visible: true
+    }, option, {
+      source: source
+    })
+    const layer = new ImageLayer(layerOptions)
+    layer.set('id', option.id || '')
+    layer.set('type', option.type || 'graphicLayer')
+    layer.set('users', true)
+    map.on('singleclick', function (r) {
+      console.log(r.pixel)
+      console.log(option)
+      map.forEachSmFeatureAtPixel(r.pixel, option.onClick(), {}, r)
+    })
     return layer
   } else {
     // 元素图层
@@ -658,10 +844,10 @@ function setPointFeature (option, map) {
   const feature = new FeatureExt({
     geometry: new Point(coordinates)
   })
+  const featureStyle = new Style()
   // newFeaturePrototype(feature)
   if (validObjKey(option, 'style')) {
     const optionStyle = option.style
-    const featureStyle = new Style()
     let imageStyle
     let textStyle
     if (validObjKey(optionStyle, 'icon')) {
@@ -680,6 +866,14 @@ function setPointFeature (option, map) {
     } else {
       feature.setStyle(featureStyle)
     }
+  } else {
+    featureStyle.setImage(new CircleStyle({
+      radius: 5,
+      fill: new Fill({
+        color: '#ff0000'
+      })
+    }))
+    feature.setStyle(featureStyle)
   }
   if (validObjKey(option, 'id')) {
     feature.setId(option.id)
