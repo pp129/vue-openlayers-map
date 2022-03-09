@@ -44,9 +44,10 @@ Map.prototype.getFeaturesByLayerId = function (id) {
 }
 const e = function (t, r, s, i, a, n) {
   t.getSource()._forEachFeatureAtCoordinate && t.getSource()._forEachFeatureAtCoordinate(r, s,
-    function (e) {
+    (function (e) {
+      console.log(e)
       return i(e, t)
-    },
+    })(),
     a, n)
 }
 Map.prototype.forEachSmFeatureAtPixel = function (t, r, s, i) {
@@ -63,9 +64,6 @@ Map.prototype.forEachSmFeatureAtPixel = function (t, r, s, i) {
     // eslint-disable-next-line no-useless-call
     h.getVisible() && a.call(null, h) && e(h, l, o, r, t, i)
   }
-  const output = this.forEachFeatureAtPixel(t, r, s)
-  console.log(output)
-  return output
 }
 
 /**
@@ -96,7 +94,6 @@ VectorLayer.prototype.getFeatureById = function (id) {
 }
 
 const getGraphicsInExtent = function (source, e) {
-  debugger
   var t = []
   return e ? (source.get('graphics').map(function (r) {
     console.log(r)
@@ -554,9 +551,10 @@ function setVectorLayer (option, map) {
     layer.set('users', true)
     return layer
   } else if (validObjKey(option, 'type') && option.type === 'graphicLayer') {
-    const geoms = []
+    // let geoms = []
     const source = new ImageCanvasSource({
       canvasFunction: function (extent, resolution, pixelRatio, size, projection) {
+        const geoms = []
         const canvas = document.createElement('canvas')
         const width = size[0] / pixelRatio
         const height = size[1] / pixelRatio
@@ -600,7 +598,8 @@ function setVectorLayer (option, map) {
             })
           }
         }
-
+        source.set('graphics', geoms)
+        console.log('graphics=====', source.get('graphics'))
         // canvas.width = size[0]
         // canvas.height = size[1]
         // const context = canvas.getContext('2d')
@@ -622,8 +621,8 @@ function setVectorLayer (option, map) {
         return canvas
       }
     })
-    source.set('graphics', geoms)
-    console.log(source)
+    console.log('graphics-----', source.get('graphics'))
+    // console.log(geoms)
     const layerOptions = Object.assign({
       visible: true
     }, option, {
@@ -636,7 +635,7 @@ function setVectorLayer (option, map) {
     map.on('singleclick', function (r) {
       console.log(r.pixel)
       console.log(option)
-      map.forEachSmFeatureAtPixel(r.pixel, option.onClick(), {}, r)
+      map.forEachSmFeatureAtPixel(r.pixel, option.onClick, {}, r)
     })
     return layer
   } else {

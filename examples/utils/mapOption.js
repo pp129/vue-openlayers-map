@@ -274,8 +274,8 @@ export default {
     {
       id: 'graphicLayer',
       type: 'graphicLayer',
-      onClick: (e) => {
-        console.log('eeeeee', e)
+      onClick: (i, e) => {
+        console.log('eeeeee', i, e)
       },
       source: {
         features: [{

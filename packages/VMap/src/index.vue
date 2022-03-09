@@ -173,9 +173,6 @@ export default {
         this.map.on('click', evt => {
           this.$emit('click', evt, this.map)
         })
-        this.map.on('singleclick', evt => {
-          this.$emit('singleclick', evt, this.map)
-        })
         // 层级变化
         this.map.getView().once('change:resolution', () => {
           this.map.once('moveend', (evt) => {
