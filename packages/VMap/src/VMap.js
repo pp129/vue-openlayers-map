@@ -1,26 +1,32 @@
 import 'ol/ol.css'
 import { Map, View } from 'ol'
 import Overlay from 'ol/Overlay'
-import { Tile as TileLayer, Vector as VectorLayer, VectorImage as VectorImageLayer, Heatmap as HeatmapLayer } from 'ol/layer'
+import {
+  Heatmap as HeatmapLayer,
+  Tile as TileLayer,
+  Vector as VectorLayer,
+  VectorImage as VectorImageLayer
+} from 'ol/layer'
 import ImageLayer from 'ol/layer/Image'
 import WebGLPointsLayer from 'ol/layer/WebGLPoints'
-import { Cluster, XYZ, Vector as VectorSource } from 'ol/source'
+import { Cluster, Vector as VectorSource, XYZ } from 'ol/source'
 import ImageCanvasSource from 'ol/source/ImageCanvas'
 import Feature from 'ol/Feature'
 import { Circle, LineString, Point, Polygon } from 'ol/geom'
-import { Fill, Icon, Stroke, Style, Text, Circle as CircleStyle, RegularShape } from 'ol/style'
-import { OverviewMap, defaults as defaultControls } from 'ol/control'
+import { Circle as CircleStyle, Fill, Icon, RegularShape, Stroke, Style, Text } from 'ol/style'
+import { defaults as defaultControls, OverviewMap } from 'ol/control'
 import { Draw, Modify, Select } from 'ol/interaction'
 import TileGrid from 'ol/tilegrid/TileGrid'
 import { addCoordinateTransforms, addProjection, Projection } from 'ol/proj'
 import { getArea, getLength } from 'ol/sphere'
+import * as olExtent from 'ol/extent'
 import { getCenter } from 'ol/extent'
 import { toContext } from 'ol/render'
-import { point, lineString, distance, length } from '@turf/turf'
+import { distance, length, lineString, point } from '@turf/turf'
 
 import projzh from '~/VMap/src/utils/projConvert'
 import coordtransform from '~/VMap/src/utils/coordtransform'
-import * as olExtent from 'ol/extent'
+
 // import LayerGroup from 'ol/layer/Group'
 
 function validObjKey (obj, key) {
@@ -44,14 +50,12 @@ Map.prototype.getFeaturesByLayerId = function (id) {
 }
 const e = function (t, r, s, i, a, n) {
   t.getSource()._forEachFeatureAtCoordinate && t.getSource()._forEachFeatureAtCoordinate(r, s,
-    (function (e) {
-      console.log(e)
+    function (e) {
       return i(e, t)
-    })(),
+    },
     a, n)
 }
 Map.prototype.forEachSmFeatureAtPixel = function (t, r, s, i) {
-  debugger
   const a = s && s.layerFilter ? s.layerFilter : function () {
     return !0
   }
@@ -64,6 +68,7 @@ Map.prototype.forEachSmFeatureAtPixel = function (t, r, s, i) {
     // eslint-disable-next-line no-useless-call
     h.getVisible() && a.call(null, h) && e(h, l, o, r, t, i)
   }
+  return this.forEachFeatureAtPixel(t, r, s)
 }
 
 /**
@@ -106,22 +111,22 @@ const getGraphicsInExtent = function (source, e) {
 }
 ImageCanvasSource.prototype._forEachFeatureAtCoordinate = function (e, r, s, i, a) {
   var n = getGraphicsInExtent(this)
-  console.log(n)
   for (var o = n.length - 1; o >= 0; o--) {
-    var l = n[o].getStyle()
+    var l = n[o]._style
     if (!l) return
-    var h = n[o].getGeometry().getCoordinates()
+    var h = n[o]._coordinates
     var u = l.getImage()
     var c = !1
 
     var _t = []
     // eslint-disable-next-line no-unused-expressions,no-sequences
-    _t[0] = h[0] - u.getAnchor()[0] * r, _t[2] = h[0] + u.getAnchor()[0] * r, _t[1] = h[1] - u.getAnchor()[1] * r,
-    _t[3] = h[1] + u.getAnchor()[1] * r,
+    _t[0] = h[0] - u.getAnchor()[0] * r
+    _t[2] = h[0] + u.getAnchor()[0] * r
+    _t[1] = h[1] - u.getAnchor()[1] * r
+    _t[3] = h[1] + u.getAnchor()[1] * r
     olExtent.containsCoordinate(_t, e) && (c = !0)
-
     // eslint-disable-next-line no-unused-expressions
-    !0 !== c ? _t.isHighLight && _t._highLightClose() : (_t.isHighLight && _t._highLight(h, u, n[o], i), this._forEachFeatureAtCoordinate && this._forEachFeatureAtCoordinate(n[o], a))
+    !0 !== c ? _t.isHighLight && _t._highLightClose() : (_t.isHighLight && _t._highLight(h, u, n[o], i), s && s(n[o], a))
   }
 }
 
@@ -552,6 +557,19 @@ function setVectorLayer (option, map) {
     return layer
   } else if (validObjKey(option, 'type') && option.type === 'graphicLayer') {
     // let geoms = []
+    let style
+    if (validObjKey(option, 'style')) {
+      style = setStyle(option.style)
+    } else {
+      style = new Style({
+        image: new CircleStyle({
+          radius: 2,
+          fill: new Fill({
+            color: 'blue'
+          })
+        })
+      })
+    }
     const source = new ImageCanvasSource({
       canvasFunction: function (extent, resolution, pixelRatio, size, projection) {
         const geoms = []
@@ -559,32 +577,20 @@ function setVectorLayer (option, map) {
         const width = size[0] / pixelRatio
         const height = size[1] / pixelRatio
         const vectorContext = toContext(canvas.getContext('2d'), { size: [width, height] })
+        vectorContext.setStyle(style)
         // const fill = new Fill({ color: 'blue' })
         // vectorContext.setStyle(style)
         const mapsize = map.getSize()
         const t = width
         const r = height
         const s = [(t - mapsize[0]) / 2, (r - mapsize[1]) / 2]
+        const h = -map.getView().getRotation()
+        const u = map.getPixelFromCoordinate(map.getView().getCenter())
         if (validObjKey(option, 'source')) {
           if (validObjKey(option.source, 'features') && option.source.features.length > 0) {
-            option.source.features.forEach(feature => {
-              let style
-              if (validObjKey(feature, 'style')) {
-                style = setStyle(feature.style)
-              } else {
-                style = new Style({
-                  image: new CircleStyle({
-                    radius: 5,
-                    fill: new Fill({
-                      color: 'blue'
-                    })
-                  })
-                })
-              }
+            option.source.features.map(feature => {
               const r = feature.coordinates
               const l = map.getPixelFromCoordinate(r)
-              const h = -map.getView().getRotation()
-              const u = map.getPixelFromCoordinate(map.getView().getCenter())
               const c = (function (e, t, r) {
                 return [Math.cos(t) * (e[0] - r[0]) - Math.sin(t) * (e[1] - r[1]) + r[0], Math.sin(t) * (e[0] - r[0]) + Math.cos(t) * (e[1] - r[1]) + r[1]]
               }((function (e, t, r) {
@@ -592,14 +598,21 @@ function setVectorLayer (option, map) {
               }(l, u, 1)), h, u))
               const d = [c[0] + s[0], c[1] + s[1]]
               const p = new Point(d, 'XY')
-              const geom = new Feature(p)
+              const geom = new FeatureExt(p)
+              geom._coordinates = r
+              geom._style = style
+              for (const i in feature) {
+                if (Object.prototype.hasOwnProperty.call(feature, i)) {
+                  geom.set(i, feature[i])
+                }
+              }
               geoms.push(geom)
-              vectorContext.drawFeature(geom, style)
+              // vectorContext.drawFeature(geom, style)
+              vectorContext.drawGeometry(p)
             })
           }
         }
         source.set('graphics', geoms)
-        console.log('graphics=====', source.get('graphics'))
         // canvas.width = size[0]
         // canvas.height = size[1]
         // const context = canvas.getContext('2d')
@@ -621,7 +634,6 @@ function setVectorLayer (option, map) {
         return canvas
       }
     })
-    console.log('graphics-----', source.get('graphics'))
     // console.log(geoms)
     const layerOptions = Object.assign({
       visible: true
@@ -632,11 +644,11 @@ function setVectorLayer (option, map) {
     layer.set('id', option.id || '')
     layer.set('type', option.type || 'graphicLayer')
     layer.set('users', true)
-    map.on('singleclick', function (r) {
-      console.log(r.pixel)
-      console.log(option)
-      map.forEachSmFeatureAtPixel(r.pixel, option.onClick, {}, r)
-    })
+    if (validObjKey(option, 'onClick')) {
+      map.on('singleclick', function (r) {
+        map.forEachSmFeatureAtPixel(r.pixel, option.onClick, {}, r)
+      })
+    }
     return layer
   } else {
     // 元素图层
@@ -973,6 +985,25 @@ function setStyle (option) {
   }
   if (validObjKey(option, 'icon')) {
     style.setImage(new Icon(option.icon))
+  }
+  if (validObjKey(option, 'circle')) {
+    let radius = 2
+    if (validObjKey(option.circle, 'radius')) {
+      radius = option.circle.radius
+    }
+    const optionCircle = {
+      radius: radius
+    }
+    if (validObjKey(option.circle, 'fill')) {
+      optionCircle.fill = new Fill(option.circle.fill)
+    } else {
+      optionCircle.fill = new Fill({ color: 'blue' })
+    }
+    if (validObjKey(option.circle, 'stroke')) {
+      optionCircle.stroke = new Stroke(option.circle.stroke)
+    }
+    const circle = new CircleStyle(optionCircle)
+    style.setImage(circle)
   }
   if (validObjKey(option, 'text')) {
     const optionText = option.text
@@ -1718,13 +1749,13 @@ export class VMap {
       const pixel = this.map.getEventPixel(evt.originalEvent)
       const hit = this.map.hasFeatureAtPixel(pixel)
       this.map.getTargetElement().style.cursor = hit ? 'pointer' : ''
-      this.map.getLayers().getArray().forEach(layer => {
-        if (layer.get('users') && layer.get('type') === 'graphicLayer') {
-          const data = layer.getData(evt.pixel)
-          const hitImage = data && data[3] > 0 // transparent pixels have zero for data[3]
-          this.map.getTargetElement().style.cursor = hitImage || hit ? 'pointer' : ''
-        }
-      })
+      // this.map.getLayers().getArray().forEach(layer => {
+      //   if (layer.get('users') && layer.get('type') === 'graphicLayer') {
+      //     const data = layer.getData(evt.pixel)
+      //     const hitImage = data && data[3] > 0 // transparent pixels have zero for data[3]
+      //     this.map.getTargetElement().style.cursor = hitImage || hit ? 'pointer' : ''
+      //   }
+      // })
     })
   }
 

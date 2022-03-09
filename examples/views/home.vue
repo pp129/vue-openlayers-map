@@ -385,72 +385,52 @@ export default {
     },
     graphicLayer () {
       const features = []
-      const mockData = this.setMockData(600)
+      const mockData = this.setMockData(41122)
       mockData.array.forEach(val => {
         features.push({
-          coordinates: val,
-          style: {
-            icon: {
-              src: require('@/assets/img/point_blue.png'),
-              scale: 0.8
-            },
-            text: {
-              text: '百度转84',
-              font: '13px sans-serif',
-              fill: {
-                color: '#3d73e8'
-              },
-              backgroundFill: {
-                color: '#ffffff'
-              },
-              stroke: {
-                color: '#ffffff',
-                width: 1
-              },
-              backgroundStroke: {
-                color: '#000000',
-                width: 1
-              },
-              offsetX: 0,
-              offsetY: 30
-            },
-            /**
-             * 要素样式自定义方法
-             * @param feature
-             * @param resolution
-             * @param map
-             * @param style
-             * @returns {*|null}
-             */
-            styleFunction: function (feature, resolution, map, style) {
-              const viewZoom = map.getView().getZoom()
-              const minZoom = 12
-              const maxZoom = 16
-              const textStyle = style.getText()
-              if (viewZoom >= 14) {
-                textStyle.setText('百度转84')
-              }
-              if (viewZoom >= 15) {
-                textStyle.setText('根据层级显示不同内容')
-              }
-              style.setText(textStyle)
-              return minZoom <= viewZoom && viewZoom <= maxZoom ? style : null
-            }
-          }
+          coordinates: val
         })
       })
       console.log(features)
       const index = this.option.layers.map(item => item.id).indexOf('graphicLayer')
       if (index > -1) {
         this.option.layers[index] = Object.assign(this.option.layers[index], {
+          maxZoom: 15,
           source: {
             features: features
           },
-          onClick (evt) {
-            console.log('evt')
+          style: {
+            circle: {
+              radius: 5,
+              fill: {
+                color: 'red'
+              }
+            }
+          },
+          onClick: (feature, layer) => {
+            console.log(feature)
+            console.log(layer)
           }
         })
-        // this.option.layers[index].source.features = features
+      }
+      const index2 = this.option.layers.map(item => item.id).indexOf('graphicLayer2')
+      if (index2 > -1) {
+        this.option.layers[index2] = Object.assign(this.option.layers[index2], {
+          minZoom: 15,
+          source: {
+            features: features
+          },
+          style: {
+            icon: {
+              src: require('@/assets/img/point_blue.png'),
+              scale: 0.8
+            }
+          },
+          onClick: (feature, layer) => {
+            console.log(feature)
+            console.log(layer)
+          }
+        })
       }
     },
     removeLayer () {

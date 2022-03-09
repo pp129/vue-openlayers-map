@@ -3,6 +3,7 @@ import VueRouter from 'vue-router'
 import Home from '../views/home.vue'
 import Simple from '../views/simple.vue'
 import Layers from '../views/layers.vue'
+import CanvasMap from '../views/canvasMap.vue'
 
 Vue.use(VueRouter)
 
@@ -15,18 +16,17 @@ const routes = [
   {
     path: '/simple',
     name: 'simple',
-    // route level code-splitting
-    // this generates a separate chunk (about.[hash].js) for this route
-    // which is lazy-loaded when the route is visited.
     component: Simple
   },
   {
     path: '/layers',
     name: 'layers',
-    // route level code-splitting
-    // this generates a separate chunk (about.[hash].js) for this route
-    // which is lazy-loaded when the route is visited.
     component: Layers
+  },
+  {
+    path: '/canvasMap',
+    name: 'canvasMap',
+    component: CanvasMap
   }
 ]
 

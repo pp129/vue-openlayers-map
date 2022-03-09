@@ -254,7 +254,7 @@ export default {
       overlays.forEach(val => {
         output = VMap.addOverlay(val, this.map)
       })
-      if (this.load) {
+      if (this.load && output.length > 0) {
         this.changeObj.overlays = output.getArray()
         this.$emit('change', this.changeObj)
       }

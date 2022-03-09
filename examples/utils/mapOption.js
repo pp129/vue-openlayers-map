@@ -292,6 +292,16 @@ export default {
         }]
       }
     },
+    {
+      id: 'graphicLayer2',
+      type: 'graphicLayer',
+      onClick: (i, e) => {
+        console.log('eeeeee', i, e)
+      },
+      source: {
+        features: []
+      }
+    },
     /**
      * 示例图层 继承layer
      * 聚合
