@@ -1680,13 +1680,6 @@ export class VMap {
       controls: controls
     })
 
-    // 鼠标悬浮
-    this.map.on('pointermove', evt => {
-      const pixel = this.map.getEventPixel(evt.originalEvent)
-      const hit = this.map.hasFeatureAtPixel(pixel)
-      this.map.getTargetElement().style.cursor = hit ? 'pointer' : ''
-    })
-
     this.map.on('contextmenu', evt => {
       evt.preventDefault()
     })
@@ -1719,6 +1712,20 @@ export class VMap {
     if (validObjKey(option, 'interaction') && option.interaction.length > 0) {
       this.setInteraction(this.map, option.interaction)
     }
+
+    // 鼠标悬浮
+    this.map.on('pointermove', evt => {
+      const pixel = this.map.getEventPixel(evt.originalEvent)
+      const hit = this.map.hasFeatureAtPixel(pixel)
+      this.map.getTargetElement().style.cursor = hit ? 'pointer' : ''
+      this.map.getLayers().getArray().forEach(layer => {
+        if (layer.get('users') && layer.get('type') === 'graphicLayer') {
+          const data = layer.getData(evt.pixel)
+          const hitImage = data && data[3] > 0 // transparent pixels have zero for data[3]
+          this.map.getTargetElement().style.cursor = hitImage || hit ? 'pointer' : ''
+        }
+      })
+    })
   }
 
   getMap () {
