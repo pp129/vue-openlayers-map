@@ -247,6 +247,9 @@ export default {
                 color: 'rgba(220,171,119,1)',
                 width: 2
                 // lineDash: [20, 10, 20, 10]
+              },
+              text: {
+                text: 'line'
               }
             },
             coordinates: [[118.20513460817911, 24.6005204040184], [118.22511304202654, 24.607323827184675], [118.22998527470209, 24.627570481933592]]
@@ -274,32 +277,19 @@ export default {
     {
       id: 'graphicLayer',
       type: 'graphicLayer',
-      onClick: (i, e) => {
-        console.log('eeeeee', i, e)
-      },
       source: {
         features: [{
           id: 'point2',
           coordinates: [118.106671, 24.449304],
-          style: {
-            icon: {
-              src: require('@/assets/img/point_blue.png')
-            }
-          },
           properties: {
             name: 'feature2'
           }
         }]
-      }
-    },
-    {
-      id: 'graphicLayer2',
-      type: 'graphicLayer',
-      onClick: (i, e) => {
-        console.log('eeeeee', i, e)
       },
-      source: {
-        features: []
+      style: {
+        icon: {
+          src: require('@/assets/img/point_red.png')
+        }
       }
     },
     /**
@@ -380,45 +370,7 @@ export default {
       offset: [0, 0]
     }
   ],
-  // todo 轨迹动画
-  track: [
-    {
-      id: 'track1',
-      speed: 45,
-      routes: [
-        [118.171545, 24.460156],
-        [118.169381, 24.459420],
-        [118.167310, 24.457971],
-        [118.166292, 24.456996],
-        [118.165197, 24.456315],
-        [118.163195, 24.455480],
-        [118.161864, 24.454370],
-        [118.161154, 24.454048],
-        [118.159665, 24.454158],
-        [118.157046, 24.453941]
-      ],
-      start: {
-        icon: {
-          scale: 0.05,
-          src: require('@/assets/img/point_start.png')
-        }
-      },
-      end: {
-        icon: {
-          scale: 0.05,
-          src: require('@/assets/img/point_end.png')
-        }
-      },
-      geoMarker: {
-        icon: {
-          scale: 0.1,
-          src: require('@/assets/img/car.png'),
-          rotation: 180
-        }
-      },
-      state: ''// start、pause、continue、stop
-    }
-  ],
+  track: [],
   /**
    * 除去默认的交互选项： https://openlayers.org/en/latest/apidoc/module-ol_interaction.html#~DefaultsOptions
    * 要新加的交互类型集合

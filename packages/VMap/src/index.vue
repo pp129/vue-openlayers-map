@@ -5,8 +5,7 @@
 <script>
 import { VMap } from '~/VMap/src/VMap.js'
 // 轨迹动画
-import track from '~/VMap/src/utils/track'
-// import track from '~/VMap/src/utils/trackAnimation'
+import PathSimplifier from '~/VMap/src/utils/track'
 
 export default {
   name: 'v-map',
@@ -141,15 +140,7 @@ export default {
       handler (value) {
         if (value) {
           console.log('track change', value)
-          value.forEach(item => {
-            if (item.state) {
-              switch (item.state) {
-                case 'start':
-                  track.start(item.speed)
-                  break
-              }
-            }
-          })
+          this.initTrack()
         }
       },
       deep: true,
@@ -179,16 +170,12 @@ export default {
             this.zoomEnd(evt)
           })
         })
-        // 初始化轨迹图层
-        this.mapOption.track.forEach(item => {
-          const option = Object.assign({}, item, {
-            map: this.map
-          })
-          track.init(option)
-        })
         this.$emit('load')
       }
     })
+  },
+  beforeDestroy () {
+    this.dispose()
   },
   methods: {
     validObjKey (obj, key) {
@@ -203,6 +190,43 @@ export default {
           reject(new Error('fail'))
         }
       })
+    },
+    dispose () {
+      if (!this.map) return
+      const layers = [...this.map.getLayers().getArray()]
+      layers.forEach(layer => {
+        if (layer) {
+          const layerTitle = layer.get('users')
+          if (layerTitle) {
+            console.log('destroying layer', layerTitle)
+            layer.getSource().clear()
+            layer.getRenderer().dispose()
+            layer.setSource(undefined)
+            this.map.removeLayer(layer)
+          }
+        }
+      })
+      this.map.disposeInternal()
+      // this.map.setTarget(null)
+      // this.map = null
+    },
+    initTrack () {
+      // 初始化轨迹图层
+      const tracks = []
+      this.mapOption.track.forEach(item => {
+        const option = Object.assign({}, item, {
+          map: this.map
+        })
+        const track = PathSimplifier(option)
+        item.target = track
+        console.log(item)
+        if (track) {
+          tracks.push(track)
+        }
+      })
+      if (tracks.length > 0) {
+        this.$emit('onLoadTrack', tracks)
+      }
     },
     zoomEnd (evt) {
       this.$emit('changeZoom', evt, this.map)

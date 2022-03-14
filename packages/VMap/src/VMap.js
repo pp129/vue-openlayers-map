@@ -373,9 +373,7 @@ function getCustomerTileXYZ (option, visible) {
     if (validObjKey(val, 'tileGrid')) {
       tileGrid = new TileGrid(val.tileGrid)
     }
-    const xyzOpt = Object.assign({}, val, {
-      tileGrid: tileGrid
-    })
+    const xyzOpt = { ...val, ...{ tileGrid: tileGrid } }
     const layer = new TileLayer({
       visible: false,
       source: new XYZ(xyzOpt)
@@ -525,11 +523,7 @@ function setVectorLayer (option, map) {
       sourceOption = option.source
     }
     const source = addVectorSource(sourceOption, map)
-    const layerOptions = Object.assign({
-      visible: true
-    }, option, {
-      source: source
-    })
+    const layerOptions = { ...{ visible: true }, ...option, ...{ source: source } }
     const layer = new VectorImageLayer(layerOptions)
     layer.setStyle(function (feature) {
       if (feature.get('style')) {
@@ -634,12 +628,7 @@ function setVectorLayer (option, map) {
         return canvas
       }
     })
-    // console.log(geoms)
-    const layerOptions = Object.assign({
-      visible: true
-    }, option, {
-      source: source
-    })
+    const layerOptions = { ...{ visible: true }, ...option, ...{ source: source } }
     const layer = new ImageLayer(layerOptions)
     layer.set('id', option.id || '')
     layer.set('type', option.type || 'graphicLayer')
@@ -657,11 +646,7 @@ function setVectorLayer (option, map) {
       sourceOption = option.source
     }
     const source = addVectorSource(sourceOption, map)
-    const layerOptions = Object.assign({
-      visible: true
-    }, option, {
-      source: source
-    })
+    const layerOptions = { ...{ visible: true }, ...option, ...{ source: source } }
     const layer = new VectorLayer(layerOptions)
     layer.setStyle(function (feature) {
       if (feature.get('style')) {
@@ -720,11 +705,7 @@ function addOverlay (option) {
     if (typeof option.element === 'string') {
       element = document.getElementById(option.element.toString())
     }
-    const overlayOption = Object.assign({
-      position: undefined
-    }, option, {
-      element: element
-    })
+    const overlayOption = { ...{ position: undefined }, ...option, ...{ element: element } }
     return new Overlay(overlayOption)
   }
 }
@@ -753,10 +734,11 @@ function updateOverlay (overlay, option) {
  * @returns {Text}
  */
 function setText (option) {
-  const defaultOption = Object.assign({
+  const defaultParam = {
     font: '14px sans-serif',
     padding: [2, 5, 2, 5] // [top, right, bottom, left].
-  }, option)
+  }
+  const defaultOption = { ...defaultParam, ...option }
   const textStyle = new Text(defaultOption)
   if (validObjKey(option, 'fill')) {
     const fillStyle = new Fill(option.fill)
@@ -1024,9 +1006,7 @@ function addVectorSource (option, map) {
   if (validObjKey(option, 'features')) {
     features = option.features
   }
-  const source = Object.assign({}, option, {
-    features: setFeatures(features, map)
-  })
+  const source = { ...option, ...{ features: setFeatures(features, map) } }
   return new VectorSource(source)
 }
 
@@ -1073,73 +1053,74 @@ function getSourceByLayerId (id, map) {
  */
 function addClusterLayer (option, map) {
   const source = addVectorSource(option.cluster.source, map)
-  const options = Object.assign({}, option.cluster, {
-    source: source
-  })
+  const options = { ...option.cluster, ...{ source: source } }
   const clusterSource = new Cluster(options)
   const styleCache = {}
-  const clusterOptions = Object.assign({
-    source: clusterSource,
-    style: function (feature) {
-      const size = feature.get('features').length
-      let style = styleCache[size]
-      if (size > 1) {
-        if (!style) {
-          let styleOptions = {}
-          if (!validObjKey(options, 'style')) {
-            styleOptions = {
-              image: new CircleStyle({
-                radius: 20,
-                stroke: new Stroke({
-                  color: '#fff'
+  const clusterOptions = {
+    ...{
+      source: clusterSource,
+      style: function (feature) {
+        const size = feature.get('features').length
+        let style = styleCache[size]
+        if (size > 1) {
+          if (!style) {
+            let styleOptions = {}
+            if (!validObjKey(options, 'style')) {
+              styleOptions = {
+                image: new CircleStyle({
+                  radius: 20,
+                  stroke: new Stroke({
+                    color: '#fff'
+                  }),
+                  fill: new Fill({
+                    color: '#3399CC'
+                  })
                 }),
-                fill: new Fill({
-                  color: '#3399CC'
+                text: new Text({
+                  font: '16px sans-serif',
+                  text: size.toString(),
+                  fill: new Fill({
+                    color: '#fff'
+                  })
                 })
-              }),
-              text: new Text({
-                font: '16px sans-serif',
-                text: size.toString(),
-                fill: new Fill({
-                  color: '#fff'
-                })
-              })
-            }
-          } else {
-            options.style.forEach(e => {
-              let min = 0
-              let max = 0
-              let textColor = 'white'
-              if (validObjKey(e, 'textColor')) {
-                textColor = e.textColor
               }
-              if (validObjKey(e, 'min') && validObjKey(e, 'max')) {
-                min = e.min
-                max = e.max
-              } else {
-                const total = source.getFeatures()
-                if (total > 0) {
-                  const average = total / options.style.length
-                  for (let i = 0; i < options.style.length; i++) {
-                    min = i
-                    max = average * (i + 1)
+            } else {
+              options.style.forEach(e => {
+                let min = 0
+                let max = 0
+                let textColor = 'white'
+                if (validObjKey(e, 'textColor')) {
+                  textColor = e.textColor
+                }
+                if (validObjKey(e, 'min') && validObjKey(e, 'max')) {
+                  min = e.min
+                  max = e.max
+                } else {
+                  const total = source.getFeatures()
+                  if (total > 0) {
+                    const average = total / options.style.length
+                    for (let i = 0; i < options.style.length; i++) {
+                      min = i
+                      max = average * (i + 1)
+                    }
                   }
                 }
-              }
-              if (min < size && size <= max) {
-                styleOptions = clusterFeatureStyle(e.icon, size.toString(), textColor)
-              }
-            })
+                if (min < size && size <= max) {
+                  styleOptions = clusterFeatureStyle(e.icon, size.toString(), textColor)
+                }
+              })
+            }
+            style = new Style(styleOptions)
+            styleCache[size] = style
           }
-          style = new Style(styleOptions)
-          styleCache[size] = style
+        } else {
+          style = setStyle(feature.get('features')[0].get('style'))
         }
-      } else {
-        style = setStyle(feature.get('features')[0].get('style'))
+        return style
       }
-      return style
-    }
-  }, option)
+    },
+    ...option
+  }
   const clusters = new VectorLayer(clusterOptions)
   clusters.set('type', 'cluster')
   clusters.set('id', options.id)
@@ -1177,9 +1158,7 @@ function clusterFeatureStyle (icon, text, color) {
  */
 function addHeatmapLayer (option, map) {
   const source = addVectorSource(option.source, map)
-  const options = Object.assign({}, option, {
-    source: source
-  })
+  const options = { ...option, ...{ source: source } }
   const vector = new HeatmapLayer(options)
   vector.setSource(source)
   vector.set('id', options.id)
@@ -1214,14 +1193,20 @@ function addWebGLPointsLayer (option, map) {
     symbol = option.symbol
   }
   const source = addVectorSource(sourceOption, map)
-  return new WebGLPointsLayer(Object.assign({
+  const WebGlOptDefault = {
     disableHitDetection: false // 将此设置为true会稍微提高性能，但会阻止在图层上进行所有命中检测，需要交互的话，设置false
-  }, option, {
-    style: {
-      symbol: symbol
-    },
-    source: source
-  }))
+  }
+  const WebGlOpt = {
+    ...WebGlOptDefault,
+    ...option,
+    ...{
+      style: {
+        symbol: symbol
+      },
+      source: source
+    }
+  }
+  return new WebGLPointsLayer(WebGlOpt)
 }
 
 /**
@@ -1679,20 +1664,24 @@ export class VMap {
 
   constructor (option = {}) {
     // view
-    const viewOption = Object.assign({
+    const viewOptDefault = {
       center: [0, 0],
       zoom: 12,
       constrainResolution: true,
       projection: 'EPSG:4326'
-    }, option.view)
+    }
+    const viewOption = { ...viewOptDefault, ...option.view }
     const view = new View(viewOption)
 
     // controls
-    const controlsOption = Object.assign({ zoom: false, rotate: false }, option.controls)
+    const controlsDefaultOpt = {
+      zoom: false, rotate: false
+    }
+    const controlsOption = { ...controlsDefaultOpt, ...option.controls }
     const controls = defaultControls(controlsOption).extend([])
 
     // tile
-    const baseTiles = Object.assign(['td'], option.baseTile)
+    const baseTiles = [...['td'], ...option.baseTile]
     let visibleTile
     if (validObjKey(option, 'visibleTile') && option.visibleTile) {
       visibleTile = option.visibleTile
@@ -1748,14 +1737,14 @@ export class VMap {
     this.map.on('pointermove', evt => {
       const pixel = this.map.getEventPixel(evt.originalEvent)
       const hit = this.map.hasFeatureAtPixel(pixel)
-      this.map.getTargetElement().style.cursor = hit ? 'pointer' : ''
-      // this.map.getLayers().getArray().forEach(layer => {
-      //   if (layer.get('users') && layer.get('type') === 'graphicLayer') {
-      //     const data = layer.getData(evt.pixel)
-      //     const hitImage = data && data[3] > 0 // transparent pixels have zero for data[3]
-      //     this.map.getTargetElement().style.cursor = hitImage || hit ? 'pointer' : ''
-      //   }
-      // })
+      // this.map.getTargetElement().style.cursor = hit ? 'pointer' : ''
+      this.map.getLayers().getArray().forEach(layer => {
+        if (layer.get('users') && layer.get('type') === 'graphicLayer') {
+          const data = layer.getData(evt.pixel)
+          const hitImage = data && data[3] > 0 // transparent pixels have zero for data[3]
+          this.map.getTargetElement().style.cursor = hitImage || hit ? 'pointer' : ''
+        }
+      })
     })
   }
 

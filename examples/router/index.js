@@ -4,6 +4,7 @@ import Home from '../views/home.vue'
 import Simple from '../views/simple.vue'
 import Layers from '../views/layers.vue'
 import CanvasMap from '../views/canvasMap.vue'
+import Track from '../views/track.vue'
 
 Vue.use(VueRouter)
 
@@ -27,6 +28,11 @@ const routes = [
     path: '/canvasMap',
     name: 'canvasMap',
     component: CanvasMap
+  },
+  {
+    path: '/trackMap',
+    name: 'trackMap',
+    component: Track
   }
 ]
 
