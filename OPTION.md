@@ -95,8 +95,7 @@ export default {
     constrainResolution: true // 设置视图是否应允许中间缩放级别。true:鼠标缩放地图,每次缩放级别为整数1
   },
   /**
-   * 图层集合
-   * 可选
+   * 矢量图层集合
    * @param {Array} [layers=[]]
    */
   layers: [
@@ -257,14 +256,34 @@ export default {
           }
         ]
       }
-    },
-    /**
-     * 示例图层 继承layer
-     * 聚合
-     */
+    }
+  ],
+  /**
+   * 图形图层，使用ImageCanvas渲染图层。建议海量点业务使用此图层
+   */
+  graphicLayers: [
     {
-      id: 'cluster',
-      type: 'cluster',
+      source: {
+        features: [{
+          id: 'point2',
+          coordinates: [118.106671, 24.449304],
+          properties: {
+            name: 'feature2'
+          }
+        }]
+      },
+      style: {
+        icon: {
+          src: require('@/assets/img/point_red.png')
+        }
+      }
+    }
+  ],
+  /**
+   * 聚合图层集合
+   */
+  clusters: [
+    {
       visible: true,
       minZoom: 10,
       maxZoom: 16,
@@ -297,14 +316,18 @@ export default {
         distance: 120, // 要素将聚集在一起的像素距离。
         minDistance: 1// 聚合之间的最小距离（以像素为单位）。将被限制在配置的距离。默认情况下，不设置最小距离。此配置可用于避免重叠图标。作为权衡，聚合要素的位置将不再是其所有要素的中心。
       }
-    },
+    }
+  ],
+  /**
+   * 热力图图层集合
+   */
+  heatmaps: [
     /**
      * 示例图层 继承layer
      * 热力图：https://openlayers.org/en/latest/apidoc/module-ol_layer_Heatmap-Heatmap.html
      */
     {
       id: 'heatmap',
-      type: 'heatmap',
       visible: true,
       // 继承source
       source: {
@@ -336,7 +359,9 @@ export default {
       offset: [0, 0]
     }
   ],
-  // todo 轨迹动画
+  /**
+   * 轨迹动画集合
+   */
   track: [
     {
       id: 'track1',
@@ -397,8 +422,7 @@ export default {
    * }
    * 当值为false/null/undefined时为不设置或清空测量
    */
-  measure: false,
-  updateLayers: []// 想要局部更新的layers id最好不要重复
+  measure: false
 }
 
 ```

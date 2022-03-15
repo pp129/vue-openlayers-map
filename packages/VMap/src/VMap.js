@@ -571,7 +571,10 @@ function setVectorLayer (option, map) {
         const width = size[0] / pixelRatio
         const height = size[1] / pixelRatio
         const vectorContext = toContext(canvas.getContext('2d'), { size: [width, height] })
-        vectorContext.setStyle(style)
+        if (style) {
+          vectorContext.setStyle(style)
+        }
+        // vectorContext.setStyle(style)
         // const fill = new Fill({ color: 'blue' })
         // vectorContext.setStyle(style)
         const mapsize = map.getSize()
@@ -601,8 +604,14 @@ function setVectorLayer (option, map) {
                 }
               }
               geoms.push(geom)
+              if (validObjKey(feature, 'style')) {
+                style = setStyle(feature.style)
+                vectorContext.drawFeature(geom, style)
+              } else {
+                vectorContext.drawGeometry(p)
+              }
               // vectorContext.drawFeature(geom, style)
-              vectorContext.drawGeometry(p)
+              // vectorContext.drawGeometry(p)
             })
           }
         }

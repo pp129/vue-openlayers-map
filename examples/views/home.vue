@@ -4,6 +4,7 @@
     <div class="tools">
 <!--      <button class="btn" @click="webGlPoint">海量点(webGl)</button>-->
       <button class="btn" @click="graphicLayer">海量点</button>
+      <button class="btn" @click="clusterLayer">海量点聚合</button>
       <button class="btn" @click="setModify">{{modifyStatus?'结束':'开始'}}编辑矢量元素</button>
       <select id="draw" class="btn" v-model="drawType" @change="changeInteractions">
         <option value="none">绘制图形</option>
@@ -388,6 +389,12 @@ export default {
       const mockData = this.setMockData(41122)
       mockData.array.forEach(val => {
         features.push({
+          // style: {
+          //   icon: {
+          //     src: require('@/assets/img/point_blue.png'),
+          //     scale: 0.8
+          //   }
+          // },
           coordinates: val
         })
       })
@@ -397,14 +404,14 @@ export default {
         source: {
           features: features
         },
-        onClick: (i, e) => {
-          console.log('eeeeee', i, e)
-        },
         style: {
           icon: {
             src: require('@/assets/img/point_blue.png'),
             scale: 0.8
           }
+        },
+        onClick: (i, e) => {
+          console.log('eeeeee', i, e)
         }
       })
       // const index2 = this.option.layers.map(item => item.id).indexOf('graphicLayer2')
@@ -416,6 +423,21 @@ export default {
       //     }
       //   })
       // }
+    },
+    clusterLayer () {
+      const features = []
+      const mockData = this.setMockData(41122)
+      mockData.array.forEach(val => {
+        features.push({
+          coordinates: val,
+          style: {
+            icon: {
+              src: require('@/assets/img/point_red.png')
+            }
+          }
+        })
+      })
+      this.option.clusters[0].cluster.source.features = features
     },
     removeLayer () {
       const index = this.option.layers.map(item => item.id).indexOf('layer2')

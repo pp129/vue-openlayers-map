@@ -21,9 +21,9 @@
       - [x] 圆 Circle
         - [x] 自定义样式 Style
   - [x] 瓦片图层 TileLayer
-  - [x] 热力图 [Heatmap](LAYER.md#heatmap)
-  - [x] 聚合 [Cluster](LAYER.md#cluster)
-  - [x] WebGL [WebGLPointsLayer](LAYER.md#webglpoints)
+- [x] 热力图 [Heatmap](LAYER.md#heatmap)
+- [x] 聚合 [Cluster](LAYER.md#cluster)
+- [x] WebGL [WebGLPointsLayer](LAYER.md#webglpoints)
 - [x] 弹框 Overlay
 - [x] 交互 Interaction
   - [x] 编辑 modify

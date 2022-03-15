@@ -132,7 +132,7 @@ export default {
         }
       })
     },
-    startTrack (id) {
+    startTrack (ids) {
       this.option.track[0].target.start()
       // const index = this.tracks.findIndex(x => x.id === id)
       // if (index > -1) {
