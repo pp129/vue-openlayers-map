@@ -554,15 +554,6 @@ function setVectorLayer (option, map) {
     let style
     if (validObjKey(option, 'style')) {
       style = setStyle(option.style)
-    } else {
-      style = new Style({
-        image: new CircleStyle({
-          radius: 2,
-          fill: new Fill({
-            color: 'blue'
-          })
-        })
-      })
     }
     const source = new ImageCanvasSource({
       canvasFunction: function (extent, resolution, pixelRatio, size, projection) {

@@ -389,12 +389,12 @@ export default {
       const mockData = this.setMockData(41122)
       mockData.array.forEach(val => {
         features.push({
-          // style: {
-          //   icon: {
-          //     src: require('@/assets/img/point_blue.png'),
-          //     scale: 0.8
-          //   }
-          // },
+          style: {
+            icon: {
+              src: require('@/assets/img/point_blue.png'),
+              scale: 0.8
+            }
+          },
           coordinates: val
         })
       })
@@ -404,12 +404,12 @@ export default {
         source: {
           features: features
         },
-        style: {
-          icon: {
-            src: require('@/assets/img/point_blue.png'),
-            scale: 0.8
-          }
-        },
+        // style: {
+        //   icon: {
+        //     src: require('@/assets/img/point_blue.png'),
+        //     scale: 0.8
+        //   }
+        // },
         onClick: (i, e) => {
           console.log('eeeeee', i, e)
         }
