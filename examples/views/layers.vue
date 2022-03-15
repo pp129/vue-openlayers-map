@@ -5,7 +5,8 @@
   </div>
   <v-map ref="map"
          class="map"
-         :option='option'
+         :view="option.view"
+         :layers="option.layers"
          :height="height"
          :width="width"></v-map>
 </div>

@@ -7,6 +7,7 @@ import Overlay from 'ol/Overlay'
 import { LineString, Point, Polygon } from 'ol/geom'
 import Feature from 'ol/Feature'
 import * as olSphere from 'ol/sphere'
+import { uuid } from '~/VMap/src/utils/index'
 
 Feature.prototype.setPosition = function (coordinates) {
   this.getGeometry().setCoordinates(coordinates)
@@ -32,13 +33,6 @@ function getLayerById (id, map) {
     }
   })
   return layer
-}
-
-function uuid () {
-  var tempUrl = URL.createObjectURL(new Blob())
-  var uuid = tempUrl.toString() // blob:https://xxx.com/b250d159-e1b6-4a87-9002-885d90033be3
-  URL.revokeObjectURL(tempUrl)
-  return uuid.substr(uuid.lastIndexOf('/') + 1)
 }
 
 // 轨迹回放初始化对象 lushuTrack

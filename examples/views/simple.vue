@@ -1,6 +1,6 @@
 <template>
 <div class="simple">
-  <v-map class="map" :height="height" :width="width" :option="option" @click="onClick"></v-map>
+  <v-map class="map" :height="height" :width="width" :target="option.target" :view="option.view" :base-tile="option.baseTile" :layers="option.layers" @click="onClick"></v-map>
 </div>
 </template>
 

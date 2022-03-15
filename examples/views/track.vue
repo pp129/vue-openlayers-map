@@ -6,7 +6,7 @@
     class="map"
     :height="height"
     :width="width"
-    :option="option" @click="onClick" @onLoadTrack="onLoadTrack">
+    :view="option.view" :track="option.track" @click="onClick" @onLoadTrack="onLoadTrack">
   </v-map>
   <div class="tools">
     <button class="btn" @click="setTrack">新增轨迹</button>

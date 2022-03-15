@@ -95,21 +95,12 @@ export default {
    */
   view: {
     center: [118.045456, 24.567489],
-    zoom: 10,
-    constrainResolution: true // 设置视图是否应允许中间缩放级别。true:鼠标缩放地图,每次缩放级别为整数1
+    zoom: 10
   },
   /**
    * 图层集合
-   * 可选
-   * @param {Array} [layers=[]]
    */
   layers: [
-    /**
-     * 示例图层 layer
-     * 继承layer：https://openlayers.org/en/latest/apidoc/module-ol_layer_Layer-Layer.html
-     * 可选
-     * @param {Object}
-     */
     {
       id: 'layer1',
       visible: true,
@@ -202,10 +193,13 @@ export default {
         ]
       }
     },
-    /**
-     * 示例图层 继承layer
-     * features为多边形、折线、圆形
-     */
+    {
+      id: 'layer2',
+      visible: true,
+      source: {
+        features: []
+      }
+    },
     {
       id: 'polygon',
       visible: true,
@@ -266,17 +260,10 @@ export default {
           }
         ]
       }
-    },
+    }
+  ],
+  graphicLayers: [
     {
-      id: 'VectorImageLayer',
-      type: 'VectorImage',
-      source: {
-        features: []
-      }
-    },
-    {
-      id: 'graphicLayer',
-      type: 'graphicLayer',
       source: {
         features: [{
           id: 'point2',
@@ -291,20 +278,13 @@ export default {
           src: require('@/assets/img/point_red.png')
         }
       }
-    },
-    /**
-     * 示例图层 继承layer
-     * 聚合
-     */
+    }
+  ],
+  clusters: [
     {
-      id: 'cluster',
-      type: 'cluster',
       visible: true,
       minZoom: 10,
       maxZoom: 16,
-      /**
-       * 聚合：https://openlayers.org/en/latest/apidoc/module-ol_source_Cluster-Cluster.html
-       */
       cluster: {
         // 继承source
         source: {
@@ -331,14 +311,11 @@ export default {
         distance: 120, // 要素将聚集在一起的像素距离。
         minDistance: 1// 聚合之间的最小距离（以像素为单位）。将被限制在配置的距离。默认情况下，不设置最小距离。此配置可用于避免重叠图标。作为权衡，聚合要素的位置将不再是其所有要素的中心。
       }
-    },
-    /**
-     * 示例图层 继承layer
-     * 热力图：https://openlayers.org/en/latest/apidoc/module-ol_layer_Heatmap-Heatmap.html
-     */
+    }
+  ],
+  heatmaps: [
     {
       id: 'heatmap',
-      type: 'heatmap',
       visible: true,
       // 继承source
       source: {

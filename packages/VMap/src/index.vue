@@ -6,6 +6,7 @@
 import { VMap } from '~/VMap/src/VMap.js'
 // 轨迹动画
 import PathSimplifier from '~/VMap/src/utils/track'
+import { uuid } from '~/VMap/src/utils'
 
 export default {
   name: 'v-map',
@@ -18,88 +19,155 @@ export default {
       type: [String, Number],
       default: '960px'
     },
-    option: {
+    target: {
+      type: String,
+      default: `map-${uuid()}`
+    },
+    controls: {
       type: Object,
       default () {
-        return {}
+        return {
+          zoom: false,
+          rotate: false
+        }
+      }
+    },
+    baseTile: {
+      type: Array,
+      default () {
+        return ['td']
+      }
+    },
+    visibleTile: {
+      type: [String, Object],
+      default () {
+        return this.baseTile[0]
+      }
+    },
+    overview: {
+      type: [String, Array, Boolean, Object],
+      default: false
+    },
+    view: {
+      type: Object,
+      default () {
+        return {
+          center: [0, 0],
+          zoom: 12,
+          constrainResolution: true,
+          projection: 'EPSG:4326'
+        }
+      }
+    },
+    layers: {
+      type: Array,
+      default () {
+        return []
+      }
+    },
+    heatmaps: {
+      type: Array,
+      default () {
+        return []
+      }
+    },
+    clusters: {
+      type: Array,
+      default () {
+        return []
+      }
+    },
+    graphicLayers: {
+      type: Array,
+      default () {
+        return []
+      }
+    },
+    overlays: {
+      type: Array,
+      default () {
+        return []
+      }
+    },
+    track: {
+      type: Array,
+      default () {
+        return []
+      }
+    },
+    interaction: {
+      type: Array,
+      default () {
+        return []
+      }
+    },
+    measure: {
+      type: [Boolean, Array],
+      default () {
+        return false
       }
     }
   },
   computed: {
     mapOption () {
-      return Object.assign({
-        target: 'map',
-        controls: {},
-        baseTile: ['td'],
-        visibleTile: '',
-        overview: false,
-        view: {
-          center: [0, 0],
-          zoom: 10,
-          animate: null
-        },
-        layers: [],
-        overlays: [],
-        track: [],
-        interaction: [],
-        measure: false,
-        updateLayers: []
-      }, this.option)
+      return {
+        target: this.target,
+        view: this.view,
+        controls: this.controls,
+        baseTile: this.baseTile,
+        visibleTile: this.visibleTile,
+        overview: this.overview,
+        layers: this.layers,
+        heatmaps: this.heatmaps,
+        clusters: this.clusters,
+        graphicLayers: this.graphicLayers,
+        overlays: this.overlays,
+        track: this.track,
+        interaction: this.interaction,
+        measure: this.measure
+      }
     },
     map () {
       return VMap.map.map
-    },
-    target () {
-      return this.mapOption.target
-    },
-    layers () {
-      return this.mapOption.layers
-    },
-    overlays () {
-      return this.mapOption.overlays
-    },
-    visibleTile () {
-      return this.mapOption.visibleTile
-    },
-    interaction () {
-      return this.mapOption.interaction
-    },
-    measure () {
-      return this.mapOption.measure
-    },
-    track () {
-      return this.mapOption.track
     }
   },
   watch: {
     layers: {
       handler (value) {
         console.log('layers change', value)
-        this.$nextTick(() => {
-          if (value) {
-            if (this.mapOption.updateLayers && this.mapOption.updateLayers.length > 0) {
-              // 局部更新图层
-              this.mapOption.updateLayers.forEach(updateLayer => {
-                const index = value.findIndex(x => x.id === updateLayer)
-                console.log(index, updateLayer)
-                if (index > -1) {
-                  value.forEach(layer => {
-                    if (layer.id === updateLayer) {
-                      this.setLayer(layer)
-                    }
-                  })
-                } else {
-                  this.removeLayerById(updateLayer)
-                  const indexUpdate = this.mapOption.updateLayers.map(item => item.id).indexOf(updateLayer)
-                  this.mapOption.updateLayers.splice(indexUpdate, 1)
-                }
-              })
-            } else {
-              // 全量更新
-              this.setLayers(value)
-            }
-          }
-        })
+        if (value) {
+          this.setLayers(value)
+        }
+      },
+      deep: true,
+      immediate: false
+    },
+    heatmaps: {
+      handler (value) {
+        console.log('heatmaps change', value)
+        if (value) {
+          this.setHeatmaps(value)
+        }
+      },
+      deep: true,
+      immediate: false
+    },
+    clusters: {
+      handler (value) {
+        console.log('clusters change', value)
+        if (value) {
+          this.setClusters(value)
+        }
+      },
+      deep: true,
+      immediate: false
+    },
+    graphicLayers: {
+      handler (value) {
+        console.log('graphicLayers change', value)
+        if (value) {
+          this.setGraphicLayers(value)
+        }
       },
       deep: true,
       immediate: false
@@ -117,7 +185,7 @@ export default {
     visibleTile: {
       handler (value, oldValue) {
         console.log('visibleTile change', value, oldValue)
-        if (this.mapOption.baseTile.length > 1 && value !== oldValue) { // 理论上有多基础图层的情况下才有必要走这一步
+        if (this.baseTile.length > 1 && value !== oldValue) { // 理论上有多基础图层的情况下才有必要走这一步
           this.restVisibleBaseTile(value)
         }
       },
@@ -183,6 +251,7 @@ export default {
     },
     init () {
       return new Promise((resolve, reject) => {
+        console.log(this.mapOption)
         VMap.map = new VMap(this.mapOption)
         if (VMap.map.map) {
           resolve('success')
@@ -213,7 +282,7 @@ export default {
     initTrack () {
       // 初始化轨迹图层
       const tracks = []
-      this.mapOption.track.forEach(item => {
+      this.track.forEach(item => {
         const option = Object.assign({}, item, {
           map: this.map
         })
@@ -265,6 +334,91 @@ export default {
         this.changeObj.layers = output
         this.$emit('change', this.changeObj)
       }
+    },
+    updateFeatures (layerId, data) {
+      this.map.getLayers().getArray().forEach(val => {
+        if (val.get('id') === layerId) {
+          console.log(val)
+          val.getSource().clear()
+          const features = VMap.setFeatures(data)
+          val.getSource().addFeatures(features)
+        }
+      })
+    },
+    updateFeatureById (layerId, featureId, update) {
+      this.map.getLayers().getArray().forEach(val => {
+        if (val.get('id') === layerId) {
+          const features = val.getSource().getFeatures()
+          features.forEach(feature => {
+            if (feature.get('id') === featureId) {
+              if (typeof update === 'object') {
+                for (const i in update) {
+                  if (Object.prototype.hasOwnProperty.call(update, i)) {
+                    feature.update(i, update[i])
+                  }
+                }
+              }
+            }
+          })
+        }
+      })
+    },
+    setHeatmaps (layers) {
+      this.map.getLayers().forEach(layer => {
+        let index = -1
+        if (layer && layer.get('type') === 'heatmap') {
+          layers.forEach(item => {
+            if (item.id === layer.get('id')) {
+              index++
+            }
+          })
+          if (index < 0) {
+            VMap.removeLayer(layer)
+          }
+        }
+      })
+      layers.forEach(val => {
+        const layer = { ...{ id: `heatmap-${uuid()}`, type: 'heatmap' }, ...val }
+        this.setLayer(layer)
+      })
+    },
+    setClusters (layers) {
+      this.map.getLayers().forEach(layer => {
+        let index = -1
+        if (layer && layer.get('type') === 'cluster') {
+          layers.forEach(item => {
+            if (item.id === layer.get('id')) {
+              index++
+            }
+          })
+          if (index < 0) {
+            VMap.removeLayer(layer)
+          }
+        }
+      })
+      layers.forEach(val => {
+        const layer = { ...{ id: `heatmap-${uuid()}`, type: 'cluster' }, ...val }
+        this.setLayer(layer)
+      })
+    },
+    setGraphicLayers (layers) {
+      this.map.getLayers().forEach(layer => {
+        let index = -1
+        if (layer && layer.get('type') === 'graphicLayer') {
+          layers.forEach(item => {
+            if (item.id === layer.get('id')) {
+              index++
+            }
+          })
+          if (index < 0) {
+            VMap.removeLayer(layer)
+          }
+        }
+      })
+      layers.forEach(val => {
+        const layer = { ...{ id: `heatmap-${uuid()}`, type: 'graphicLayer' }, ...val }
+        this.setLayer(layer)
+      })
     },
     removeLayerById (id) {
       VMap.removeLayerById(id)

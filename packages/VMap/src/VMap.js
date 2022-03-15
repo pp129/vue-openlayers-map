@@ -26,6 +26,7 @@ import { distance, length, lineString, point } from '@turf/turf'
 
 import projzh from '~/VMap/src/utils/projConvert'
 import coordtransform from '~/VMap/src/utils/coordtransform'
+import { uuid } from '~/VMap/src/utils'
 
 // import LayerGroup from 'ol/layer/Group'
 
@@ -500,14 +501,13 @@ function setVectorLayer (option, map) {
     const layer = addClusterLayer(option, map)
     layer.set('id', option.id || '')
     layer.set('type', option.type)
-    layer.set('users', true)
+    // layer.set('users', true)
     return layer
   } else if (validObjKey(option, 'type') && option.type === 'heatmap') {
     // 热力图
     const layer = addHeatmapLayer(option, map)
     layer.set('id', option.id || '')
     layer.set('type', option.type)
-    layer.set('users', true)
     return layer
   } else if (validObjKey(option, 'type') && option.type === 'webGLPoints') {
     const layer = addWebGLPointsLayer(option, map)
@@ -632,7 +632,7 @@ function setVectorLayer (option, map) {
     const layer = new ImageLayer(layerOptions)
     layer.set('id', option.id || '')
     layer.set('type', option.type || 'graphicLayer')
-    layer.set('users', true)
+    // layer.set('users', true)
     if (validObjKey(option, 'onClick')) {
       map.on('singleclick', function (r) {
         map.forEachSmFeatureAtPixel(r.pixel, option.onClick, {}, r)
@@ -870,6 +870,8 @@ function setPointFeature (option, map) {
   }
   if (validObjKey(option, 'id')) {
     feature.setId(option.id)
+  } else {
+    feature.setId(`feature-${uuid()}`)
   }
   if (typeof option === 'object') {
     for (const i in option) {
@@ -1650,6 +1652,10 @@ export class VMap {
     return setFeature(option, VMap.map.map)
   }
 
+  static setFeatures (option) {
+    return setFeatures(option, VMap.map.map)
+  }
+
   static getCenterByExtent (extent) {
     return getCenter(extent)
   }
@@ -1665,8 +1671,6 @@ export class VMap {
   constructor (option = {}) {
     // view
     const viewOptDefault = {
-      center: [0, 0],
-      zoom: 12,
       constrainResolution: true,
       projection: 'EPSG:4326'
     }
@@ -1674,28 +1678,11 @@ export class VMap {
     const view = new View(viewOption)
 
     // controls
-    const controlsDefaultOpt = {
-      zoom: false, rotate: false
-    }
-    const controlsOption = { ...controlsDefaultOpt, ...option.controls }
-    const controls = defaultControls(controlsOption).extend([])
+    const controls = defaultControls(option.controls).extend([])
 
-    // tile
-    const baseTiles = [...['td'], ...option.baseTile]
-    let visibleTile
-    if (validObjKey(option, 'visibleTile') && option.visibleTile) {
-      visibleTile = option.visibleTile
-    } else {
-      visibleTile = baseTiles[0]
-    }
-
-    let target = 'map'
-    if (validObjKey(option, 'target')) {
-      target = option.target
-    }
     // 生成地图
     this.map = new Map({
-      target: target,
+      target: option.target,
       view: view,
       controls: controls
     })
@@ -1705,19 +1692,51 @@ export class VMap {
     })
 
     // 基础图层
-    const tileLayer = baseTile(baseTiles, visibleTile)
+    const tileLayer = baseTile(option.baseTile, option.visibleTile)
 
-    // 添加图层
+    // 矢量图层
     const vectorLayersOption = option.layers
     const vectorLayers = []
     if (vectorLayersOption && vectorLayersOption.length > 0) {
       vectorLayersOption.forEach(val => {
-        vectorLayers.push(this.setVectorLayer(val, this.map))
+        const layer = { ...{ id: `vector-${uuid()}` }, ...val }
+        vectorLayers.push(this.setVectorLayer(layer, this.map))
+      })
+    }
+
+    // 热力图
+    const heatmapsOption = option.heatmaps
+    const heatmapLayers = []
+    if (heatmapsOption && heatmapsOption.length > 0) {
+      heatmapsOption.forEach(val => {
+        const layer = { ...{ id: `heatmap-${uuid()}`, type: 'heatmap' }, ...val }
+        heatmapLayers.push(this.setVectorLayer(layer, this.map))
+      })
+    }
+
+    // 聚合
+    const clustersOption = option.clusters
+    const clusterLayers = []
+    if (clustersOption && clustersOption.length > 0) {
+      clustersOption.forEach(val => {
+        const layer = { ...{ id: `cluster-${uuid()}`, type: 'cluster' }, ...val }
+        clusterLayers.push(this.setVectorLayer(layer, this.map))
+      })
+    }
+
+    // 图形
+    const graphicLayersOption = option.graphicLayers
+    const graphicLayers = []
+    if (graphicLayersOption && graphicLayersOption.length > 0) {
+      graphicLayersOption.forEach(val => {
+        const layer = { ...{ id: `graphicLayer-${uuid()}`, type: 'graphicLayer' }, ...val }
+        graphicLayers.push(this.setVectorLayer(layer, this.map))
       })
     }
 
     // 所有图层
-    const layers = tileLayer.concat(vectorLayers)
+    const layers = tileLayer.concat(vectorLayers).concat(clusterLayers).concat(heatmapLayers).concat(graphicLayers)
+    console.log(layers)
     layers.forEach(layer => {
       this.map.addLayer(layer)
     })
@@ -1725,7 +1744,7 @@ export class VMap {
     // 鹰眼
     if (option.overview) {
       const overviewLayer = baseTile(option.overview, option.overview)
-      this.map.addControl(addOverviewMapControl(viewOption, overviewLayer))
+      this.map.addControl(addOverviewMapControl(option.view, overviewLayer))
     }
 
     // 编辑
@@ -1739,7 +1758,7 @@ export class VMap {
       const hit = this.map.hasFeatureAtPixel(pixel)
       // this.map.getTargetElement().style.cursor = hit ? 'pointer' : ''
       this.map.getLayers().getArray().forEach(layer => {
-        if (layer.get('users') && layer.get('type') === 'graphicLayer') {
+        if (layer.get('users') || layer.get('type') === 'graphicLayer') {
           const data = layer.getData(evt.pixel)
           const hitImage = data && data[3] > 0 // transparent pixels have zero for data[3]
           this.map.getTargetElement().style.cursor = hitImage || hit ? 'pointer' : ''

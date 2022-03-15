@@ -2,8 +2,8 @@
   <div class="home">
     <!-- tools -->
     <div class="tools">
-      <button class="btn" @click="webGlPoint">海量点(webGl)</button>
-      <button class="btn" @click="graphicLayer">海量点(canvas)</button>
+<!--      <button class="btn" @click="webGlPoint">海量点(webGl)</button>-->
+      <button class="btn" @click="graphicLayer">海量点</button>
       <button class="btn" @click="setModify">{{modifyStatus?'结束':'开始'}}编辑矢量元素</button>
       <select id="draw" class="btn" v-model="drawType" @change="changeInteractions">
         <option value="none">绘制图形</option>
@@ -47,7 +47,16 @@
       class="map"
       :height="height"
       :width="width"
-      :option="option"
+      :view="option.view"
+      :base-tile="option.baseTile"
+      :visible-tile="option.visibleTile"
+      :layers="option.layers"
+      :clusters="option.clusters"
+      :heatmaps="option.heatmaps"
+      :graphic-layers="option.graphicLayers"
+      :overlays="option.overlays"
+      :interaction="option.interaction"
+      :measure="option.measure"
       @load="onLoad"
       @onLoadTrack="onLoadTrack"
       @change="onChange"
@@ -283,22 +292,7 @@ export default {
           }
         })
       })
-      this.newLayer = Object.assign({}, {
-        id: 'layer2',
-        visible: true,
-        source: {
-          features: features
-        },
-        extent: [117.882223, 24.386902, 118.373857, 24.90727]
-      })
-      if (this.option.updateLayers.indexOf('layer2') < 0) {
-        this.option.updateLayers.push('layer2')
-      }
-      const index = this.option.layers.map(item => item.id).indexOf('layer2')
-      if (index > -1) {
-        this.option.layers.splice(index, 1)
-      }
-      this.option.layers.push(this.newLayer)
+      this.$refs.map.updateFeatures('layer2', features)
     },
     addTileLayer () {
       const index = this.option.layers.map(item => item.id).indexOf('tile')
@@ -398,24 +392,21 @@ export default {
         })
       })
       console.log(features)
-      const index = this.option.layers.map(item => item.id).indexOf('graphicLayer')
-      if (index > -1) {
-        this.option.layers[index] = Object.assign(this.option.layers[index], {
-          // maxZoom: 15,
-          source: {
-            features: features
-          },
-          onClick: (i, e) => {
-            console.log('eeeeee', i, e)
-          },
-          style: {
-            icon: {
-              src: require('@/assets/img/point_blue.png'),
-              scale: 0.8
-            }
+      this.option.graphicLayers[0] = Object.assign(this.option.graphicLayers[0], {
+        // maxZoom: 15,
+        source: {
+          features: features
+        },
+        onClick: (i, e) => {
+          console.log('eeeeee', i, e)
+        },
+        style: {
+          icon: {
+            src: require('@/assets/img/point_blue.png'),
+            scale: 0.8
           }
-        })
-      }
+        }
+      })
       // const index2 = this.option.layers.map(item => item.id).indexOf('graphicLayer2')
       // if (index2 > -1) {
       //   this.option.layers[index2] = Object.assign(this.option.layers[index2], {
@@ -439,13 +430,17 @@ export default {
       })
     },
     moveFeature () {
-      const newFeatures = []
-      this.option.layers[0].source.features.forEach(feature => {
-        feature.coordinates[0] = feature.coordinates[0] + (this.getMockNumber().a / 100)
-        feature.coordinates[1] = feature.coordinates[1] + (this.getMockNumber().a / 100)
-        newFeatures.push(feature)
-      })
-      this.option.layers[0].source.features = newFeatures
+      // const newFeatures = []
+      setInterval(() => {
+        this.option.layers[0].source.features.forEach(feature => {
+          // feature.coordinates[0] = feature.coordinates[0] + (this.getMockNumber().a / 100)
+          // feature.coordinates[1] = feature.coordinates[1] + (this.getMockNumber().a / 100
+          // newFeatures.push(feature)
+          const position = [feature.coordinates[0] + (this.getMockNumber().a / 100), feature.coordinates[1] + (this.getMockNumber().a / 100)]
+          this.$refs.map.updateFeatureById('layer1', feature.id, { position: position })
+        })
+      }, 1000)
+      // this.option.layers[0].source.features = newFeatures
     },
     changeTile () {
       if (typeof this.selectedTile === 'string') {
@@ -549,9 +544,9 @@ export default {
           convert: 'bd-84'
         })
       })
-      const index = this.option.layers.findIndex(x => x.id === 'heatmap')
+      const index = this.option.heatmaps.findIndex(x => x.id === 'heatmap')
       if (index > -1) {
-        this.option.layers[index].source.features = data
+        this.option.heatmaps[index].source.features = data
       }
     },
     setTrack () {
