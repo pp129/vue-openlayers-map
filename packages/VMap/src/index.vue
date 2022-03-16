@@ -423,6 +423,15 @@ export default {
     removeLayerById (id) {
       VMap.removeLayerById(id)
     },
+    clearLayerById (id) {
+      const layer = this.map.getLayerById(id)
+      // console.log(layer)
+      if (layer.get('type') === 'graphicLayer') {
+        layer.setSource(null)
+      } else {
+        layer.getSource().clear()
+      }
+    },
     restVisibleBaseTile (visibleTile) {
       console.log('reset tile')
       VMap.restVisibleBaseTile(visibleTile, this.map)

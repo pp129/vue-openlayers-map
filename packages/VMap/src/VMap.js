@@ -89,6 +89,11 @@ Map.prototype.getFeatureById = function (layerId, featureId) {
   return feature
 }
 
+Map.prototype.getLayerById = function (id) {
+  const layers = this.getLayers().getArray()
+  return layers.find(x => (x.get('id') === id))
+}
+
 /**
  * 对VectorLayer扩展，获取当前layer下制定id的要素
  * @param id

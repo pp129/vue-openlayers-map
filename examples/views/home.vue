@@ -386,13 +386,20 @@ export default {
     },
     graphicLayer () {
       const features = []
-      const mockData = this.setMockData(41122)
+      const mockData = this.setMockData(31548)
       mockData.array.forEach(val => {
+        const randomNum = Mock.mock({
+          'number|1-6': 3
+        })
+        console.log(randomNum)
+        const pic = require(`@/assets/img/point_${randomNum.number}.png`)
+        const image = new Image()
+        image.src = pic
         features.push({
           style: {
             icon: {
-              src: require('@/assets/img/point_blue.png'),
-              scale: 0.8
+              img: image,
+              imgSize: [40, 40]
             }
           },
           coordinates: val
