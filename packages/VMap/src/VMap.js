@@ -1669,24 +1669,21 @@ export class VMap {
 
   constructor (option = {}) {
     // view
-    const viewOptDefault = {
+    const viewOption = Object.assign({
       center: [0, 0],
       zoom: 12,
       constrainResolution: true,
       projection: 'EPSG:4326'
-    }
-    const viewOption = { ...viewOptDefault, ...option.view }
+    }, option.view)
     const view = new View(viewOption)
 
     // controls
-    const controlsDefaultOpt = {
-      zoom: false, rotate: false
-    }
-    const controlsOption = { ...controlsDefaultOpt, ...option.controls }
+    const controlsOption = Object.assign({ zoom: false, rotate: false }, option.controls)
     const controls = defaultControls(controlsOption).extend([])
 
     // tile
-    const baseTiles = [...['td'], ...option.baseTile]
+    const baseTiles = Object.assign(['td'], option.baseTile)
+    console.log(baseTiles)
     let visibleTile
     if (validObjKey(option, 'visibleTile') && option.visibleTile) {
       visibleTile = option.visibleTile
