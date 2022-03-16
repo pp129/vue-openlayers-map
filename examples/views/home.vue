@@ -4,6 +4,7 @@
     <div class="tools">
       <button class="btn" @click="webGlPoint">海量点(webGl)</button>
       <button class="btn" @click="graphicLayer">海量点(canvas)</button>
+      <button class="btn" @click="clearGraphicLayer">清空海量点(canvas)</button>
       <button class="btn" @click="setModify">{{modifyStatus?'结束':'开始'}}编辑矢量元素</button>
       <select id="draw" class="btn" v-model="drawType" @change="changeInteractions">
         <option value="none">绘制图形</option>
@@ -19,7 +20,7 @@
       </select>
       <button class="btn" @click="addTileLayer">新增切片图层</button>
       <button class="btn" @click="addLayer">新增/更新layer2</button>
-      <button class="btn" @click="removeLayer">删除layer2</button>
+      <button class="btn" @click="removeLayer">清空layer2</button>
       <button class="btn" @click="moveFeature">随机移动layer1中点位</button>
       <select id="changeLayer" class="btn" v-model="selectedTile" @change="changeTile">
         <option v-for="(item,index) in baseTile" :key="index" :value="item.value">{{item.name}}</option>
@@ -291,9 +292,9 @@ export default {
         },
         extent: [117.882223, 24.386902, 118.373857, 24.90727]
       })
-      if (this.option.updateLayers.indexOf('layer2') < 0) {
-        this.option.updateLayers.push('layer2')
-      }
+      // if (this.option.updateLayers.indexOf('layer2') < 0) {
+      //   this.option.updateLayers.push('layer2')
+      // }
       const index = this.option.layers.map(item => item.id).indexOf('layer2')
       if (index > -1) {
         this.option.layers.splice(index, 1)
@@ -388,6 +389,13 @@ export default {
       if (index > -1) {
         this.option.layers[index].source.features = features
       }
+    },
+    clearGraphicLayer () {
+      const index = this.option.layers.map(item => item.id).indexOf('graphicLayer')
+      if (index > -1) {
+        this.option.layers[index].source.features = []
+      }
+      // this.$refs.map.clearLayerById('graphicLayer')
     },
     graphicLayer () {
       const features = []

@@ -88,6 +88,11 @@ Map.prototype.getFeatureById = function (layerId, featureId) {
   return feature
 }
 
+Map.prototype.getLayerById = function (id) {
+  const layers = this.getLayers().getArray()
+  return layers.find(x => (x.get('id') === id))
+}
+
 /**
  * 对VectorLayer扩展，获取当前layer下制定id的要素
  * @param id
@@ -1740,7 +1745,7 @@ export class VMap {
       // this.map.getTargetElement().style.cursor = hit ? 'pointer' : ''
       this.map.getLayers().getArray().forEach(layer => {
         if (layer.get('users') && layer.get('type') === 'graphicLayer') {
-          const data = layer.getData(evt.pixel)
+          const data = layer.getSource() ? layer.getData(evt.pixel) : false
           const hitImage = data && data[3] > 0 // transparent pixels have zero for data[3]
           this.map.getTargetElement().style.cursor = hitImage || hit ? 'pointer' : ''
         }
