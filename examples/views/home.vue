@@ -70,7 +70,7 @@
       <!-- 矢量图层 -->
       <v-vector-layer v-for="layer in layers" :key="layer.id" :ref="layer.id" :layer-id="layer.id"  :visible="layer.visible" :features="layer.features"></v-vector-layer>
       <!-- 图形图层 渲染海量点 -->
-      <v-graphic-layer v-if="comGraphic.show" :id="comGraphic.id" :features="comGraphic.features"></v-graphic-layer>
+      <v-graphic-layer v-if="comGraphic.show" :layer-id="comGraphic.id" :features="comGraphic.features"></v-graphic-layer>
       <!-- 热力图 -->
       <v-heatmap-layer :layer-id="heatmap.id" :features="heatmap.features"></v-heatmap-layer>
       <!-- 聚合 -->
