@@ -115,6 +115,5 @@ export default {
    * }
    * 当值为false/null/undefined时为不设置或清空测量
    */
-  measure: false,
-  updateLayers: []// 想要局部更新的layers id最好不要重复
+  measure: false
 }
