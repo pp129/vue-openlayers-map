@@ -46,6 +46,7 @@
       <button class="btn" @click="pauseTrack('track1')">暂停</button>
       <button class="btn" @click="stopTrack('track1')">停止</button>
       <button class="btn" @click="disposeTrack('track1')">清除轨迹</button>
+      <button class="btn" @click="initAnimateIcons()">动画弹框</button>
     </div>
     <!-- map -->
     <v-map
@@ -59,11 +60,10 @@
       :interaction="option.interaction"
       :measure="option.measure"
       @load="onLoad"
-      @change="onChange"
       @drawend="drawEnd"
       @measureend="measureEnd"
       @click="onClick"
-      @singleclick="onClickGraph"
+      @onClickFeature="onClickFeature"
       @changeZoom="onChangeZoom">
       <!-- 鹰眼 -->
       <v-overview :view="overview.view" :layers="overview.layers"></v-overview>
@@ -90,6 +90,13 @@
         <button @click="save">保存</button>
         <button @click="clearDraw">删除</button>
       </v-overlay>
+      <!-- 动画弹框案例 -->
+      <v-vector-layer :features="animateIcons.features"></v-vector-layer>
+      <v-overlay :position="animateIcons.position" :offset="[10,-17]">
+        <transition mode="out-in" name="fade-right">
+          <div v-show="animateIcons.showText" class="text">6102湖滨东</div>
+        </transition>
+      </v-overlay>
       <!-- 轨迹动画 -->
       <v-track v-for="track in option.track" :key="track.id" :ref="track.id" :id="track.id" :paths="track.paths" :options="track.options" @onLoad="onLoadTrack"></v-track>
     </v-map>
@@ -97,7 +104,7 @@
 </template>
 
 <script>
-import { VMap, VVectorLayer, VGraphicLayer, VHeatmapLayer, VClusterLayer, VOverlay, VOverview, VTrack } from '~/index'
+import { VClusterLayer, VGraphicLayer, VHeatmapLayer, VMap, VOverlay, VOverview, VTrack, VVectorLayer } from '~/index'
 import mapOption from '@/utils/mapOption.js'
 import MapOverlay from '@/components/overlay'
 import { heatmap } from '@/utils/heatmap'
@@ -119,6 +126,11 @@ export default {
   },
   data () {
     return {
+      animateIcons: {
+        features: [],
+        showText: false,
+        position: undefined
+      },
       overlays: [
         {
           id: 'overlay1',
@@ -382,11 +394,6 @@ export default {
     onLoadTrack (track) {
       console.log(track)
     },
-    onChange (data) {
-      console.log('on change', data)
-      const feature = this.$refs.map.getFeatureById('layer1', 'point1')
-      console.log(feature)
-    },
     drawEnd (evt) {
       console.log('on draw end', evt)
       this.drawCoors = evt.feature.getGeometry().getCoordinates()[0]
@@ -400,6 +407,8 @@ export default {
       console.log('on measure end', evt)
     },
     onClick (evt, map) {
+      this.animateIcons.showText = false
+      // this.animateIcons.position = undefined
       console.log('on map click === get coordinate', evt.coordinate)
       this.currentCoordinates = `${evt.coordinate[0].toFixed(6)}, ${evt.coordinate[1].toFixed(6)}`
       const pixel = map.getEventPixel(evt.originalEvent)
@@ -481,24 +490,11 @@ export default {
       // this.$refs.map.updateFeatures('layer2', features)
     },
     addTileLayer () {
-      const index = this.option.layers.map(item => item.id).indexOf('tile')
+      const index = this.tiles.map(item => item.id).indexOf('tile')
       if (index > -1) {
-        this.option.layers.splice(index, 1)
+        this.tiles.splice(index, 1)
       } else {
-        this.option.layers.push({
-          id: 'tile',
-          visible: true,
-          type: 'tile',
-          tile: {
-            type: 'xyz',
-            name: 'gd',
-            option: [
-              {
-                url: 'http://wprd0{1-4}.is.autonavi.com/appmaptile?x={x}&y={y}&z={z}&lang=zh_cn&size=1&scl=1&style=7'
-              }
-            ]
-          }
-        })
+
       }
     },
     webGlPoint () {
@@ -597,8 +593,12 @@ export default {
       this.comGraphic.show = !this.comGraphic.show
       // this.comGraphic.features = []
     },
-    onClickGraph (i, e) {
-      console.log(i, e)
+    onClickFeature (feature, layer) {
+      console.log(feature, layer)
+      if (feature && feature.get('overlay') === 'animate') {
+        this.animateIcons.position = feature.get('coordinates')
+        this.animateIcons.showText = true
+      }
     },
     clusterLayer () {
       const features = []
@@ -853,6 +853,21 @@ export default {
         center: this.animate.center,
         zoom: this.animate.zoom
       })
+    },
+    initAnimateIcons () {
+      this.animateIcons.features = []
+      const mockData = this.setMockData()
+      mockData.array.forEach((val, i) => {
+        this.animateIcons.features.push({
+          coordinates: val,
+          style: {
+            icon: {
+              src: require('@/assets/img/camera.png')
+            }
+          },
+          overlay: 'animate'
+        })
+      })
     }
   }
 }
@@ -908,6 +923,55 @@ export default {
     width: 100px;
     height: 100px;
     background: white;
+  }
+  .animate-icon{
+    height: 40px;
+    display: flex;
+    position: relative;
+  }
+  .icon{
+    width: 40px;
+    height: 40px;
+    background: url("~@/assets/img/camera.png") no-repeat;
+    background-size: 100% 100%;
+    cursor: pointer;
+    z-index: 2;
+  }
+  .text{
+    height: 34px;
+    /* width: 100%; */
+    /* line-height: 28px; */
+    /* position: absolute; */
+    /* top: 3px; */
+    /* left: 25px; */
+    padding-left: 20px;
+    padding-right: 10px;
+    box-shadow: 0 1px 13px #6695ff inset;
+    z-index: 1;
+    color: #6695FF;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    font-size: 24px;
+    //margin-left: -15px;
+    //margin-top: 3px;
+  }
+  .slide-fade-enter-active {transition: all .2s ease;}
+  .slide-fade-leave-active {transition: all .2s cubic-bezier(1.0, 0.5, 0.8, 1.0);}
+  .slide-fade-enter, .slide-fade-leave-to{transform: translateX(5px);opacity: 0;}
+  .fade-left-enter-active,.fade-right-enter-active{
+    transition: all 0.8s ease;
+  }
+  .fade-left-leave-active, .fade-right-leave-active {
+    transition: all .3s cubic-bezier(1.0, 0.5, 0.8, 1.0)
+  }
+  .fade-left-leave-to, .fade-right-enter{
+    transform: translate3d(-10%, 0, 0);
+    opacity: 0
+  }
+  .fade-left-enter, .fade-right-leave-to{
+    transform: translate3d(-10%, 0, 0);
+    opacity: 0
   }
 }
 </style>

@@ -149,7 +149,7 @@ export default {
         })
         this.map.on('singleclick', (r) => {
           this.map.forEachSmFeatureAtPixel(r.pixel, (i, e) => {
-            this.$emit('singleclick', i, e)
+            this.$emit('onClickFeature', i, e)
           }, {}, r)
         })
         // 层级变化
@@ -253,10 +253,6 @@ export default {
       layers.forEach(layer => {
         output.push(this.setLayer(layer))
       })
-      if (this.load) {
-        this.changeObj.layers = output
-        this.$emit('change', this.changeObj)
-      }
     },
     updateFeatures (layerId, data) {
       this.map.getLayers().getArray().forEach(val => {
