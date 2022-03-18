@@ -1,15 +1,20 @@
 <template>
-  <div :id="target" :style="{'width':width,'height':height}"></div>
+  <div :id="target" :style="{'width':width,'height':height}"><slot v-if="load"></slot></div>
 </template>
 
 <script>
 import { VMap } from '~/VMap/src/VMap.js'
 // 轨迹动画
 import PathSimplifier from '~/VMap/src/utils/track'
-import { uuid } from '~/VMap/src/utils'
+import { uuid } from '~/utils'
 
 export default {
   name: 'v-map',
+  provide () {
+    return {
+      VMap: this
+    }
+  },
   props: {
     width: {
       type: [String, Number],
@@ -44,10 +49,6 @@ export default {
         return this.baseTile[0]
       }
     },
-    overview: {
-      type: [String, Array, Boolean, Object],
-      default: false
-    },
     view: {
       type: Object,
       default () {
@@ -57,36 +58,6 @@ export default {
           constrainResolution: true,
           projection: 'EPSG:4326'
         }
-      }
-    },
-    layers: {
-      type: Array,
-      default () {
-        return []
-      }
-    },
-    heatmaps: {
-      type: Array,
-      default () {
-        return []
-      }
-    },
-    clusters: {
-      type: Array,
-      default () {
-        return []
-      }
-    },
-    graphicLayers: {
-      type: Array,
-      default () {
-        return []
-      }
-    },
-    overlays: {
-      type: Array,
-      default () {
-        return []
       }
     },
     track: {
@@ -116,12 +87,6 @@ export default {
         controls: this.controls,
         baseTile: this.baseTile,
         visibleTile: this.visibleTile,
-        overview: this.overview,
-        layers: this.layers,
-        heatmaps: this.heatmaps,
-        clusters: this.clusters,
-        graphicLayers: this.graphicLayers,
-        overlays: this.overlays,
         track: this.track,
         interaction: this.interaction,
         measure: this.measure
@@ -132,56 +97,6 @@ export default {
     }
   },
   watch: {
-    layers: {
-      handler (value) {
-        console.log('layers change', value)
-        if (value) {
-          this.setLayers(value)
-        }
-      },
-      deep: true,
-      immediate: false
-    },
-    heatmaps: {
-      handler (value) {
-        console.log('heatmaps change', value)
-        if (value) {
-          this.setHeatmaps(value)
-        }
-      },
-      deep: true,
-      immediate: false
-    },
-    clusters: {
-      handler (value) {
-        console.log('clusters change', value)
-        if (value) {
-          this.setClusters(value)
-        }
-      },
-      deep: true,
-      immediate: false
-    },
-    graphicLayers: {
-      handler (value) {
-        console.log('graphicLayers change', value)
-        if (value) {
-          this.setGraphicLayers(value)
-        }
-      },
-      deep: true,
-      immediate: false
-    },
-    overlays: {
-      handler (value) {
-        if (value) {
-          console.log('overlays change', value)
-          this.setOverlays(value)
-        }
-      },
-      deep: true,
-      immediate: false
-    },
     visibleTile: {
       handler (value, oldValue) {
         console.log('visibleTile change', value, oldValue)
@@ -231,6 +146,11 @@ export default {
         // 点击事件
         this.map.on('click', evt => {
           this.$emit('click', evt, this.map)
+        })
+        this.map.on('singleclick', (r) => {
+          this.map.forEachSmFeatureAtPixel(r.pixel, (i, e) => {
+            this.$emit('singleclick', i, e)
+          }, {}, r)
         })
         // 层级变化
         this.map.getView().once('change:resolution', () => {
@@ -288,7 +208,7 @@ export default {
         })
         const track = PathSimplifier(option)
         item.target = track
-        console.log(item)
+        console.log('init track', item)
         if (track) {
           tracks.push(track)
         }
@@ -308,6 +228,9 @@ export default {
     },
     getMap () {
       return VMap.map
+    },
+    addLayer (layer) {
+      this.map.addLayer(layer)
     },
     setLayer (layer) {
       return VMap.setLayer(layer, this.map)
@@ -347,8 +270,10 @@ export default {
     },
     updateFeatureById (layerId, featureId, update) {
       this.map.getLayers().getArray().forEach(val => {
+        console.log(val)
         if (val.get('id') === layerId) {
           const features = val.getSource().getFeatures()
+          console.log(features)
           features.forEach(feature => {
             if (feature.get('id') === featureId) {
               if (typeof update === 'object') {
@@ -422,6 +347,9 @@ export default {
     },
     removeLayerById (id) {
       VMap.removeLayerById(id)
+    },
+    removeLayer (layer) {
+      VMap.removeLayer(layer)
     },
     clearLayerById (id) {
       const layer = this.map.getLayerById(id)
@@ -518,6 +446,14 @@ export default {
     },
     getFeatureById (layerId, featureId) {
       return this.map.getFeatureById(layerId, featureId)
+    },
+    setLayerVisible (layer, visible) {
+      layer.setVisible(visible)
+    },
+    setLayerVisibleById (id, visible) {
+      const layers = this.map.getLayers().getArray()
+      const layer = layers.find(x => x.get('id') === id)
+      if (layer) layer.setVisible(visible)
     }
   }
 }

@@ -3,7 +3,8 @@
     <!-- tools -->
     <div class="tools">
 <!--      <button class="btn" @click="webGlPoint">海量点(webGl)</button>-->
-      <button class="btn" @click="graphicLayer">海量点</button>
+      <button class="btn" @click="graphicLayer2">海量点</button>
+      <button class="btn" @click="removeGraphicLayer2">删除海量点</button>
       <button class="btn" @click="clusterLayer">海量点聚合</button>
       <button class="btn" @click="setModify">{{modifyStatus?'结束':'开始'}}编辑矢量元素</button>
       <select id="draw" class="btn" v-model="drawType" @change="changeInteractions">
@@ -19,9 +20,10 @@
         <option value="Polygon">Area (Polygon)</option>
       </select>
       <button class="btn" @click="addTileLayer">新增切片图层</button>
+      <button class="btn" @click="toggleLayer">显示、隐藏图层1</button>
+      <button class="btn" @click="moveFeature">随机移动layer1中点位</button>
       <button class="btn" @click="addLayer">新增/更新layer2</button>
       <button class="btn" @click="removeLayer">删除layer2</button>
-      <button class="btn" @click="moveFeature">随机移动layer1中点位</button>
       <select id="changeLayer" class="btn" v-model="selectedTile" @change="changeTile">
         <option v-for="(item,index) in baseTile" :key="index" :value="item.value">{{item.name}}</option>
       </select>
@@ -41,6 +43,9 @@
       </span>
       <button class="btn" @click="setTrack">新增轨迹</button>
       <button class="btn" @click="startTrack('track1')">出发</button>
+      <button class="btn" @click="pauseTrack('track1')">暂停</button>
+      <button class="btn" @click="stopTrack('track1')">停止</button>
+      <button class="btn" @click="disposeTrack('track1')">清除轨迹</button>
     </div>
     <!-- map -->
     <v-map
@@ -51,36 +56,49 @@
       :view="option.view"
       :base-tile="option.baseTile"
       :visible-tile="option.visibleTile"
-      :layers="option.layers"
-      :clusters="option.clusters"
-      :heatmaps="option.heatmaps"
-      :graphic-layers="option.graphicLayers"
-      :overlays="option.overlays"
       :interaction="option.interaction"
       :measure="option.measure"
       @load="onLoad"
-      @onLoadTrack="onLoadTrack"
       @change="onChange"
       @drawend="drawEnd"
       @measureend="measureEnd"
       @click="onClick"
+      @singleclick="onClickGraph"
       @changeZoom="onChangeZoom">
+      <!-- 鹰眼 -->
+      <v-overview :view="overview.view" :layers="overview.layers"></v-overview>
+      <!-- 矢量图层 -->
+      <v-vector-layer v-for="layer in layers" :key="layer.id" :ref="layer.id" :layer-id="layer.id"  :visible="layer.visible" :features="layer.features"></v-vector-layer>
+      <!-- 图形图层 渲染海量点 -->
+      <v-graphic-layer v-if="comGraphic.show" :id="comGraphic.id" :features="comGraphic.features"></v-graphic-layer>
+      <!-- 热力图 -->
+      <v-heatmap-layer :layer-id="heatmap.id" :features="heatmap.features"></v-heatmap-layer>
+      <!-- 聚合 -->
+      <v-cluster-layer :layer-id="cluster.id" :features="cluster.features" :distance="cluster.distance"></v-cluster-layer>
+      <!-- 遮罩层 -->
+      <v-overlay :id="overlays[0].id" :element="overlays[0].element" :position="overlays[0].position" :auto-pan="true" class="overlay">
+        <!-- overlays -->
+        <template v-slot="slotProps">
+          <p>{{ slotProps.position }}</p>
+          <span @click="closeOverlay('overlay1')">close</span>
+        </template>
+      </v-overlay>
+      <v-overlay :id="overlays[1].id" :element="overlays[1].element" :position="overlays[1].position">
+        <map-overlay @close="closeOverlay('overlay2')"></map-overlay>
+      </v-overlay>
+      <v-overlay :id="overlays[2].id" :element="overlays[2].element" :position="overlays[2].position">
+        <button @click="save">保存</button>
+        <button @click="clearDraw">删除</button>
+      </v-overlay>
+      <!-- 轨迹动画 -->
+      <v-track v-for="track in option.track" :key="track.id" :ref="track.id" :id="track.id" :paths="track.paths" :options="track.options" @onLoad="onLoadTrack"></v-track>
     </v-map>
-    <!-- overlays -->
-    <div ref="overlay1" id="overlay1" class="overlay">
-      <p>overlay1</p>
-      <span @click="closeOverlay('overlay1')">close</span>
-    </div>
-    <div id="drawEnd">
-      <button @click="save">保存</button>
-      <button @click="clearDraw">删除</button>
-    </div>
-    <map-overlay id="overlay2" ref="overlay2" @close="closeOverlay('overlay2')"></map-overlay>
   </div>
 </template>
 
 <script>
-import { VMap } from '~/index'
+import { VMap, VVectorLayer, VGraphicLayer, VHeatmapLayer, VClusterLayer, VOverlay, VOverview, VTrack } from '~/index'
+// import Layers from '~/index'
 import mapOption from '@/utils/mapOption.js'
 import MapOverlay from '@/components/overlay'
 import { heatmap } from '@/utils/heatmap'
@@ -91,10 +109,196 @@ export default {
   name: 'home',
   components: {
     VMap,
+    VVectorLayer,
+    VGraphicLayer,
+    VHeatmapLayer,
+    VClusterLayer,
+    VOverlay,
+    VOverview,
+    VTrack,
     MapOverlay
   },
   data () {
     return {
+      overlays: [
+        {
+          id: 'overlay1',
+          element: 'overlay1',
+          position: undefined
+        },
+        {
+          id: 'overlay2',
+          element: 'overlay2',
+          position: undefined
+        },
+        {
+          id: 'drawEnd',
+          element: 'drawEnd',
+          position: undefined
+        }
+      ],
+      comGraphic: {
+        show: false,
+        features: []
+      },
+      layers: [
+        {
+          id: 'layer1',
+          visible: true,
+          features: [
+            {
+              id: 'point1',
+              coordinates: [118.140448, 24.512917],
+              convert: 'bd-84', // 特殊属性，经纬度转化。支持：百度(bd)、高德(gd)、wgs84(84)互转
+              style: {
+                icon: {
+                  scale: 0.6,
+                  src: require('@/assets/img/point_6.png')
+                },
+                text: {
+                  text: '百度转84',
+                  font: '13px sans-serif',
+                  fill: {
+                    color: '#3d73e8'
+                  },
+                  backgroundFill: {
+                    color: '#ffffff'
+                  },
+                  stroke: {
+                    color: '#ffffff',
+                    width: 1
+                  },
+                  backgroundStroke: {
+                    color: '#000000',
+                    width: 1
+                  },
+                  offsetX: 0,
+                  offsetY: 30
+                },
+                styleFunction: function (feature, resolution, map, style) {
+                  const viewZoom = map.getView().getZoom()
+                  const minZoom = 12
+                  const maxZoom = 16
+                  const textStyle = style.getText()
+                  if (viewZoom >= 14) {
+                    textStyle.setText('百度转84')
+                  }
+                  if (viewZoom >= 15) {
+                    textStyle.setText('根据层级显示不同内容')
+                  }
+                  style.setText(textStyle)
+                  return minZoom <= viewZoom && viewZoom <= maxZoom ? style : null
+                }
+              },
+              properties: {
+                name: 'feature1'
+              }
+            }
+          ]
+        },
+        {
+          id: 'layer2',
+          visible: true,
+          features: []
+        },
+        {
+          id: 'polygon',
+          visible: true,
+          features: [
+            {
+              type: 'polygon', // 除了普通icon点位，其他元素需注明元素类型
+              style: {
+                fill: {
+                  color: 'rgba(67,126,152,0.15)'
+                },
+                stroke: {
+                  color: 'rgba(67,126,255,1)',
+                  width: 1,
+                  lineDash: [20, 10, 20, 10]
+                },
+                text: {
+                  text: '多边形',
+                  font: '13px sans-serif',
+                  fill: {
+                    color: '#3d73e8'
+                  }
+                }
+              },
+              updateStyle: {
+                fill: {
+                  color: 'rgba(4,3,43,0.5)'
+                }
+              },
+              coordinates: [
+                [118.23048075355373, 24.587052571002776], [118.25051461705989, 24.592192894082423],
+                [118.24383041710121, 24.561810933485354], [118.23048075355373, 24.587052571002776]
+              ]
+            },
+            {
+              type: 'polyline',
+              style: {
+                stroke: {
+                  color: 'rgba(220,171,119,1)',
+                  width: 2
+                  // lineDash: [20, 10, 20, 10]
+                },
+                text: {
+                  text: 'line'
+                }
+              },
+              coordinates: [[118.20513460817911, 24.6005204040184], [118.22511304202654, 24.607323827184675], [118.22998527470209, 24.627570481933592]]
+            },
+            {
+              type: 'circle',
+              center: [118.25945470514871, 24.608883531726836],
+              radius: 500,
+              style: {
+                text: {
+                  text: '圆形'
+                }
+              }
+            }
+          ]
+        }
+      ],
+      heatmap: {
+        id: 'heatmap',
+        features: [],
+        blur: 15, // 模糊大小 控制热力图热度深浅
+        radius: 5, // 半径大小 点扩散的范围
+        /**
+         * 用于权重的特征属性或从特征返回权重的函数。权重值的范围应为 0 到 1（超出范围的值将被限制在该范围内）。
+         * type: string | function
+         * (defaults to 'weight')
+         */
+        weight: 'weight'
+      },
+      cluster: {
+        id: 'cluster',
+        visible: true,
+        minZoom: 10,
+        maxZoom: 16,
+        features: [
+          {
+            coordinates: [117.96768937292673, 24.51616895381355],
+            style: {
+              icon: {
+                src: require('@/assets/img/point_red.png')
+              }
+            }
+          },
+          {
+            coordinates: [117.97481324839465, 24.502306340499445],
+            style: {
+              icon: {
+                src: require('@/assets/img/point_blue.png')
+              }
+            }
+          }
+        ],
+        distance: 120, // 要素将聚集在一起的像素距离。
+        minDistance: 1// 聚合之间的最小距离（以像素为单位）。将被限制在配置的距离。默认情况下，不设置最小距离。此配置可用于避免重叠图标。作为权衡，聚合要素的位置将不再是其所有要素的中心。
+      },
       mapId: 'map',
       height: '100%',
       width: '100%',
@@ -120,6 +324,15 @@ export default {
           value: 'xyz_bd'
         }
       ],
+      overview: {
+        view: {
+          center: [118.045456, 24.567489],
+          zoom: 10
+        },
+        layers: [
+          'td'
+        ]
+      },
       option: mapOption,
       tracks: [],
       newLayer: {},
@@ -149,7 +362,6 @@ export default {
       modifyStatus: false,
       measureType: 'none',
       useCom: true,
-      overlay2: 'overlay2',
       animate: {
         zoom: 0,
         center: [0, 0]
@@ -157,31 +369,8 @@ export default {
       drawCoors: []
     }
   },
-  watch: {
-    'option.layers': {
-      handler (value) {
-        if (value) {
-          this.checkbox = []
-          this.checked = []
-          value.forEach(item => {
-            this.checkbox.push({
-              label: item.id,
-              value: item.id
-            })
-            if (item.visible) {
-              this.checked.push(item.id)
-            }
-          })
-        }
-      },
-      immediate: true
-    }
-  },
-  created () {
-
-  },
   mounted () {
-
+    console.log(this.$refs.map.map.getLayers().getArray())
   },
   methods: {
     modifyEnd (evt, map) {
@@ -189,11 +378,7 @@ export default {
     },
     onLoad () {
       console.log('on load')
-      this.option.overlays.push({
-        id: 'overlay2',
-        element: 'overlay2', // dom元素id
-        position: undefined
-      })
+      console.log(this.$refs.map.map.getLayers().getArray())
       this.$refs.map.panTo({ center: [118.118033, 24.478697], zoom: 12 })
       this.getHeatmapData()
       const distance = this.$refs.map.getDistancePoint([118.118033, 24.478697], [118.136562, 24.500419])
@@ -202,8 +387,8 @@ export default {
       //   this.addLayer()
       // }, 300)
     },
-    onLoadTrack (tracks) {
-      this.tracks = tracks
+    onLoadTrack (track) {
+      console.log(track)
     },
     onChange (data) {
       console.log('on change', data)
@@ -214,9 +399,9 @@ export default {
       console.log('on draw end', evt)
       this.drawCoors = evt.feature.getGeometry().getCoordinates()[0]
       const center = this.$refs.map.getCenterByExtent(evt.feature.getGeometry().getExtent())
-      const index = this.option.overlays.findIndex(x => x.id === 'drawEnd')
+      const index = this.overlays.findIndex(x => x.id === 'drawEnd')
       if (index > -1) {
-        this.option.overlays[index].position = center
+        this.overlays[index].position = center
       }
     },
     measureEnd (evt) {
@@ -228,6 +413,7 @@ export default {
       const pixel = map.getEventPixel(evt.originalEvent)
       const hit = map.hasFeatureAtPixel(pixel)
       const polyFeatures = map.getFeaturesByLayerId('polygon')
+      console.log(polyFeatures)
       if (hit) {
         const features = map.getFeaturesAtPixel(evt.pixel)
         console.log(features)
@@ -236,7 +422,9 @@ export default {
           let polygon = null
           let type = ''
           features.forEach(feature => {
-            item = feature.get('properties')
+            if (feature.get('properties')) {
+              item = feature.get('properties')
+            }
             type = feature.get('type')
             if (type && type === 'polygon') {
               if (feature.get('updateStyle')) {
@@ -268,17 +456,18 @@ export default {
       this.currentZoom = evt.map.getView().getZoom()
     },
     showOverlay (properties, id, element, coordinate) {
-      this.option.overlays.forEach((overlay, index) => {
+      this.overlays.forEach((overlay, index) => {
         if (overlay.id === id) {
           overlay.position = coordinate
           overlay.offset = [20, -50]
           overlay.properties = properties
         }
       })
+      // this.overlay.position = coordinate
     },
     closeOverlay (id) {
-      const overlay = this.option.overlays.filter(item => item.id === id)
-      overlay[0].position = undefined
+      const overlay = this.overlays.find(item => item.id === id)
+      overlay.position = undefined
     },
     addLayer () {
       const features = []
@@ -293,7 +482,11 @@ export default {
           }
         })
       })
-      this.$refs.map.updateFeatures('layer2', features)
+      const layer = this.layers.find(x => x.id === 'layer2')
+      if (layer) {
+        layer.features = features
+      }
+      // this.$refs.map.updateFeatures('layer2', features)
     },
     addTileLayer () {
       const index = this.option.layers.map(item => item.id).indexOf('tile')
@@ -391,7 +584,7 @@ export default {
         const randomNum = Mock.mock({
           'number|1-6': 3
         })
-        console.log(randomNum)
+        // console.log(randomNum)
         const pic = require(`@/assets/img/point_${randomNum.number}.png`)
         const image = new Image()
         image.src = pic
@@ -431,6 +624,37 @@ export default {
       //   })
       // }
     },
+    graphicLayer2 () {
+      const features = []
+      const mockData = this.setMockData(31548)
+      mockData.array.forEach(val => {
+        const randomNum = Mock.mock({
+          'number|1-6': 3
+        })
+        // console.log(randomNum)
+        const pic = require(`@/assets/img/point_${randomNum.number}.png`)
+        const image = new Image()
+        image.src = pic
+        features.push({
+          style: {
+            icon: {
+              img: image,
+              imgSize: [40, 40]
+            }
+          },
+          coordinates: val
+        })
+      })
+      this.comGraphic.features = features
+      this.comGraphic.show = true
+    },
+    removeGraphicLayer2 () {
+      this.comGraphic.show = !this.comGraphic.show
+      // this.comGraphic.features = []
+    },
+    onClickGraph (i, e) {
+      console.log(i, e)
+    },
     clusterLayer () {
       const features = []
       const mockData = this.setMockData(41122)
@@ -444,14 +668,17 @@ export default {
           }
         })
       })
-      this.option.clusters[0].cluster.source.features = features
+      this.cluster.features = features
     },
     removeLayer () {
-      const index = this.option.layers.map(item => item.id).indexOf('layer2')
+      const index = this.layers.map(item => item.id).indexOf('layer2')
       if (index > -1) {
-        this.option.layers.splice(index, 1)
+        this.layers[index].features = []
         // this.option.updateLayers = []
       }
+    },
+    toggleLayer () {
+      this.layers[0].visible = !this.layers[0].visible
     },
     getMockNumber () {
       return Mock.mock({
@@ -459,17 +686,14 @@ export default {
       })
     },
     moveFeature () {
-      // const newFeatures = []
       setInterval(() => {
-        this.option.layers[0].source.features.forEach(feature => {
-          // feature.coordinates[0] = feature.coordinates[0] + (this.getMockNumber().a / 100)
-          // feature.coordinates[1] = feature.coordinates[1] + (this.getMockNumber().a / 100
-          // newFeatures.push(feature)
+        this.layers[0].features.forEach((feature, index) => {
           const position = [feature.coordinates[0] + (this.getMockNumber().a / 100), feature.coordinates[1] + (this.getMockNumber().a / 100)]
-          this.$refs.map.updateFeatureById('layer1', feature.id, { position: position })
+          // this.$refs.map.updateFeatureById('layer1', feature.id, { position: position })
+          console.log(this.$refs.layer1)
+          this.$refs.layer1[0].updateFeatureById(feature.id, { position: position })
         })
       }, 1000)
-      // this.option.layers[0].source.features = newFeatures
     },
     changeTile () {
       if (typeof this.selectedTile === 'string') {
@@ -487,14 +711,9 @@ export default {
       return Mock.mock(option)
     },
     setLayerVisible (value) {
-      this.option.updateLayers = []
-      this.option.updateLayers.push(value)
       const index = this.checked.indexOf(value)
-      this.option.layers.forEach(layer => {
-        if (layer.id === value) {
-          layer.visible = index < 0
-        }
-      })
+      const visible = index < 0
+      this.$refs.map.setLayerVisibleById(value, visible)
     },
     changeInteractions () {
       this.option.interaction = []
@@ -538,7 +757,7 @@ export default {
       }
     },
     hideOverlayById (id) {
-      this.option.overlays.forEach(overlay => {
+      this.overlays.forEach(overlay => {
         if (overlay.id === id) {
           overlay.position = undefined
         }
@@ -573,15 +792,10 @@ export default {
           convert: 'bd-84'
         })
       })
-      const index = this.option.heatmaps.findIndex(x => x.id === 'heatmap')
-      if (index > -1) {
-        this.option.heatmaps[index].source.features = data
-      }
+      this.heatmap.features = data
     },
     setTrack () {
       this.option.track.push({
-        trackObj: undefined,
-        state: '',
         id: 'track1',
         paths: [
           {
@@ -634,17 +848,16 @@ export default {
             time: '2018-08-20 08:22:20'
           }
         ],
-        // tracePointsModePlay: 'animation', // skip 跳动模式，默认 animation 动画模式
-        smokeMode: 'distance', // 轨迹抽稀模式，”distance”和”track”
-        vacuateDistance: 90, // 抽稀距离，单位像素
-        labelShow: true, // 是否显示轨迹点信息标签 vacuate:false, //是否抽稀
-        showTracePoint: true, // 是否显示轨迹点，默认显示
         options: {
+          // showInfoWin: false,
+          overlay: {
+            id: 'carOverlay',
+            element: 'carOverlay'
+          },
           startIcon: {
             src: require('@/assets/img/point_start.png'),
             scale: 0.05
           },
-          tracePlay: true,
           endIcon: {
             src: require('@/assets/img/point_end.png'),
             scale: 0.05
@@ -653,18 +866,39 @@ export default {
             src: require('@/assets/img/car2.png'),
             scale: 0.1
           }, // 小车图标
-          speed: 120, // 车速，设置时为匀速模式，否则为实际速度模式 startIcon:'./images/start.png', //起点图标 endIcon:'./images/end.png' //终点图标
-          arrowPixel: 20, // 方向箭头之间的像素距离，单位是 px tracePlay:true //是否进行轨迹回放，默认为 false
+          speed: 120, // 车速，设置时为匀速模式，否则为实际速度模式
+          arrowPixel: 20, // 方向箭头之间的像素距离，单位是 px
+          tracePlay: false, // 是否进行轨迹回放，默认为 false
           lineWidth: 5, // 轨迹线宽度，单位为像素
           lineColor: 'red', // 轨迹线颜色
           passlineColor: 'lightgreen' // 通过动画轨迹线颜色
         }
       })
     },
-    startTrack (id) {
-      const index = this.tracks.findIndex(x => x.id === id)
-      if (index > -1) {
-        this.tracks[index].start()
+    startTrack () {
+      if (this.$refs.track1) {
+        this.$refs.track1[0].start()
+      } else {
+        alert('track unload')
+      }
+    },
+    pauseTrack () {
+      if (this.$refs.track1) {
+        this.$refs.track1[0].pause()
+      } else {
+        alert('track unload')
+      }
+    },
+    stopTrack () {
+      if (this.$refs.track1) {
+        this.$refs.track1[0].stop()
+      } else {
+        alert('track unload')
+      }
+    },
+    disposeTrack () {
+      if (this.$refs.track1) {
+        this.option.track = []
       } else {
         alert('track unload')
       }

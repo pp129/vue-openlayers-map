@@ -3,21 +3,18 @@ import { Map, View } from 'ol'
 import Overlay from 'ol/Overlay'
 import {
   Heatmap as HeatmapLayer,
-  Tile as TileLayer,
   Vector as VectorLayer,
   VectorImage as VectorImageLayer
 } from 'ol/layer'
 import ImageLayer from 'ol/layer/Image'
 import WebGLPointsLayer from 'ol/layer/WebGLPoints'
-import { Cluster, Vector as VectorSource, XYZ } from 'ol/source'
+import { Cluster, Vector as VectorSource } from 'ol/source'
 import ImageCanvasSource from 'ol/source/ImageCanvas'
 import Feature from 'ol/Feature'
 import { Circle, LineString, Point, Polygon } from 'ol/geom'
 import { Circle as CircleStyle, Fill, Icon, RegularShape, Stroke, Style, Text } from 'ol/style'
-import { defaults as defaultControls, OverviewMap } from 'ol/control'
+import { defaults as defaultControls } from 'ol/control'
 import { Draw, Modify, Select } from 'ol/interaction'
-import TileGrid from 'ol/tilegrid/TileGrid'
-import { addCoordinateTransforms, addProjection, Projection } from 'ol/proj'
 import { getArea, getLength } from 'ol/sphere'
 import * as olExtent from 'ol/extent'
 import { getCenter } from 'ol/extent'
@@ -26,7 +23,8 @@ import { distance, length, lineString, point } from '@turf/turf'
 
 import projzh from '~/VMap/src/utils/projConvert'
 import coordtransform from '~/VMap/src/utils/coordtransform'
-import { uuid } from '~/VMap/src/utils'
+import { baseTile, getCustomerTileXYZ, uuid } from '~/utils'
+import { addCoordinateTransforms, addProjection, Projection } from 'ol/proj'
 
 // import LayerGroup from 'ol/layer/Group'
 
@@ -209,98 +207,6 @@ function setPosition (feature, coordinates) {
   feature.getGeometry().setCoordinates(coordinates)
 }
 
-/**
- * 设置地图基础切片图层
- * @param option
- * @param visible
- * @returns {*[]}
- */
-function baseTile (option, visible) {
-  let layers = []
-  if (typeof option === 'string') {
-    layers = getBaseTile({ type: option }, visible)
-  } else if (typeof option === 'object') {
-    if (option instanceof Array) {
-      option.forEach(item => {
-        if (typeof item === 'string') {
-          const layer = getBaseTile({ type: item }, visible)
-          layers = layers.concat(layer)
-        } else if (typeof item === 'object') {
-          const layer = getBaseTile(item, visible)
-          layers = layers.concat(layer)
-        }
-      })
-    } else {
-      const layer = getBaseTile(option, visible)
-      layers = layers.concat(layer)
-    }
-  }
-  return layers
-}
-
-/**
- * 获取地图基础切片图层
- * @param option
- * @param visible
- * @returns {*[]}
- */
-function getBaseTile (option, visible) {
-  switch (option.type) {
-    case 'td':
-      return getTDMap(visible)
-    case 'td_img':
-      return getTDImg(visible)
-    case 'xyz':
-      option.base = true
-      return getCustomerTileXYZ(option, visible)
-    case 'bd':
-      return getBDMap(option, visible)
-    default:
-      return getTDMap(visible)
-  }
-}
-
-/**
- * 天地图-矢量图
- * @param visible
- * @returns {*[]}
- */
-function getTDMap (visible) {
-  return getCustomerTileXYZ({
-    option: [
-      {
-        url: 'http://t4.tianditu.com/DataServer?T=vec_w&x={x}&y={y}&l={z}&tk=88e2f1d5ab64a7477a7361edd6b5f68a'
-      },
-      {
-        url: 'http://t3.tianditu.com/DataServer?T=cva_w&x={x}&y={y}&l={z}&tk=88e2f1d5ab64a7477a7361edd6b5f68a'
-      }
-    ],
-    type: 'td',
-    name: 'td',
-    base: true
-  }, visible)
-}
-
-/**
- * 天地图-影像图
- * @param visible
- * @returns {*[]}
- */
-function getTDImg (visible) {
-  return getCustomerTileXYZ({
-    option: [
-      {
-        url: 'http://t4.tianditu.com/DataServer?T=img_w&x={x}&y={y}&l={z}&tk=88e2f1d5ab64a7477a7361edd6b5f68a'
-      },
-      {
-        url: 'http://t3.tianditu.com/DataServer?T=cia_w&x={x}&y={y}&l={z}&tk=88e2f1d5ab64a7477a7361edd6b5f68a'
-      }
-    ],
-    type: 'td_img',
-    name: 'td_img',
-    base: true
-  }, visible)
-}
 const baiduMercatorProj = new Projection({
   code: 'baidu',
   // extent: applyTransform(extent, projzh.ll2bmerc),
@@ -310,98 +216,6 @@ const baiduMercatorProj = new Projection({
 addProjection(baiduMercatorProj)
 addCoordinateTransforms('EPSG:4326', baiduMercatorProj, projzh.ll2bmerc, projzh.bmerc2ll)
 addCoordinateTransforms('EPSG:3857', baiduMercatorProj, projzh.smerc2bmerc, projzh.bmerc2smerc)
-
-/**
- * 百度地图
- * @param option
- * @param visible
- * @returns {TileLayer<TileSourceType>[]}
- */
-function getBDMap (option, visible) {
-  // const extent = [72.004, 0.8293, 137.8347, 55.8271]//中国范围
-  // 计算百度使用的分辨率
-  const resolutions = []
-  for (let i = 0; i < 19; i++) {
-    resolutions[i] = Math.pow(2, 18 - i)
-  }
-  const tilegrid = new TileGrid({
-    // extent: applyTransform(extent, projzh.ll2bmerc),
-    origin: [0, 0], // 设置原点坐标
-    resolutions: resolutions // 设置分辨率
-  })
-  // 创建百度地图的数据源
-  const tile = new XYZ({
-    projection: 'baidu',
-    tileGrid: tilegrid,
-    tileUrlFunction: function (tileCoord, pixelRatio, proj) {
-      if (!tileCoord) {
-        return ''
-      }
-      const z = tileCoord[0]
-      const x = tileCoord[1]
-      const y = -tileCoord[2] - 1
-      return 'https://maponline1.bdimg.com/tile/?qt=vtile&x=' +
-        x + '&y=' + y + '&z=' + z +
-        '&styles=pl&scaler=1&udt=20220113&from=jsapi2_0'
-    },
-    crossOrigin: 'anonymous'
-  })
-  // 百度地图层
-  const layer = new TileLayer({
-    visible: false,
-    source: tile
-  })
-  let visibleTile = ''
-  if (typeof visible === 'string') {
-    visibleTile = visible
-  } else if (typeof visible === 'object') {
-    visibleTile = visible.name
-  }
-  if (option.name === visibleTile) {
-    layer.setVisible(true)
-  }
-  layer.set('type', option.type || 'bd')
-  layer.set('name', option.name || 'bd')
-  layer.set('base', true)
-  return [layer]
-}
-
-/**
- * 自定义xyz切片
- * @param option
- * @param visible
- * @returns {*[]}
- */
-function getCustomerTileXYZ (option, visible) {
-  const tiles = []
-  option.option.forEach(val => {
-    let tileGrid
-    if (validObjKey(val, 'tileGrid')) {
-      tileGrid = new TileGrid(val.tileGrid)
-    }
-    const xyzOpt = { ...val, ...{ tileGrid: tileGrid } }
-    const layer = new TileLayer({
-      visible: false,
-      source: new XYZ(xyzOpt)
-    })
-    let visibleTile = ''
-    if (typeof visible === 'string') {
-      visibleTile = visible
-    } else if (typeof visible === 'object') {
-      visibleTile = visible.name
-    }
-    if (option.name === visibleTile) {
-      layer.setVisible(true)
-    }
-    layer.set('type', option.type || '')
-    layer.set('name', option.name || '')
-    if (validObjKey(option, 'base')) {
-      layer.set('base', option.base)
-    }
-    tiles.push(layer)
-  })
-  return tiles
-}
 
 /**
  * 更新可视的基础切片图层
@@ -683,20 +497,6 @@ function setVectorLayer (option, map) {
     }
     return layer
   }
-}
-
-/**
- * 添加鹰眼
- * @param view
- * @param layers
- * @returns {OverviewMap}
- */
-function addOverviewMapControl (view, layers) {
-  return new OverviewMap({
-    view: new View(view),
-    collapsed: false,
-    layers: layers
-  })
 }
 
 /**
@@ -1699,58 +1499,9 @@ export class VMap {
     // 基础图层
     const tileLayer = baseTile(option.baseTile, option.visibleTile)
 
-    // 矢量图层
-    const vectorLayersOption = option.layers
-    const vectorLayers = []
-    if (vectorLayersOption && vectorLayersOption.length > 0) {
-      vectorLayersOption.forEach(val => {
-        const layer = { ...{ id: `vector-${uuid()}` }, ...val }
-        vectorLayers.push(this.setVectorLayer(layer, this.map))
-      })
-    }
-
-    // 热力图
-    const heatmapsOption = option.heatmaps
-    const heatmapLayers = []
-    if (heatmapsOption && heatmapsOption.length > 0) {
-      heatmapsOption.forEach(val => {
-        const layer = { ...{ id: `heatmap-${uuid()}`, type: 'heatmap' }, ...val }
-        heatmapLayers.push(this.setVectorLayer(layer, this.map))
-      })
-    }
-
-    // 聚合
-    const clustersOption = option.clusters
-    const clusterLayers = []
-    if (clustersOption && clustersOption.length > 0) {
-      clustersOption.forEach(val => {
-        const layer = { ...{ id: `cluster-${uuid()}`, type: 'cluster' }, ...val }
-        clusterLayers.push(this.setVectorLayer(layer, this.map))
-      })
-    }
-
-    // 图形
-    const graphicLayersOption = option.graphicLayers
-    const graphicLayers = []
-    if (graphicLayersOption && graphicLayersOption.length > 0) {
-      graphicLayersOption.forEach(val => {
-        const layer = { ...{ id: `graphicLayer-${uuid()}`, type: 'graphicLayer' }, ...val }
-        graphicLayers.push(this.setVectorLayer(layer, this.map))
-      })
-    }
-
-    // 所有图层
-    const layers = tileLayer.concat(vectorLayers).concat(clusterLayers).concat(heatmapLayers).concat(graphicLayers)
-    console.log(layers)
-    layers.forEach(layer => {
+    tileLayer.forEach(layer => {
       this.map.addLayer(layer)
     })
-
-    // 鹰眼
-    if (option.overview) {
-      const overviewLayer = baseTile(option.overview, option.overview)
-      this.map.addControl(addOverviewMapControl(option.view, overviewLayer))
-    }
 
     // 编辑
     if (validObjKey(option, 'interaction') && option.interaction.length > 0) {
@@ -1763,7 +1514,7 @@ export class VMap {
       const hit = this.map.hasFeatureAtPixel(pixel)
       // this.map.getTargetElement().style.cursor = hit ? 'pointer' : ''
       this.map.getLayers().getArray().forEach(layer => {
-        if (layer.get('users') || layer.get('type') === 'graphicLayer') {
+        if (layer.get('users')) {
           const data = layer.getData(evt.pixel)
           const hitImage = data && data[3] > 0 // transparent pixels have zero for data[3]
           this.map.getTargetElement().style.cursor = hitImage || hit ? 'pointer' : ''

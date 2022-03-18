@@ -7,7 +7,7 @@ import Overlay from 'ol/Overlay'
 import { LineString, Point, Polygon } from 'ol/geom'
 import Feature from 'ol/Feature'
 import * as olSphere from 'ol/sphere'
-import { uuid } from '~/VMap/src/utils/index'
+import { uuid } from '~/utils'
 
 Feature.prototype.setPosition = function (coordinates) {
   this.getGeometry().setCoordinates(coordinates)
@@ -89,24 +89,28 @@ export class LushuTrack {
       source: new VectorSource(),
       zIndex: 99
     })
+    this.traceLayer.set('isTrack', true)
     map.addLayer(this.traceLayer)
     // 通过动画轨迹线
     this.tracePassLayer = new VectorLayer({
       source: new VectorSource(),
       zIndex: 100
     })
+    this.tracePassLayer.set('isTrack', true)
     map.addLayer(this.tracePassLayer)
     // 方向箭头图层
     this.arrowsLayer = new VectorLayer({
       source: new VectorSource(),
       zIndex: 101
     })
+    this.arrowsLayer.set('isTrack', true)
     map.addLayer(this.arrowsLayer)
     // 小车图层
     this.carLayer = new VectorLayer({
       source: new VectorSource(),
       zIndex: 102
     })
+    this.carLayer.set('isTrack', true)
     map.addLayer(this.carLayer)
     // 轨迹点要素集合
     this.traceNodes = []
@@ -984,6 +988,25 @@ LushuTrack.prototype.windowAddMouseWheel = function () {
   }
 
   window.onmousewheel = document.onmousewheel = scrollFunc
+}
+
+LushuTrack.prototype.dispose = function () {
+  if (this._intervalTimeFlag) {
+    clearInterval(this._intervalTimeFlag)
+    this._intervalTimeFlag = null
+  }
+  if (this._intervalTraceFlag) {
+    clearInterval(this._intervalTraceFlag)
+    this._intervalTraceFlag = null
+  }
+  const layers = this._map.getLayers().getArray()
+  const trackLayers = layers.filter(x => x.get('isTrack') && x.get('isTrack') === true)
+  if (trackLayers && trackLayers.length > 0) {
+    trackLayers.forEach(layer => {
+      layer.getSource().clear()
+      this._map.removeLayer(layer)
+    })
+  }
 }
 
 // 抽稀，包括距离抽稀和轨迹抽稀
