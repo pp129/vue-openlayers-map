@@ -3,8 +3,8 @@
     <!-- tools -->
     <div class="tools">
 <!--      <button class="btn" @click="webGlPoint">海量点(webGl)</button>-->
-      <button class="btn" @click="graphicLayer2">海量点</button>
-      <button class="btn" @click="removeGraphicLayer2">删除海量点</button>
+      <button class="btn" @click="graphicLayer">海量点</button>
+      <button class="btn" @click="removeGraphicLayer">删除海量点</button>
       <button class="btn" @click="clusterLayer">海量点聚合</button>
       <button class="btn" @click="setModify">{{modifyStatus?'结束':'开始'}}编辑矢量元素</button>
       <select id="draw" class="btn" v-model="drawType" @change="changeInteractions">
@@ -98,7 +98,6 @@
 
 <script>
 import { VMap, VVectorLayer, VGraphicLayer, VHeatmapLayer, VClusterLayer, VOverlay, VOverview, VTrack } from '~/index'
-// import Layers from '~/index'
 import mapOption from '@/utils/mapOption.js'
 import MapOverlay from '@/components/overlay'
 import { heatmap } from '@/utils/heatmap'
@@ -266,11 +265,6 @@ export default {
         features: [],
         blur: 15, // 模糊大小 控制热力图热度深浅
         radius: 5, // 半径大小 点扩散的范围
-        /**
-         * 用于权重的特征属性或从特征返回权重的函数。权重值的范围应为 0 到 1（超出范围的值将被限制在该范围内）。
-         * type: string | function
-         * (defaults to 'weight')
-         */
         weight: 'weight'
       },
       cluster: {
@@ -370,6 +364,7 @@ export default {
     }
   },
   mounted () {
+    console.log('on mounted')
     console.log(this.$refs.map.map.getLayers().getArray())
   },
   methods: {
@@ -383,9 +378,6 @@ export default {
       this.getHeatmapData()
       const distance = this.$refs.map.getDistancePoint([118.118033, 24.478697], [118.136562, 24.500419])
       console.log(distance)
-      // setInterval(() => {
-      //   this.addLayer()
-      // }, 300)
     },
     onLoadTrack (track) {
       console.log(track)
@@ -598,57 +590,10 @@ export default {
           coordinates: val
         })
       })
-      console.log(features)
-      this.option.graphicLayers[0] = Object.assign(this.option.graphicLayers[0], {
-        // maxZoom: 15,
-        source: {
-          features: features
-        },
-        // style: {
-        //   icon: {
-        //     src: require('@/assets/img/point_blue.png'),
-        //     scale: 0.8
-        //   }
-        // },
-        onClick: (i, e) => {
-          console.log('eeeeee', i, e)
-        }
-      })
-      // const index2 = this.option.layers.map(item => item.id).indexOf('graphicLayer2')
-      // if (index2 > -1) {
-      //   this.option.layers[index2] = Object.assign(this.option.layers[index2], {
-      //     mimZoom: 16,
-      //     source: {
-      //       features: featuresCircle
-      //     }
-      //   })
-      // }
-    },
-    graphicLayer2 () {
-      const features = []
-      const mockData = this.setMockData(31548)
-      mockData.array.forEach(val => {
-        const randomNum = Mock.mock({
-          'number|1-6': 3
-        })
-        // console.log(randomNum)
-        const pic = require(`@/assets/img/point_${randomNum.number}.png`)
-        const image = new Image()
-        image.src = pic
-        features.push({
-          style: {
-            icon: {
-              img: image,
-              imgSize: [40, 40]
-            }
-          },
-          coordinates: val
-        })
-      })
       this.comGraphic.features = features
       this.comGraphic.show = true
     },
-    removeGraphicLayer2 () {
+    removeGraphicLayer () {
       this.comGraphic.show = !this.comGraphic.show
       // this.comGraphic.features = []
     },
