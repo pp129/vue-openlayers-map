@@ -49,13 +49,6 @@ export default {
     }
   },
   watch: {
-    visible: {
-      handler (value) {
-        console.log('layer visible change', value)
-        this.layer.setVisible(value)
-      },
-      immediate: false
-    },
     features: {
       handler (value) {
         console.log('layer features change', value)
@@ -66,6 +59,37 @@ export default {
         }
       },
       immediate: false
+    },
+    visible: {
+      handler (value) {
+        console.log('layer visible change', value)
+        this.layer.setVisible(value)
+      },
+      immediate: false
+    },
+    zIndex: {
+      handler (value) {
+        this.layer.setZIndex(value)
+      },
+      immediate: false
+    },
+    maxZoom: {
+      handler (value) {
+        this.layer.setMaxZoom(value)
+      },
+      immediate: false
+    },
+    minZoom: {
+      handler (value) {
+        this.layer.setMinZoom(value)
+      },
+      immediate: false
+    },
+    extent: {
+      handler (value) {
+        this.layer.setExtent(value)
+      },
+      immediate: false
     }
   },
   mounted () {
@@ -74,9 +98,8 @@ export default {
       const features = setFeatures(this.features, this.map)
       source.addFeatures(features)
     }
-    this.layer = new VectorLayer({
-      source: source
-    })
+    const layerOpt = { ...this.$props, ...{ source: source } }
+    this.layer = new VectorLayer(layerOpt)
     this.layer.setStyle((feature) => {
       if (feature.get('style')) {
         return setStyle(feature.get('style'))
@@ -100,6 +123,7 @@ export default {
     this.layer.set('id', this.layerId)
     this.layer.set('type', 'vector')
     this.layer.set('users', true)
+    this.layer.setZIndex(1)
     this.map.addLayer(this.layer)
   },
   beforeDestroy () {

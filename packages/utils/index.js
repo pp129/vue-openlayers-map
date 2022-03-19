@@ -510,7 +510,7 @@ function getTDImg (visible) {
  * @param visible
  * @returns {TileLayer<TileSourceType>[]}
  */
-function getBDMap (option, visible) {
+export function getBDMap (option, visible) {
   // const extent = [72.004, 0.8293, 137.8347, 55.8271]//中国范围
   // 计算百度使用的分辨率
   const resolutions = []

@@ -49,13 +49,6 @@ export default {
     }
   },
   watch: {
-    visible: {
-      handler (value) {
-        console.log('heatmap layer visible change', value)
-        this.layer.setVisible(value)
-      },
-      immediate: false
-    },
     features: {
       handler (value) {
         console.log('layer features change', value)
@@ -78,6 +71,37 @@ export default {
         this.layer.setRadius(value)
       },
       immediate: false
+    },
+    visible: {
+      handler (value) {
+        console.log('heatmap layer visible change', value)
+        this.layer.setVisible(value)
+      },
+      immediate: false
+    },
+    zIndex: {
+      handler (value) {
+        this.layer.setZIndex(value)
+      },
+      immediate: false
+    },
+    maxZoom: {
+      handler (value) {
+        this.layer.setMaxZoom(value)
+      },
+      immediate: false
+    },
+    minZoom: {
+      handler (value) {
+        this.layer.setMinZoom(value)
+      },
+      immediate: false
+    },
+    extent: {
+      handler (value) {
+        this.layer.setExtent(value)
+      },
+      immediate: false
     }
   },
   computed: {
@@ -91,16 +115,12 @@ export default {
       const features = setFeatures(this.features, this.map)
       source.addFeatures(features)
     }
-    const option = {
-      source: source,
-      blur: this.blur,
-      radius: this.radius,
-      weight: this.weight
-    }
-    this.layer = new HeatmapLayer(option)
+    const layerOpt = { ...this.$props, ...{ source: source } }
+    this.layer = new HeatmapLayer(layerOpt)
     this.layer.set('id', this.layerId)
     this.layer.set('type', 'heatmap')
     this.layer.set('users', true)
+    this.layer.setZIndex(1)
     this.map.addLayer(this.layer)
   },
   beforeDestroy () {

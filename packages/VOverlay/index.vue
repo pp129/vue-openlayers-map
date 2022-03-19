@@ -12,7 +12,7 @@ export default {
   name: 'v-overlay',
   inject: ['VMap'],
   props: {
-    id: {
+    overlayId: {
       type: String,
       default () {
         return `overlay-id-${uuid()}`
@@ -30,6 +30,9 @@ export default {
         return undefined
       }
     },
+    positioning: {
+      type: String
+    },
     offset: {
       type: Array,
       default () {
@@ -39,6 +42,9 @@ export default {
     autoPan: {
       type: Boolean,
       default: false
+    },
+    className: {
+      type: String
     }
   },
   data () {
@@ -58,6 +64,18 @@ export default {
         this.overlay.setPosition(value)
       },
       immediate: false
+    },
+    positioning: {
+      handler (value) {
+        this.overlay.setPositioning(value)
+      },
+      immediate: false
+    },
+    offset: {
+      handler (value) {
+        this.overlay.setOffset(value)
+      },
+      immediate: false
     }
   },
   mounted () {
@@ -66,12 +84,7 @@ export default {
     if (typeof this.element === 'string') {
       overlayEl = document.getElementById(this.element.toString())
     }
-    const overlayOption = {
-      id: this.id,
-      element: overlayEl,
-      position: this.position,
-      offset: this.offset
-    }
+    const overlayOption = { ...this.$props, ...{ id: this.overlayId, element: overlayEl } }
     this.overlay = new Overlay(overlayOption)
     this.map.addOverlay(this.overlay)
   },

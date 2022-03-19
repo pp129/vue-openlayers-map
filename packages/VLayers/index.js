@@ -1,7 +1,8 @@
+import VTileLayer from './TileLayer.vue'
 import VVectorLayer from './VectorLayer.vue'
-import VGraphicLayer from '~/VLayers/GraphicLayer'
-import VHeatmapLayer from '~/VLayers/HeatmapLayer'
-import VClusterLayer from '~/VLayers/ClusterLayer'
+import VGraphicLayer from './GraphicLayer'
+import VHeatmapLayer from './HeatmapLayer'
+import VClusterLayer from './ClusterLayer'
 
 function install (app) {
   if (install.installed) {
@@ -10,6 +11,7 @@ function install (app) {
 
   install.installed = true
 
+  app.component(VTileLayer.name, VTileLayer)
   app.component(VVectorLayer.name, VVectorLayer)
   app.component(VGraphicLayer.name, VGraphicLayer)
   app.component(VHeatmapLayer.name, VHeatmapLayer)
@@ -20,6 +22,7 @@ export default install
 
 export {
   install,
+  VTileLayer,
   VVectorLayer,
   VGraphicLayer,
   VHeatmapLayer,

@@ -46,7 +46,19 @@ export default {
       }
     }
   },
+  computed: {
+    map () {
+      return this.VMap.map
+    }
+  },
   watch: {
+    features: {
+      handler (value) {
+        console.log('layers change', value)
+        this.source.refresh()
+      },
+      immediate: false
+    },
     visible: {
       handler (value) {
         console.log('layer visible change', value)
@@ -54,10 +66,27 @@ export default {
       },
       immediate: false
     },
-    features: {
+    zIndex: {
       handler (value) {
-        console.log('layers change', value)
-        this.source.refresh()
+        this.layer.setZIndex(value)
+      },
+      immediate: false
+    },
+    maxZoom: {
+      handler (value) {
+        this.layer.setMaxZoom(value)
+      },
+      immediate: false
+    },
+    minZoom: {
+      handler (value) {
+        this.layer.setMinZoom(value)
+      },
+      immediate: false
+    },
+    extent: {
+      handler (value) {
+        this.layer.setExtent(value)
       },
       immediate: false
     }
@@ -114,13 +143,13 @@ export default {
         return canvas
       }
     })
-    this.layer = new ImageLayer({
-      source: this.source
-    })
+    const layerOpt = { ...this.$props, ...{ source: this.source } }
+    this.layer = new ImageLayer(layerOpt)
     this.layer.set('id', this.layerId)
     this.layer.set('type', 'graphic')
     this.layer.set('users', true)
-    this.VMap.addLayer(this.layer)
+    this.layer.setZIndex(1)
+    this.map.addLayer(this.layer)
   },
   beforeDestroy () {
     this.layer.setSource(null)

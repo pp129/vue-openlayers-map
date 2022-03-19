@@ -121,6 +121,7 @@ export default {
   },
   beforeDestroy () {
     this.track.dispose()
+    this.track = null
   },
   methods: {
     init (paths) {

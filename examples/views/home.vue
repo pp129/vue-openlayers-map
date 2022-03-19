@@ -55,8 +55,6 @@
       :height="height"
       :width="width"
       :view="option.view"
-      :base-tile="option.baseTile"
-      :visible-tile="option.visibleTile"
       :interaction="option.interaction"
       :measure="option.measure"
       @load="onLoad"
@@ -67,6 +65,8 @@
       @changeZoom="onChangeZoom">
       <!-- 鹰眼 -->
       <v-overview :view="overview.view" :layers="overview.layers"></v-overview>
+      <!-- 瓦片图层 -->
+      <v-tile-layer v-if="showTile" :tile-type="tileType" :xyz="xyz[tileType]"></v-tile-layer>
       <!-- 矢量图层 -->
       <v-vector-layer v-for="layer in layers" :key="layer.id" :ref="layer.id" :layer-id="layer.id"  :visible="layer.visible" :features="layer.features"></v-vector-layer>
       <!-- 图形图层 渲染海量点 -->
@@ -76,17 +76,17 @@
       <!-- 聚合 -->
       <v-cluster-layer :layer-id="cluster.id" :features="cluster.features" :distance="cluster.distance"></v-cluster-layer>
       <!-- 遮罩层 -->
-      <v-overlay :id="overlays[0].id" :element="overlays[0].element" :position="overlays[0].position" :auto-pan="true" class="overlay">
+      <v-overlay :overlay-id="overlays[0].id" :element="overlays[0].element" :position="overlays[0].position" :auto-pan="true" class="overlay">
         <!-- overlays -->
         <template v-slot="slotProps">
           <p>{{ slotProps.position }}</p>
           <span @click="closeOverlay('overlay1')">close</span>
         </template>
       </v-overlay>
-      <v-overlay :id="overlays[1].id" :element="overlays[1].element" :position="overlays[1].position">
+      <v-overlay :overlay-id="overlays[1].id" :element="overlays[1].element" :position="overlays[1].position">
         <map-overlay @close="closeOverlay('overlay2')"></map-overlay>
       </v-overlay>
-      <v-overlay :id="overlays[2].id" :element="overlays[2].element" :position="overlays[2].position">
+      <v-overlay :overlay-id="overlays[2].id" :element="overlays[2].element" :position="overlays[2].position">
         <button @click="save">保存</button>
         <button @click="clearDraw">删除</button>
       </v-overlay>
@@ -104,7 +104,7 @@
 </template>
 
 <script>
-import { VClusterLayer, VGraphicLayer, VHeatmapLayer, VMap, VOverlay, VOverview, VTrack, VVectorLayer } from '~/index'
+import { VClusterLayer, VGraphicLayer, VHeatmapLayer, VMap, VOverlay, VOverview, VTrack, VVectorLayer, VTileLayer } from '~/index'
 import mapOption from '@/utils/mapOption.js'
 import MapOverlay from '@/components/overlay'
 import { heatmap } from '@/utils/heatmap'
@@ -115,6 +115,7 @@ export default {
   name: 'home',
   components: {
     VMap,
+    VTileLayer,
     VVectorLayer,
     VGraphicLayer,
     VHeatmapLayer,
@@ -125,7 +126,33 @@ export default {
     MapOverlay
   },
   data () {
+    const resolutions = []
+    for (let i = 0; i < 19; i++) {
+      resolutions[i] = Math.pow(2, 18 - i)
+    }
     return {
+      showTile: true,
+      tileType: 'TD',
+      xyz: {
+        XYZ: {
+          projection: 'baidu',
+          tileGrid: {
+            origin: [0, 0], // 设置原点坐标
+            resolutions: resolutions // 设置分辨率
+          },
+          tileUrlFunction: function (tileCoord, pixelRatio, proj) {
+            if (!tileCoord) {
+              return ''
+            }
+            const z = tileCoord[0]
+            const x = tileCoord[1]
+            const y = -tileCoord[2] - 1
+            return 'https://maponline1.bdimg.com/tile/?qt=vtile&x=' +
+              x + '&y=' + y + '&z=' + z +
+              '&styles=pl&scaler=1&udt=20220113&from=jsapi2_0'
+          }
+        }
+      },
       animateIcons: {
         features: [],
         showText: false,
@@ -311,23 +338,31 @@ export default {
       baseTile: [
         {
           name: '天地图-街道+注记',
-          value: 'td'
+          value: 'TD'
         },
         {
           name: '天地图-影像+注记',
-          value: 'td_img'
+          value: 'TD_IMG'
         },
         {
           name: '百度',
-          value: 'bd'
+          value: 'BD'
         },
         {
           name: '高德',
-          value: 'gd'
+          value: 'GD'
         },
         {
           name: '自定义参数的百度地图',
-          value: 'xyz_bd'
+          value: 'XYZ'
+        },
+        {
+          name: 'OSM',
+          value: 'OSM'
+        },
+        {
+          name: 'PGIS',
+          value: 'PGIS'
         }
       ],
       overview: {
@@ -342,7 +377,7 @@ export default {
       option: mapOption,
       tracks: [],
       newLayer: {},
-      selectedTile: 'td',
+      selectedTile: 'TD',
       checkbox: [
         {
           label: '点位',
@@ -485,6 +520,7 @@ export default {
       })
       const layer = this.layers.find(x => x.id === 'layer2')
       if (layer) {
+        console.log(layer)
         layer.features = features
       }
       // this.$refs.map.updateFeatures('layer2', features)
@@ -568,7 +604,7 @@ export default {
     graphicLayer () {
       const features = []
       const mockData = this.setMockData(31548)
-      mockData.array.forEach(val => {
+      mockData.array.forEach((val, i) => {
         const randomNum = Mock.mock({
           'number|1-6': 3
         })
@@ -583,7 +619,10 @@ export default {
               imgSize: [40, 40]
             }
           },
-          coordinates: val
+          coordinates: val,
+          properties: {
+            name: `graphic-${i}`
+          }
         })
       })
       this.comGraphic.features = features
@@ -641,11 +680,8 @@ export default {
       }, 1000)
     },
     changeTile () {
-      if (typeof this.selectedTile === 'string') {
-        this.option.visibleTile = this.selectedTile
-      } else if (typeof this.selectedTile === 'object') {
-        this.option.visibleTile = this.selectedTile.value
-      }
+      console.log(this.selectedTile)
+      this.tileType = this.selectedTile
     },
     setMockData (count = 600) {
       const Random = Mock.Random

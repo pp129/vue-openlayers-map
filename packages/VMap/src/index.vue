@@ -4,8 +4,6 @@
 
 <script>
 import { VMap } from '~/VMap/src/VMap.js'
-// 轨迹动画
-import PathSimplifier from '~/VMap/src/utils/track'
 import { uuid } from '~/utils'
 
 export default {
@@ -37,18 +35,6 @@ export default {
         }
       }
     },
-    baseTile: {
-      type: Array,
-      default () {
-        return ['td']
-      }
-    },
-    visibleTile: {
-      type: [String, Object],
-      default () {
-        return this.baseTile[0]
-      }
-    },
     view: {
       type: Object,
       default () {
@@ -58,12 +44,6 @@ export default {
           constrainResolution: true,
           projection: 'EPSG:4326'
         }
-      }
-    },
-    track: {
-      type: Array,
-      default () {
-        return []
       }
     },
     interaction: {
@@ -85,9 +65,6 @@ export default {
         target: this.target,
         view: this.view,
         controls: this.controls,
-        baseTile: this.baseTile,
-        visibleTile: this.visibleTile,
-        track: this.track,
         interaction: this.interaction,
         measure: this.measure
       }
@@ -97,16 +74,6 @@ export default {
     }
   },
   watch: {
-    visibleTile: {
-      handler (value, oldValue) {
-        console.log('visibleTile change', value, oldValue)
-        if (this.baseTile.length > 1 && value !== oldValue) { // 理论上有多基础图层的情况下才有必要走这一步
-          this.restVisibleBaseTile(value)
-        }
-      },
-      deep: true,
-      immediate: false
-    },
     interaction: {
       handler (value) {
         console.log('interaction change', value)
@@ -118,16 +85,6 @@ export default {
         console.log('measure change', value)
         this.setMeasure(value)
       }
-    },
-    track: {
-      handler (value) {
-        if (value) {
-          console.log('track change', value)
-          this.initTrack()
-        }
-      },
-      deep: true,
-      immediate: false
     }
   },
   data () {
@@ -198,24 +155,6 @@ export default {
       this.map.disposeInternal()
       // this.map.setTarget(null)
       // this.map = null
-    },
-    initTrack () {
-      // 初始化轨迹图层
-      const tracks = []
-      this.track.forEach(item => {
-        const option = Object.assign({}, item, {
-          map: this.map
-        })
-        const track = PathSimplifier(option)
-        item.target = track
-        console.log('init track', item)
-        if (track) {
-          tracks.push(track)
-        }
-      })
-      if (tracks.length > 0) {
-        this.$emit('onLoadTrack', tracks)
-      }
     },
     zoomEnd (evt) {
       this.$emit('changeZoom', evt, this.map)

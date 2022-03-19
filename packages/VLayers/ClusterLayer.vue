@@ -57,13 +57,6 @@ export default {
     }
   },
   watch: {
-    visible: {
-      handler (value) {
-        console.log('layer visible change', value)
-        this.layer.setVisible(value)
-      },
-      immediate: false
-    },
     distance: {
       handler (value) {
         console.log('layer visible change', value)
@@ -87,6 +80,37 @@ export default {
         }
       },
       immediate: false
+    },
+    visible: {
+      handler (value) {
+        console.log('layer visible change', value)
+        this.layer.setVisible(value)
+      },
+      immediate: false
+    },
+    zIndex: {
+      handler (value) {
+        this.layer.setZIndex(value)
+      },
+      immediate: false
+    },
+    maxZoom: {
+      handler (value) {
+        this.layer.setMaxZoom(value)
+      },
+      immediate: false
+    },
+    minZoom: {
+      handler (value) {
+        this.layer.setMinZoom(value)
+      },
+      immediate: false
+    },
+    extent: {
+      handler (value) {
+        this.layer.setExtent(value)
+      },
+      immediate: false
     }
   },
   mounted () {
@@ -108,14 +132,12 @@ export default {
         minDistance: this.minDistance
       }
       this.cluster = new Cluster(option)
-      const layerOption = {
-        source: this.cluster,
-        style: this.FeatureStyle
-      }
-      this.layer = addClusterLayer(layerOption, this.map)
+      const layerOpt = { ...this.$props, ...{ source: this.cluster, style: this.FeatureStyle } }
+      this.layer = addClusterLayer(layerOpt, this.map)
       this.layer.set('id', this.layerId)
       this.layer.set('type', 'cluster')
       this.layer.set('users', true)
+      this.layer.setZIndex(1)
       this.map.addLayer(this.layer)
     },
     dispose () {

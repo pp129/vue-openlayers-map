@@ -19,12 +19,10 @@ export default {
       default: true
     },
     layers: {
-      type: [Array, undefined],
-      default: undefined
+      type: Array
     },
     view: {
-      type: [Object, undefined],
-      default: undefined
+      type: Object
     }
   },
   data () {
@@ -54,6 +52,9 @@ export default {
     }
     this.overview = addOverviewMapControl(option)
     this.map.addControl(this.overview)
+  },
+  beforeDestroy () {
+    this.map.removeControl(this.overview)
   }
 }
 </script>

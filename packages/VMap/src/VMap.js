@@ -124,10 +124,13 @@ ImageCanvasSource.prototype._forEachFeatureAtCoordinate = function (e, r, s, i, 
 
     var _t = []
     // eslint-disable-next-line no-unused-expressions,no-sequences
-    _t[0] = h[0] - u.getAnchor()[0] * r
-    _t[2] = h[0] + u.getAnchor()[0] * r
-    _t[1] = h[1] - u.getAnchor()[1] * r
-    _t[3] = h[1] + u.getAnchor()[1] * r
+    // console.log(u)
+    if (u.getAnchor()) {
+      _t[0] = h[0] - u.getAnchor()[0] * r
+      _t[2] = h[0] + u.getAnchor()[0] * r
+      _t[1] = h[1] - u.getAnchor()[1] * r
+      _t[3] = h[1] + u.getAnchor()[1] * r
+    }
     olExtent.containsCoordinate(_t, e) && (c = !0)
     // eslint-disable-next-line no-unused-expressions
     !0 !== c ? _t.isHighLight && _t._highLightClose() : (_t.isHighLight && _t._highLight(h, u, n[o], i), s && s(n[o], a))
@@ -1497,7 +1500,7 @@ export class VMap {
     })
 
     // 基础图层
-    const tileLayer = baseTile(option.baseTile, option.visibleTile)
+    const tileLayer = baseTile('td', 'td')
 
     tileLayer.forEach(layer => {
       this.map.addLayer(layer)
