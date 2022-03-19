@@ -36,11 +36,11 @@ export default {
       }
     },
     blur: {
-      type: [Number, String],
+      type: Number,
       default: 15
     },
     radius: {
-      type: [Number, String],
+      type: Number,
       default: 8
     },
     weight: {
@@ -64,6 +64,18 @@ export default {
           const features = setFeatures(value, this.map)
           this.layer.getSource().addFeatures(features)
         }
+      },
+      immediate: false
+    },
+    blur: {
+      handler (value) {
+        this.layer.setBlur(value)
+      },
+      immediate: false
+    },
+    radius: {
+      handler (value) {
+        this.layer.setRadius(value)
       },
       immediate: false
     }

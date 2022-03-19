@@ -932,7 +932,7 @@ export default {
   .icon{
     width: 40px;
     height: 40px;
-    background: url("~@/assets/img/camera.png") no-repeat;
+    background: url("../assets/img/camera.png") no-repeat;
     background-size: 100% 100%;
     cursor: pointer;
     z-index: 2;
