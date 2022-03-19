@@ -77,7 +77,7 @@ export default {
     this.layer = new VectorLayer({
       source: source
     })
-    this.layer.setStyle(function (feature) {
+    this.layer.setStyle((feature) => {
       if (feature.get('style')) {
         return setStyle(feature.get('style'))
       } else {
