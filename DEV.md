@@ -56,7 +56,7 @@ export default {
 
 ## v-tile-layer
 
-瓦片图层组件
+[瓦片图层组件](TILELAYER.md)
 
 ## v-vector-layer
 

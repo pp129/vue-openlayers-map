@@ -23,6 +23,10 @@
 import { VMap, VTileLayer } from 'vue-openlayers-map'
 export default {
   data(){
+    const resolutions = []
+    for (let i = 0; i < 19; i++) {
+      resolutions[i] = Math.pow(2, 18 - i)
+    }
     return {
       preload: Infinity,
       tileType: 'XYZ',
