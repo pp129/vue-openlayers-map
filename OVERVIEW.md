@@ -4,7 +4,7 @@
 
 | 参数        | 类型                                                         | 默认值    | 描述                                                         |
 | ----------- | ------------------------------------------------------------ | --------- | ------------------------------------------------------------ |
-| view        | 继承 [ol/View](https://openlayers.org/en/latest/apidoc/module-ol_View-View.html) / undefined | undefined | 概览图的自定义视图（应使用与主图相同的投影）。如果未提供，将使用与主地图具有相同投影的默认视图。 |
+| view        | [module:ol/View~View](https://openlayers.org/en/latest/apidoc/module-ol_View-View.html) / undefined | undefined | 概览图的自定义视图（应使用与主图相同的投影）。如果未提供，将使用与主地图具有相同投影的默认视图。 |
 | collapsible | Boolean                                                      | true      | 控件是否可以折叠。                                           |
 | collapsed   | Boolean                                                      | true      | 控件是否应该开始折叠（展开）                                 |
 
