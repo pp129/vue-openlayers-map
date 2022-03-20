@@ -21,6 +21,10 @@ export default {
         return `tile-layer-${uuid()}`
       }
     },
+    preload: {
+      type: Number,
+      default: 0
+    },
     tileType: {
       type: String,
       default: 'TD'
@@ -53,7 +57,7 @@ export default {
     tileType: {
       handler (value) {
         if (value) {
-          this.init()
+          this.init(this.$parent.$options.name)
         }
       },
       immediate: false,
@@ -61,7 +65,6 @@ export default {
     },
     visible: {
       handler (value) {
-        console.log('layer visible change', value)
         this.layer.setVisible(value)
       },
       immediate: false
@@ -136,7 +139,6 @@ export default {
       }
     },
     initTileXYZ (name) {
-      console.log(this.xyz)
       let tileGrid
       if (validObjKey(this.xyz, 'tileGrid')) {
         tileGrid = new TileGrid(this.xyz.tileGrid)
@@ -178,7 +180,7 @@ export default {
         this.$parent.init()
       }
     },
-    initTDIMG () {
+    initTDIMG (name) {
       const layerImg = this.initXYZbyURL('http://t4.tianditu.com/DataServer?T=img_w&x={x}&y={y}&l={z}&tk=88e2f1d5ab64a7477a7361edd6b5f68a')
       const layerCia = this.initXYZbyURL('http://t3.tianditu.com/DataServer?T=cia_w&x={x}&y={y}&l={z}&tk=88e2f1d5ab64a7477a7361edd6b5f68a')
       this.layers = [layerImg, layerCia]
@@ -191,11 +193,16 @@ export default {
         this.$parent.init()
       }
     },
-    initGD () {
+    initGD (name) {
       this.layers = [this.initXYZbyURL('http://wprd0{1-4}.is.autonavi.com/appmaptile?x={x}&y={y}&z={z}&lang=zh_cn&size=1&scl=1&style=7')]
-      this.layers.forEach(layer => {
-        this.map.addLayer(layer)
-      })
+      if (name === 'v-map') {
+        this.layers.forEach(layer => {
+          this.map.addLayer(layer)
+        })
+      } else {
+        this.$parent.layers = this.layers
+        this.$parent.init()
+      }
     },
     initBD (name) {
       this.layers = getBDMap({ name: 'bd' }, { name: 'bd' })
@@ -220,7 +227,6 @@ export default {
       this.layer = new TileLayer(layerOpt)
       this.layer.set('base', true)
       this.layer.setZIndex(0)
-      this.map.addLayer(this.layer)
       this.layers = [this.layer]
       if (name === 'v-map') {
         this.map.addLayer(this.layer)

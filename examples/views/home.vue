@@ -69,7 +69,7 @@
         <v-tile-layer v-if="!useDefault" :tile-type="'BD'"></v-tile-layer>
       </v-overview>
       <!-- 瓦片图层 -->
-      <v-tile-layer v-if="showTile" :tile-type="tileType" :xyz="xyz[tileType]"></v-tile-layer>
+      <v-tile-layer v-if="showTile" :tile-type="tileType" :xyz="xyz[tileType]" :preload="Infinity"></v-tile-layer>
       <!-- 矢量图层 -->
       <v-vector-layer v-for="layer in layers" :key="layer.id" :ref="layer.id" :layer-id="layer.id"  :visible="layer.visible" :features="layer.features"></v-vector-layer>
       <!-- 图形图层 渲染海量点 -->
@@ -134,6 +134,7 @@ export default {
       resolutions[i] = Math.pow(2, 18 - i)
     }
     return {
+      Infinity: Infinity,
       showTile: true,
       tileType: 'TD',
       xyz: {
