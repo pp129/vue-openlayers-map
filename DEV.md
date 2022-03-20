@@ -52,7 +52,7 @@ export default {
 
 ## v-map
 
-[地图组件。](./MAP.md)
+[地图组件](./MAP.md)
 
 ## v-tile-layer
 
@@ -76,11 +76,11 @@ export default {
 
 ## v-overview
 
-[鹰眼组件。](OVERVIEW.md)
+[鹰眼组件](OVERVIEW.md)
 
 ## v-overlay
 
-地图弹框组件
+[地图弹框组件](OVERLAY.md)
 
 ## v-track
 
