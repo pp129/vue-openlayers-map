@@ -10,8 +10,8 @@
 
 ```vue
 <template>
-  <v-map :height="height" :width="width" :option="option1.target"></v-map>  
-  <v-map :height="height" :width="width" :option="option2.target"></v-map>  
+  <v-map :height="height" :width="width" :target="option1.target"></v-map>  
+  <v-map :height="height" :width="width" :target="option2.target"></v-map>  
 </template>
 <script>
 export default{
@@ -44,6 +44,29 @@ export default{
 | 说明 | 是否必填 | 类型   | 可选值                                                       | 默认值                                                       |
 | ---- | -------- | ------ | ------------------------------------------------------------ | ------------------------------------------------------------ |
 | 视图 | 否       | Object | 继承[ol/view](https://openlayers.org/en/latest/apidoc/module-ol_View-View.html) | {view={center: [0, 0],zoom: 12,constrainResolution: true,projection: 'EPSG:4326'}} |
+
+```vue
+<template>
+  <v-map :height="height" :width="width" :view="view"></v-map>
+</template>
+<script>
+export default{
+  data(){
+    return {
+      width:'100%',
+      height:'100%',
+      view:{
+        center: [118.045456, 24.567489],//中心点，厦门
+    		zoom: 10,//地图加载完成时显示层级
+    		maxZoom: 18//最大可缩放层级
+      }
+    }
+  }
+}
+</script>
+```
+
+
 
 # events
 
@@ -84,8 +107,30 @@ export default{
   export default{
     methods:{
       onClick(evt, map){
-        console.log(evt.coordinate)
-        console.log(map.getEventPixel(evt.originalEvent))
+        console.log(evt.coordinate)//点击位置经纬度
+        console.log(map.getEventPixel(evt.originalEvent))//点击位置像素
+      }
+    }
+  }
+</script>
+```
+
+## onClickFeature
+
+点击要素
+
+```vue
+<template>
+	<div>
+    <v-map @onClickFeature="onClickFeature"></v-map>
+  </div>
+</template>
+<script>
+  export default{
+    methods:{
+      onClickFeature(feature, layer){
+        console.log(feature)//要素对象
+        console.log(layer)//要素所在图层
       }
     }
   }
@@ -108,7 +153,7 @@ export default{
   export default{
     methods:{
       onChangeZoom(evt,map){
-        console.log(evt.map.getView().getZoom())
+        console.log(evt.map.getView().getZoom())//当前层级
       }
     }
   }
