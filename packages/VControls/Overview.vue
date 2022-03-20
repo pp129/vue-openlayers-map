@@ -3,7 +3,7 @@
 </template>
 
 <script>
-import { addOverviewMapControl, baseTile } from '~/utils'
+import { addOverviewMapControl } from '~/utils'
 import { View } from 'ol'
 
 export default {
@@ -18,16 +18,17 @@ export default {
       type: Boolean,
       default: true
     },
-    layers: {
-      type: Array
-    },
+    // layers: {
+    //   type: Array
+    // },
     view: {
       type: Object
     }
   },
   data () {
     return {
-      overview: null
+      overview: null,
+      layers: []
     }
   },
   computed: {
@@ -36,25 +37,33 @@ export default {
     }
   },
   mounted () {
-    const overviewLayer = baseTile(this.layers, this.layers)
-    const viewOptDefault = {
-      ...{
-        constrainResolution: false,
-        projection: 'EPSG:4326'
-      },
-      ...this.view
+    if (!this.$slots.default || this.$slots.default.length <= 0) {
+      this.layers = this.map.getLayers().getArray().filter(x => x.get('base') === true)
+      this.init()
     }
-    const option = {
-      view: new View(viewOptDefault),
-      layers: overviewLayer,
-      collapsible: this.collapsible,
-      collapsed: this.collapsed
-    }
-    this.overview = addOverviewMapControl(option)
-    this.map.addControl(this.overview)
   },
   beforeDestroy () {
     this.map.removeControl(this.overview)
+  },
+  methods: {
+    init () {
+      // const overviewLayer = baseTile(this.layers, this.layers)
+      const viewOptDefault = {
+        ...{
+          constrainResolution: false,
+          projection: 'EPSG:4326'
+        },
+        ...this.view
+      }
+      const option = {
+        view: new View(viewOptDefault),
+        layers: this.layers,
+        collapsible: this.collapsible,
+        collapsed: this.collapsed
+      }
+      this.overview = addOverviewMapControl(option)
+      this.map.addControl(this.overview)
+    }
   }
 }
 </script>

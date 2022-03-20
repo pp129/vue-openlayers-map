@@ -54,10 +54,6 @@ export default {
 
 [地图组件。](./MAP.md)
 
-## v-overview
-
-鹰眼组件。
-
 ## v-tile-layer
 
 瓦片图层组件
@@ -77,6 +73,10 @@ export default {
 ## v-graphic-layer
 
 图形图层组件。海量点实现推荐使用次图层。
+
+## v-overview
+
+[鹰眼组件。](OVERVIEW.md)
 
 ## v-overlay
 

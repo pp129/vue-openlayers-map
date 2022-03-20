@@ -92,7 +92,7 @@ export default {
     }
   },
   mounted () {
-    this.init()
+    this.init(this.$parent.$options.name)
   },
   beforeDestroy () {
     this.layers.forEach(layer => {
@@ -101,7 +101,7 @@ export default {
     })
   },
   methods: {
-    init () {
+    init (name) {
       const layers = this.map.getLayers().getArray().filter(x => x.get('base'))
       if (layers && layers.length > 0) {
         layers.forEach(layer => {
@@ -110,32 +110,32 @@ export default {
       }
       switch (this.tileType) {
         case 'XYZ':
-          this.initTileXYZ()
+          this.initTileXYZ(name)
           break
         case 'TD':
-          this.initTD()
+          this.initTD(name)
           break
         case 'TD_IMG':
-          this.initTDIMG()
+          this.initTDIMG(name)
           break
         case 'BD':
-          this.initBD()
+          this.initBD(name)
           break
         case 'GD':
-          this.initGD()
+          this.initGD(name)
           break
         case 'OSM':
-          this.initTileOSM()
+          this.initTileOSM(name)
           break
         case 'PGIS':
-          this.initPGIS()
+          this.initPGIS(name)
           break
         default:
-          this.initTileXYZ()
+          this.initTD(name)
           break
       }
     },
-    initTileXYZ () {
+    initTileXYZ (name) {
       console.log(this.xyz)
       let tileGrid
       if (validObjKey(this.xyz, 'tileGrid')) {
@@ -147,7 +147,13 @@ export default {
       this.layer = new TileLayer(layerOpt)
       this.layer.set('base', true)
       this.layer.setZIndex(0)
-      this.map.addLayer(this.layer)
+      this.layers = [this.layer]
+      if (name === 'v-map') {
+        this.map.addLayer(this.layer)
+      } else {
+        this.$parent.layers = this.layers
+        this.$parent.init()
+      }
     },
     initXYZbyURL (url) {
       const xyzOpt = { ...this.$props.xyz, ...{ url: url } }
@@ -159,21 +165,31 @@ export default {
       return layer
       // this.map.addLayer(this.layer)
     },
-    initTD () {
+    initTD (name) {
       const layerVec = this.initXYZbyURL('http://t4.tianditu.com/DataServer?T=vec_w&x={x}&y={y}&l={z}&tk=88e2f1d5ab64a7477a7361edd6b5f68a')
       const layerCva = this.initXYZbyURL('http://t3.tianditu.com/DataServer?T=cva_w&x={x}&y={y}&l={z}&tk=88e2f1d5ab64a7477a7361edd6b5f68a')
       this.layers = [layerVec, layerCva]
-      this.layers.forEach(layer => {
-        this.map.addLayer(layer)
-      })
+      if (name === 'v-map') {
+        this.layers.forEach(layer => {
+          this.map.addLayer(layer)
+        })
+      } else {
+        this.$parent.layers = this.layers
+        this.$parent.init()
+      }
     },
     initTDIMG () {
       const layerImg = this.initXYZbyURL('http://t4.tianditu.com/DataServer?T=img_w&x={x}&y={y}&l={z}&tk=88e2f1d5ab64a7477a7361edd6b5f68a')
       const layerCia = this.initXYZbyURL('http://t3.tianditu.com/DataServer?T=cia_w&x={x}&y={y}&l={z}&tk=88e2f1d5ab64a7477a7361edd6b5f68a')
       this.layers = [layerImg, layerCia]
-      this.layers.forEach(layer => {
-        this.map.addLayer(layer)
-      })
+      if (name === 'v-map') {
+        this.layers.forEach(layer => {
+          this.map.addLayer(layer)
+        })
+      } else {
+        this.$parent.layers = this.layers
+        this.$parent.init()
+      }
     },
     initGD () {
       this.layers = [this.initXYZbyURL('http://wprd0{1-4}.is.autonavi.com/appmaptile?x={x}&y={y}&z={z}&lang=zh_cn&size=1&scl=1&style=7')]
@@ -181,19 +197,24 @@ export default {
         this.map.addLayer(layer)
       })
     },
-    initBD () {
+    initBD (name) {
       this.layers = getBDMap({ name: 'bd' }, { name: 'bd' })
       if (this.layers.length > 0) {
         // this.layer = layers[0]
         // this.layer.set('base', true)
         // this.map.addLayer(this.layer)
-        this.layers.forEach(layer => {
-          layer.setZIndex(0)
-          this.map.addLayer(layer)
-        })
+        if (name === 'v-map') {
+          this.layers.forEach(layer => {
+            layer.setZIndex(0)
+            this.map.addLayer(layer)
+          })
+        } else {
+          this.$parent.layers = this.layers
+          this.$parent.init()
+        }
       }
     },
-    initTileOSM () {
+    initTileOSM (name) {
       const source = new OSM()
       const layerOpt = { ...this.$props, ...{ source: source } }
       this.layer = new TileLayer(layerOpt)
@@ -201,8 +222,14 @@ export default {
       this.layer.setZIndex(0)
       this.map.addLayer(this.layer)
       this.layers = [this.layer]
+      if (name === 'v-map') {
+        this.map.addLayer(this.layer)
+      } else {
+        this.$parent.layers = this.layers
+        this.$parent.init()
+      }
     },
-    initPGIS () {
+    initPGIS (name) {
       const xyzOpt = {
         projection: 'EPSG:4326',
         tileUrlFunction: (tileCoord, pixelRatio, proj) => {
@@ -223,7 +250,13 @@ export default {
       this.layer = new TileLayer(layerOpt)
       this.layer.set('base', true)
       this.layer.setZIndex(0)
-      this.map.addLayer(this.layer)
+      this.layers = [this.layer]
+      if (name === 'v-map') {
+        this.map.addLayer(this.layer)
+      } else {
+        this.$parent.layers = this.layers
+        this.$parent.init()
+      }
     },
     initTileArcGISRest () {}
   }

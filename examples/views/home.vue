@@ -64,7 +64,10 @@
       @onClickFeature="onClickFeature"
       @changeZoom="onChangeZoom">
       <!-- 鹰眼 -->
-      <v-overview :view="overview.view" :layers="overview.layers"></v-overview>
+      <v-overview v-if="showOverview" :view="overview.view">
+        <!-- 鹰眼内使用瓦片图层组件，未引用自定义图层则显示默认瓦片 -->
+        <v-tile-layer v-if="!useDefault" :tile-type="'BD'"></v-tile-layer>
+      </v-overview>
       <!-- 瓦片图层 -->
       <v-tile-layer v-if="showTile" :tile-type="tileType" :xyz="xyz[tileType]"></v-tile-layer>
       <!-- 矢量图层 -->
@@ -365,6 +368,8 @@ export default {
           value: 'PGIS'
         }
       ],
+      showOverview: true,
+      useDefault: false,
       overview: {
         view: {
           center: [118.045456, 24.567489],
