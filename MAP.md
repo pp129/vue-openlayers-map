@@ -10,8 +10,10 @@
 
 ```vue
 <template>
-  <v-map :height="height" :width="width" :target="option1.target"></v-map>  
-  <v-map :height="height" :width="width" :target="option2.target"></v-map>  
+  <div style="width:100%;height:100%;">
+    <v-map :height="height" :width="width" :target="option1.target"></v-map>
+    <v-map :height="height" :width="width" :target="option2.target"></v-map>  
+  </div>	
 </template>
 <script>
 export default{
@@ -57,8 +59,8 @@ export default{
       height:'100%',
       view:{
         center: [118.045456, 24.567489],//中心点，厦门
-    		zoom: 10,//地图加载完成时显示层级
-    		maxZoom: 18//最大可缩放层级
+        zoom: 10,//地图加载完成时显示层级
+        maxZoom: 18//最大可缩放层级
       }
     }
   }
@@ -78,7 +80,7 @@ export default{
 
 ```vue
 <template>
-	<div>
+  <div>
     <v-map @load="onLoad"></v-map>
   </div>
 </template>
@@ -99,7 +101,7 @@ export default{
 
 ```vue
 <template>
-	<div>
+  <div>
     <v-map @click="onClick"></v-map>
   </div>
 </template>
@@ -121,7 +123,7 @@ export default{
 
 ```vue
 <template>
-	<div>
+  <div>
     <v-map @onClickFeature="onClickFeature"></v-map>
   </div>
 </template>
@@ -145,7 +147,7 @@ export default{
 
 ```vue
 <template>
-	<div>
+  <div>
     <v-map @changeZoom="onChangeZoom"></v-map>
   </div>
 </template>
