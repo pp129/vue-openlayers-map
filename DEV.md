@@ -60,7 +60,7 @@ export default {
 
 ## v-vector-layer
 
-矢量图层组件
+[矢量图层组件](VECTORLAYER.md)
 
 ## v-heatmap-layer
 
@@ -76,7 +76,7 @@ export default {
 
 ## v-overview
 
-[鹰眼组件](OVERVIEW.md)
+[概览地图/鹰眼组件](OVERVIEW.md)
 
 ## v-overlay
 

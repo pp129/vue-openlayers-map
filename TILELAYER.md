@@ -1,3 +1,9 @@
+```javascript
+import VTileLayer from 'vue-openlayers-map'
+```
+
+对于在按特定分辨率的缩放级别组织的网格中提供预渲染的平铺图像的图层源。
+
 # props
 
 > 参数
