@@ -101,7 +101,7 @@
         </transition>
       </v-overlay>
       <!-- 轨迹动画 -->
-      <v-track v-for="track in option.track" :key="track.id" :ref="track.id" :id="track.id" :paths="track.paths" :options="track.options" @onLoad="onLoadTrack"></v-track>
+      <v-track v-if="track.paths.length>0" ref="track" :id="track.id" :paths="track.paths" :options="track.options" @onLoad="onLoadTrack"></v-track>
     </v-map>
   </div>
 </template>
@@ -134,6 +134,11 @@ export default {
       resolutions[i] = Math.pow(2, 18 - i)
     }
     return {
+      track: {
+        id: '',
+        paths: [],
+        options: null
+      },
       Infinity: Infinity,
       showTile: true,
       tileType: 'TD',
@@ -782,7 +787,7 @@ export default {
       this.heatmap.features = data
     },
     setTrack () {
-      this.option.track.push({
+      this.track = {
         id: 'track1',
         paths: [
           {
@@ -860,32 +865,32 @@ export default {
           lineColor: 'red', // 轨迹线颜色
           passlineColor: 'lightgreen' // 通过动画轨迹线颜色
         }
-      })
+      }
     },
     startTrack () {
-      if (this.$refs.track1) {
-        this.$refs.track1[0].start()
+      if (this.$refs.track) {
+        this.$refs.track.start()
       } else {
         alert('track unload')
       }
     },
     pauseTrack () {
-      if (this.$refs.track1) {
-        this.$refs.track1[0].pause()
+      if (this.$refs.track) {
+        this.$refs.track.pause()
       } else {
         alert('track unload')
       }
     },
     stopTrack () {
-      if (this.$refs.track1) {
-        this.$refs.track1[0].stop()
+      if (this.$refs.track) {
+        this.$refs.track.stop()
       } else {
         alert('track unload')
       }
     },
     disposeTrack () {
-      if (this.$refs.track1) {
-        this.option.track = []
+      if (this.$refs.track) {
+        this.track.paths = []
       } else {
         alert('track unload')
       }

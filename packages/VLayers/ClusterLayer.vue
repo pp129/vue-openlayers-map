@@ -15,7 +15,7 @@ export default {
     layerId: {
       type: String,
       default () {
-        return `vector-layer-${uuid()}`
+        return `cluster-layer-${uuid()}`
       }
     },
     source: {
@@ -59,21 +59,18 @@ export default {
   watch: {
     distance: {
       handler (value) {
-        console.log('layer visible change', value)
         this.cluster.setDistance(value)
       },
       immediate: false
     },
     minDistance: {
       handler (value) {
-        console.log('layer visible change', value)
         this.cluster.setMinDistance(value)
       },
       immediate: false
     },
     features: {
       handler (value) {
-        console.log('layer features change', value)
         if (value && value.length > 0) {
           this.dispose()
           this.init()
@@ -83,7 +80,6 @@ export default {
     },
     visible: {
       handler (value) {
-        console.log('layer visible change', value)
         this.layer.setVisible(value)
       },
       immediate: false

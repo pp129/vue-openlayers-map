@@ -1,3 +1,9 @@
+```javascript
+import { VOverlay } from 'vue-openlayers-map'
+```
+
+在地图上显示并附加到单个地图位置的元素。就像[`module:ol/control/Control~Control`](https://openlayers.org/en/latest/apidoc/module-ol_control_Control-Control.html)，叠加层是可见的小部件。与控件不同，它们不在屏幕上的固定位置，而是与地理坐标相关联，因此平移地图将移动覆盖而不是控件。
+
 # props
 
 > 参数

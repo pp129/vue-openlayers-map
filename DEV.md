@@ -64,15 +64,15 @@ export default {
 
 ## v-heatmap-layer
 
-热力图组件
+[热力图组件](HEATMAPLAYER.md)
 
 ## v-cluster-layer
 
-聚合图层组件
+[聚合图层组件](CLUSTERLAYER.md)
 
 ## v-graphic-layer
 
-图形图层组件。海量点实现推荐使用次图层。
+[图形图层组件](GRAPHICLAYER.md)。海量点实现推荐使用次图层。
 
 ## v-overview
 
@@ -84,5 +84,5 @@ export default {
 
 ## v-track
 
-轨迹动画组件
+[轨迹动画组件](TRACK.md)
 

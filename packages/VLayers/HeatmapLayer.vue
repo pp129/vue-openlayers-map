@@ -20,7 +20,7 @@ export default {
     layerId: {
       type: String,
       default () {
-        return `vector-layer-${uuid()}`
+        return `heatmap-layer-${uuid()}`
       }
     },
     source: {
@@ -46,12 +46,17 @@ export default {
     weight: {
       type: [String, Function],
       default: 'weight'
+    },
+    gradient: {
+      type: Array,
+      default () {
+        return ['#00f', '#0ff', '#0f0', '#ff0', '#f00']
+      }
     }
   },
   watch: {
     features: {
       handler (value) {
-        console.log('layer features change', value)
         this.layer.getSource().clear()
         if (value && value.length > 0) {
           const features = setFeatures(value, this.map)
@@ -72,9 +77,15 @@ export default {
       },
       immediate: false
     },
+    gradient: {
+      handler (value) {
+        this.layer.setGradient(value)
+      },
+      immediate: false,
+      deep: true
+    },
     visible: {
       handler (value) {
-        console.log('heatmap layer visible change', value)
         this.layer.setVisible(value)
       },
       immediate: false
