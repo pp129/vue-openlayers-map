@@ -243,7 +243,7 @@ export default {
           const z = tileCoord[0]
           const x = tileCoord[1]
           const y = tileCoord[2]
-          return 'http://44.64.135.5/Tile_sl2019/81326548cf7f46638db93d0ab919f0da/EzMap?Service=getImage&Type=RGB&ZoomOffet=0' +
+          return 'http://44.64.135.5/Tile_sl2019/81326548cf7f46638db93d0ab919f0da/EzMap?Service=getImage&Type=RGB&ZoomOffset=0' +
             '&Col=' + x +
             '&Row=' + y +
             '&Zoom=' + z +

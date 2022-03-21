@@ -78,6 +78,10 @@
       <v-heatmap-layer :layer-id="heatmap.id" :features="heatmap.features"></v-heatmap-layer>
       <!-- 聚合 -->
       <v-cluster-layer :layer-id="cluster.id" :features="cluster.features" :distance="cluster.distance"></v-cluster-layer>
+      <!-- arcgis 路径规划服务图层 -->
+      <v-route-layer :route-type="'arcgis'" :service-url="routeLayer.serviceUrl" :method="routeLayer.method" :stops="routeLayer.stops" :impedance-attribute-name="routeLayer.impedanceAttributeName" :route-style="routeLayer.routeStyle"></v-route-layer>
+      <!-- graphhopper 路径规划服务图层 -->
+      <v-route-layer :route-type="'graphhopper'" :service-url="graphhopper.serviceUrl" :stops="graphhopper.stops"></v-route-layer>
       <!-- 遮罩层 -->
       <v-overlay :overlay-id="overlays[0].id" :element="overlays[0].element" :position="overlays[0].position" :auto-pan="true" class="overlay">
         <!-- overlays -->
@@ -107,7 +111,7 @@
 </template>
 
 <script>
-import { VClusterLayer, VGraphicLayer, VHeatmapLayer, VMap, VOverlay, VOverview, VTrack, VVectorLayer, VTileLayer } from '~/index'
+import { VClusterLayer, VGraphicLayer, VHeatmapLayer, VMap, VOverlay, VOverview, VTrack, VVectorLayer, VTileLayer, VRouteLayer } from '~/index'
 import mapOption from '@/utils/mapOption.js'
 import MapOverlay from '@/components/overlay'
 import { heatmap } from '@/utils/heatmap'
@@ -123,6 +127,7 @@ export default {
     VGraphicLayer,
     VHeatmapLayer,
     VClusterLayer,
+    VRouteLayer,
     VOverlay,
     VOverview,
     VTrack,
@@ -374,6 +379,30 @@ export default {
           value: 'PGIS'
         }
       ],
+      graphhopper: {
+        serviceUrl: 'http://172.16.28.74:9999/route',
+        stops: [
+          [118.106298, 24.506290],
+          [118.181858, 24.491986]
+        ]
+      },
+      routeLayer: {
+        serviceUrl: '/arcgis/rest/services/tx/NAServer/Route/solve',
+        method: 'POST',
+        stops: [
+          [120.557909, 30.644344],
+          [120.555485, 30.635603],
+          [120.547913, 30.621760]
+        ],
+        impedanceAttributeName: '长度',
+        routeStyle: {
+          stroke: {
+            color: 'red',
+            width: 5,
+            lineDash: [20, 10, 20, 10]
+          }
+        }
+      },
       showOverview: true,
       useDefault: false,
       overview: {

@@ -11,7 +11,17 @@ module.exports = {
   },
   devServer: {
     hotOnly: true,
-    open: true
+    open: true,
+    proxy: {
+      '/arcgis': {
+        target: 'http://172.16.28.120:6080/arcgis/rest/services/tx/NAServer/Route/solve',
+        changeOrigin: true
+      },
+      '/route': {
+        target: 'http://172.16.28.74:9999/route',
+        changeOrigin: true
+      }
+    }
   },
   chainWebpack: config => {
     // vue默认@指向src目录，这里要修正为examples，另外新增一个~指向packages

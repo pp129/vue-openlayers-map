@@ -3,6 +3,7 @@ import VVectorLayer from './VectorLayer.vue'
 import VGraphicLayer from './GraphicLayer'
 import VHeatmapLayer from './HeatmapLayer'
 import VClusterLayer from './ClusterLayer'
+import VRouteLayer from './RouteLayer'
 
 function install (app) {
   if (install.installed) {
@@ -16,6 +17,7 @@ function install (app) {
   app.component(VGraphicLayer.name, VGraphicLayer)
   app.component(VHeatmapLayer.name, VHeatmapLayer)
   app.component(VClusterLayer.name, VClusterLayer)
+  app.component(VRouteLayer.name, VRouteLayer)
 }
 
 export default install
@@ -26,5 +28,6 @@ export {
   VVectorLayer,
   VGraphicLayer,
   VHeatmapLayer,
-  VClusterLayer
+  VClusterLayer,
+  VRouteLayer
 }

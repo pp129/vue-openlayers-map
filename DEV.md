@@ -74,6 +74,10 @@ export default {
 
 [图形图层组件](GRAPHICLAYER.md)。海量点实现推荐使用次图层。
 
+## v-route-layer
+
+调用arcgis或graphhopper最短路径规划服务生成的图层。[参数文档。](ROUTELAYER.md)
+
 ## v-overview
 
 [概览地图/鹰眼组件](OVERVIEW.md)
