@@ -66,8 +66,8 @@ function setFeature (option, map) {
  * @param map
  * @returns {FeatureExt}
  */
-function setPointFeature (option, map) {
-  let coordinates = []
+export function setPointFeature (option, map) {
+  let coordinates
   if (validObjKey(option, 'convert') && option.convert) {
     switch (option.convert) {
       case 'bd-84':
@@ -98,36 +98,26 @@ function setPointFeature (option, map) {
   const feature = new FeatureExt({
     geometry: new Point(coordinates)
   })
-  const featureStyle = new Style()
   // newFeaturePrototype(feature)
   if (validObjKey(option, 'style')) {
-    const optionStyle = option.style
-    let imageStyle
-    let textStyle
-    if (validObjKey(optionStyle, 'icon')) {
-      imageStyle = new Icon(optionStyle.icon)
-      featureStyle.setImage(imageStyle)
-    }
-    if (validObjKey(optionStyle, 'text')) {
-      const optionText = optionStyle.text
-      textStyle = setText(optionText)
-      featureStyle.setText(textStyle)
-    }
-    if (validObjKey(optionStyle, 'styleFunction')) {
+    const featureStyle = setStyle(option.style)
+    feature.setStyle(featureStyle)
+    if (validObjKey(option.style, 'styleFunction')) {
       feature.setStyle(function (feature, resolution) {
-        return optionStyle.styleFunction(feature, resolution, map, featureStyle)
+        return option.style.styleFunction(feature, resolution, map, featureStyle)
       })
     } else {
       feature.setStyle(featureStyle)
     }
   } else {
-    featureStyle.setImage(new CircleStyle({
-      radius: 5,
-      fill: new Fill({
-        color: '#ff0000'
+    feature.setStyle(new Style({
+      image: new CircleStyle({
+        radius: 4,
+        fill: new Fill({
+          color: 'blue'
+        })
       })
     }))
-    feature.setStyle(featureStyle)
   }
   if (validObjKey(option, 'id')) {
     feature.setId(option.id)
@@ -150,7 +140,7 @@ function setPointFeature (option, map) {
  * @param map
  * @returns {FeatureExt}
  */
-function setCircle (option, map) {
+export function setCircle (option, map) {
   const feature = new FeatureExt({
     geometry: new Circle(option.center, getRadiusByUnit(map, option.radius))
   })
@@ -176,7 +166,7 @@ function getRadiusByUnit (map, radius) {
  * @param option
  * @returns {FeatureExt}
  */
-function setPolyline (option) {
+export function setPolyline (option) {
   const feature = new FeatureExt({
     geometry: new LineString(option.coordinates)
   })
@@ -232,22 +222,7 @@ export function setStyle (option) {
     style.setImage(new Icon(option.icon))
   }
   if (validObjKey(option, 'circle')) {
-    let radius = 2
-    if (validObjKey(option.circle, 'radius')) {
-      radius = option.circle.radius
-    }
-    const optionCircle = {
-      radius: radius
-    }
-    if (validObjKey(option.circle, 'fill')) {
-      optionCircle.fill = new Fill(option.circle.fill)
-    } else {
-      optionCircle.fill = new Fill({ color: 'blue' })
-    }
-    if (validObjKey(option.circle, 'stroke')) {
-      optionCircle.stroke = new Stroke(option.circle.stroke)
-    }
-    const circle = new CircleStyle(optionCircle)
+    const circle = setCircleStyle(option.circle)
     style.setImage(circle)
   }
   if (validObjKey(option, 'text')) {
@@ -256,6 +231,36 @@ export function setStyle (option) {
     style.setText(textStyle)
   }
   return style
+}
+
+export function setImage (option) {
+  const style = new Style()
+  if (validObjKey(option, 'icon')) {
+    style.setImage(new Icon(option.icon))
+  } else if (validObjKey(option, 'circle')) {
+    const circle = setCircleStyle(option.circle)
+    style.setImage(circle)
+  }
+  return style
+}
+
+function setCircleStyle (option) {
+  let radius = 2
+  if (validObjKey(option, 'radius')) {
+    radius = option.radius
+  }
+  const optionCircle = {
+    radius: radius
+  }
+  if (validObjKey(option, 'fill')) {
+    optionCircle.fill = new Fill(option.fill)
+  } else {
+    optionCircle.fill = new Fill({ color: 'blue' })
+  }
+  if (validObjKey(option, 'stroke')) {
+    optionCircle.stroke = new Stroke(option.stroke)
+  }
+  return new CircleStyle(optionCircle)
 }
 
 /**

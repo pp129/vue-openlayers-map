@@ -6,31 +6,21 @@ import {
   Vector as VectorLayer,
   VectorImage as VectorImageLayer
 } from 'ol/layer'
-import ImageLayer from 'ol/layer/Image'
 import WebGLPointsLayer from 'ol/layer/WebGLPoints'
 import { Cluster, Vector as VectorSource } from 'ol/source'
-import ImageCanvasSource from 'ol/source/ImageCanvas'
 import Feature from 'ol/Feature'
-import { Circle, LineString, Point, Polygon } from 'ol/geom'
+import { LineString, Point, Polygon } from 'ol/geom'
 import { Circle as CircleStyle, Fill, Icon, RegularShape, Stroke, Style, Text } from 'ol/style'
 import { defaults as defaultControls } from 'ol/control'
 import { Draw, Modify, Select } from 'ol/interaction'
 import { getArea, getLength } from 'ol/sphere'
-import * as olExtent from 'ol/extent'
 import { getCenter } from 'ol/extent'
-import { toContext } from 'ol/render'
 import { distance, length, lineString, point } from '@turf/turf'
-
 import projzh from '~/VMap/src/utils/projConvert'
-import coordtransform from '~/VMap/src/utils/coordtransform'
-import { baseTile, getCustomerTileXYZ, uuid } from '~/utils'
+import { baseTile, getCustomerTileXYZ, setCircle, setPointFeature, setPolyline, setStyle, validObjKey } from '~/utils'
 import { addCoordinateTransforms, addProjection, Projection } from 'ol/proj'
-
-// import LayerGroup from 'ol/layer/Group'
-
-function validObjKey (obj, key) {
-  return obj && Object.prototype.hasOwnProperty.call(obj, key) && Object.keys(obj).length > 0
-}
+import * as olExtent from 'ol/extent'
+import ImageCanvasSource from 'ol/source/ImageCanvas'
 
 /**
  * 对Map进行扩展，根据图层id获取当前图层下所有元素
@@ -92,18 +82,8 @@ Map.prototype.getLayerById = function (id) {
   return layers.find(x => (x.get('id') === id))
 }
 
-/**
- * 对VectorLayer扩展，获取当前layer下制定id的要素
- * @param id
- * @returns {*}
- */
-VectorLayer.prototype.getFeatureById = function (id) {
-  const source = this.getSource()
-  return source.getFeatureById(id)
-}
-
 const getGraphicsInExtent = function (source, e) {
-  var t = []
+  const t = []
   return e ? (source.get('graphics').map(function (r) {
     console.log(r)
     // eslint-disable-next-line no-sequences
@@ -114,15 +94,15 @@ const getGraphicsInExtent = function (source, e) {
   }), t)
 }
 ImageCanvasSource.prototype._forEachFeatureAtCoordinate = function (e, r, s, i, a) {
-  var n = getGraphicsInExtent(this)
-  for (var o = n.length - 1; o >= 0; o--) {
-    var l = n[o]._style
+  const n = getGraphicsInExtent(this)
+  for (let o = n.length - 1; o >= 0; o--) {
+    const l = n[o]._style
     if (!l) return
-    var h = n[o]._coordinates
-    var u = l.getImage()
-    var c = !1
+    const h = n[o]._coordinates
+    const u = l.getImage()
+    let c = !1
 
-    var _t = []
+    const _t = []
     // eslint-disable-next-line no-unused-expressions,no-sequences
     // console.log(u)
     if (u.getAnchor()) {
@@ -137,6 +117,15 @@ ImageCanvasSource.prototype._forEachFeatureAtCoordinate = function (e, r, s, i, 
   }
 }
 
+/**
+ * 对VectorLayer扩展，获取当前layer下制定id的要素
+ * @param id
+ * @returns {*}
+ */
+VectorLayer.prototype.getFeatureById = function (id) {
+  const source = this.getSource()
+  return source.getFeatureById(id)
+}
 /**
  * 对Feature扩展
  */
@@ -221,29 +210,6 @@ addCoordinateTransforms('EPSG:4326', baiduMercatorProj, projzh.ll2bmerc, projzh.
 addCoordinateTransforms('EPSG:3857', baiduMercatorProj, projzh.smerc2bmerc, projzh.bmerc2smerc)
 
 /**
- * 更新可视的基础切片图层
- * @param map
- * @param tile
- */
-function restVisibleBaseTile (map, tile) {
-  const layers = map.getLayers()
-  layers.forEach(layer => {
-    if (layer.get('base') === true) {
-      layer.setVisible(false)
-      if (typeof tile === 'string') {
-        if (layer.get('name') === tile) {
-          layer.setVisible(true)
-        }
-      } else {
-        if (layer.get('name') === tile.name) {
-          layer.setVisible(true)
-        }
-      }
-    }
-  })
-}
-
-/**
  * 添加图层
  * @param option
  * @param map
@@ -311,6 +277,29 @@ function removeLayer (layer, map) {
   map.removeLayer(layer)
 }
 
+function setLayerStyle (layer, option) {
+  layer.setStyle(function (feature) {
+    if (feature.get('style')) {
+      return setStyle(feature.get('style'))
+    } else {
+      if (validObjKey(option, 'style')) {
+        return setStyle(option.style)
+      } else {
+        return setStyle({
+          fill: {
+            color: 'rgba(67,126,255,0.15)'
+          },
+          stroke: {
+            color: 'rgba(67,126,255,1)',
+            width: 1
+            // lineDash: [20, 10, 20, 10]
+          }
+        })
+      }
+    }
+  })
+}
+
 /**
  * 设置图层
  * @param option
@@ -347,119 +336,10 @@ function setVectorLayer (option, map) {
     const source = addVectorSource(sourceOption, map)
     const layerOptions = { ...{ visible: true }, ...option, ...{ source: source } }
     const layer = new VectorImageLayer(layerOptions)
-    layer.setStyle(function (feature) {
-      if (feature.get('style')) {
-        return setStyle(feature.get('style'))
-      } else {
-        if (validObjKey(option, 'style')) {
-          return setStyle(option.style)
-        } else {
-          return setStyle({
-            fill: {
-              color: 'rgba(67,126,255,0.15)'
-            },
-            stroke: {
-              color: 'rgba(67,126,255,1)',
-              width: 1
-              // lineDash: [20, 10, 20, 10]
-            }
-          })
-        }
-      }
-    })
+    setLayerStyle(layer, option)
     layer.set('id', option.id || '')
     layer.set('type', option.type || 'VectorImage')
     layer.set('users', true)
-    return layer
-  } else if (validObjKey(option, 'type') && option.type === 'graphicLayer') {
-    // let geoms = []
-    let style
-    if (validObjKey(option, 'style')) {
-      style = setStyle(option.style)
-    }
-    const source = new ImageCanvasSource({
-      canvasFunction: function (extent, resolution, pixelRatio, size, projection) {
-        const geoms = []
-        const canvas = document.createElement('canvas')
-        const width = size[0] / pixelRatio
-        const height = size[1] / pixelRatio
-        const vectorContext = toContext(canvas.getContext('2d'), { size: [width, height] })
-        if (style) {
-          vectorContext.setStyle(style)
-        }
-        // vectorContext.setStyle(style)
-        // const fill = new Fill({ color: 'blue' })
-        // vectorContext.setStyle(style)
-        const mapsize = map.getSize()
-        const t = width
-        const r = height
-        const s = [(t - mapsize[0]) / 2, (r - mapsize[1]) / 2]
-        const h = -map.getView().getRotation()
-        const u = map.getPixelFromCoordinate(map.getView().getCenter())
-        if (validObjKey(option, 'source')) {
-          if (validObjKey(option.source, 'features') && option.source.features.length > 0) {
-            option.source.features.map(feature => {
-              const r = feature.coordinates
-              const l = map.getPixelFromCoordinate(r)
-              const c = (function (e, t, r) {
-                return [Math.cos(t) * (e[0] - r[0]) - Math.sin(t) * (e[1] - r[1]) + r[0], Math.sin(t) * (e[0] - r[0]) + Math.cos(t) * (e[1] - r[1]) + r[1]]
-              }((function (e, t, r) {
-                return [(e[0] - t[0]) * r + t[0], (e[1] - t[1]) * r + t[1]]
-              }(l, u, 1)), h, u))
-              const d = [c[0] + s[0], c[1] + s[1]]
-              const p = new Point(d, 'XY')
-              const geom = new FeatureExt(p)
-              geom._coordinates = r
-              geom._style = style
-              for (const i in feature) {
-                if (Object.prototype.hasOwnProperty.call(feature, i)) {
-                  geom.set(i, feature[i])
-                }
-              }
-              geoms.push(geom)
-              if (validObjKey(feature, 'style')) {
-                style = setStyle(feature.style)
-                vectorContext.drawFeature(geom, style)
-              } else {
-                vectorContext.drawGeometry(p)
-              }
-              // vectorContext.drawFeature(geom, style)
-              // vectorContext.drawGeometry(p)
-            })
-          }
-        }
-        source.set('graphics', geoms)
-        // canvas.width = size[0]
-        // canvas.height = size[1]
-        // const context = canvas.getContext('2d')
-        // context.fillStyle = 'blue'
-        // const mapsize = map.getSize()
-        // const delt = [((size[0] - mapsize[0]) / 2), ((size[1] - mapsize[1]) / 2)]
-        // if (validObjKey(option, 'source')) {
-        //   if (option.source.features.length > 0) {
-        //     option.source.features.forEach(feature => {
-        //       const pix = map.getPixelFromCoordinate(feature.coordinates)
-        //       context.beginPath()
-        //       context.arc(pix[0] + delt[0], pix[1] + delt[1], 10, 0, 2 * Math.PI)
-        //       context.closePath()
-        //       context.fill()
-        //       // context.fillRect(pix[0] + delt[0], pix[1] + delt[1], 10, 10)
-        //     })
-        //   }
-        // }
-        return canvas
-      }
-    })
-    const layerOptions = { ...{ visible: true }, ...option, ...{ source: source } }
-    const layer = new ImageLayer(layerOptions)
-    layer.set('id', option.id || '')
-    layer.set('type', option.type || 'graphicLayer')
-    // layer.set('users', true)
-    if (validObjKey(option, 'onClick')) {
-      map.on('singleclick', function (r) {
-        map.forEachSmFeatureAtPixel(r.pixel, option.onClick, {}, r)
-      })
-    }
     return layer
   } else {
     // 元素图层
@@ -470,26 +350,7 @@ function setVectorLayer (option, map) {
     const source = addVectorSource(sourceOption, map)
     const layerOptions = { ...{ visible: true }, ...option, ...{ source: source } }
     const layer = new VectorLayer(layerOptions)
-    layer.setStyle(function (feature) {
-      if (feature.get('style')) {
-        return setStyle(feature.get('style'))
-      } else {
-        if (validObjKey(option, 'style')) {
-          return setStyle(option.style)
-        } else {
-          return setStyle({
-            fill: {
-              color: 'rgba(67,126,255,0.15)'
-            },
-            stroke: {
-              color: 'rgba(67,126,255,1)',
-              width: 1
-              // lineDash: [20, 10, 20, 10]
-            }
-          })
-        }
-      }
-    })
+    setLayerStyle(layer, option)
     layer.set('id', option.id || '')
     layer.set('type', option.type || 'VectorLayer')
     if (option.type === 'draw') {
@@ -537,37 +398,6 @@ function updateOverlay (overlay, option) {
 }
 
 /**
- * 设置文本样式
- * @param option
- * @returns {Text}
- */
-function setText (option) {
-  const defaultParam = {
-    font: '14px sans-serif',
-    padding: [2, 5, 2, 5] // [top, right, bottom, left].
-  }
-  const defaultOption = { ...defaultParam, ...option }
-  const textStyle = new Text(defaultOption)
-  if (validObjKey(option, 'fill')) {
-    const fillStyle = new Fill(option.fill)
-    textStyle.setFill(fillStyle)
-  }
-  if (validObjKey(option, 'backgroundFill')) {
-    const backgroundFillStyle = new Fill(option.backgroundFill)
-    textStyle.setBackgroundFill(backgroundFillStyle)
-  }
-  if (validObjKey(option, 'stroke')) {
-    const strokeStyle = new Stroke(option.stroke)
-    textStyle.setStroke(strokeStyle)
-  }
-  if (validObjKey(option, 'backgroundStroke')) {
-    const backgroundStrokeStyle = new Stroke(option.backgroundStroke)
-    textStyle.setBackgroundStroke(backgroundStrokeStyle)
-  }
-  return textStyle
-}
-
-/**
  * 设置多元素
  * @param features
  * @param map
@@ -608,132 +438,6 @@ function setFeature (option, map) {
 }
 
 /**
- * 获取点类型元素
- * @param option
- * @param map
- * @returns {FeatureExt}
- */
-function setPointFeature (option, map) {
-  let coordinates = []
-  if (validObjKey(option, 'convert') && option.convert) {
-    switch (option.convert) {
-      case 'bd-84':
-        coordinates = coordtransform.bd09towgs84(option.coordinates[0], option.coordinates[1])
-        break
-      case 'bd-gd':
-        coordinates = coordtransform.bd09togcj02(option.coordinates[0], option.coordinates[1])
-        break
-      case 'gd-84':
-        coordinates = coordtransform.gcj02towgs84(option.coordinates[0], option.coordinates[1])
-        break
-      case 'gd-bd':
-        coordinates = coordtransform.gcj02tobd09(option.coordinates[0], option.coordinates[1])
-        break
-      case '84-gd':
-        coordinates = coordtransform.wgs84togcj02(option.coordinates[0], option.coordinates[1])
-        break
-      case '84-bd':
-        coordinates = coordtransform.wgs84tobd09(option.coordinates[0], option.coordinates[1])
-        break
-      default:
-        coordinates = option.coordinates
-        break
-    }
-  } else {
-    coordinates = option.coordinates
-  }
-  const feature = new FeatureExt({
-    geometry: new Point(coordinates)
-  })
-  const featureStyle = new Style()
-  // newFeaturePrototype(feature)
-  if (validObjKey(option, 'style')) {
-    const optionStyle = option.style
-    let imageStyle
-    let textStyle
-    if (validObjKey(optionStyle, 'icon')) {
-      imageStyle = new Icon(optionStyle.icon)
-      featureStyle.setImage(imageStyle)
-    }
-    if (validObjKey(optionStyle, 'text')) {
-      const optionText = optionStyle.text
-      textStyle = setText(optionText)
-      featureStyle.setText(textStyle)
-    }
-    if (validObjKey(optionStyle, 'styleFunction')) {
-      feature.setStyle(function (feature, resolution) {
-        return optionStyle.styleFunction(feature, resolution, map, featureStyle)
-      })
-    } else {
-      feature.setStyle(featureStyle)
-    }
-  } else {
-    featureStyle.setImage(new CircleStyle({
-      radius: 5,
-      fill: new Fill({
-        color: '#ff0000'
-      })
-    }))
-    feature.setStyle(featureStyle)
-  }
-  if (validObjKey(option, 'id')) {
-    feature.setId(option.id)
-  } else {
-    feature.setId(`feature-${uuid()}`)
-  }
-  if (typeof option === 'object') {
-    for (const i in option) {
-      if (Object.prototype.hasOwnProperty.call(option, i)) {
-        feature.set(i, option[i])
-      }
-    }
-  }
-  return feature
-}
-
-/**
- * 获取圆形类型元素
- * @param option
- * @param map
- * @returns {FeatureExt}
- */
-function setCircle (option, map) {
-  const feature = new FeatureExt({
-    geometry: new Circle(option.center, getRadiusByUnit(map, option.radius))
-  })
-  feature.set('style', option.style || null)
-  feature.set('type', option.type || 'circle')
-  feature.set('properties', option.properties || null)
-  return feature
-}
-
-/**
- * 获取以米为单位的半径
- * @param map
- * @param radius
- * @returns {number}
- */
-function getRadiusByUnit (map, radius) {
-  const metersPerUnit = map.getView().getProjection().getMetersPerUnit()
-  return radius / metersPerUnit
-}
-
-/**
- * 获取折线类型元素
- * @param option
- * @returns {FeatureExt}
- */
-function setPolyline (option) {
-  const feature = new FeatureExt({
-    geometry: new LineString(option.coordinates)
-  })
-  feature.set('style', option.style || null)
-  feature.set('type', option.type || 'polyline')
-  feature.set('properties', option.properties || null)
-  return feature
-}
-
-/**
  * 获取多边形类型元素
  * @param option
  * @returns {FeatureExt}
@@ -750,59 +454,6 @@ function setPolygon (option) {
     }
   }
   return feature
-}
-
-/**
- * 获取样式
- * @param option
- * @returns {Style}
- */
-function setStyle (option) {
-  const style = new Style()
-  if (validObjKey(option, 'fill')) {
-    style.setFill(new Fill(option.fill))
-  } else {
-    style.setFill(new Fill({
-      color: 'rgba(67,126,255,0.15)'
-    }))
-  }
-  if (validObjKey(option, 'stroke')) {
-    style.setStroke(new Stroke(option.stroke))
-  } else {
-    style.setStroke(new Stroke({
-      color: 'rgba(67,126,255,1)',
-      width: 1
-      // lineDash: [20, 10, 20, 10]
-    }))
-  }
-  if (validObjKey(option, 'icon')) {
-    style.setImage(new Icon(option.icon))
-  }
-  if (validObjKey(option, 'circle')) {
-    let radius = 2
-    if (validObjKey(option.circle, 'radius')) {
-      radius = option.circle.radius
-    }
-    const optionCircle = {
-      radius: radius
-    }
-    if (validObjKey(option.circle, 'fill')) {
-      optionCircle.fill = new Fill(option.circle.fill)
-    } else {
-      optionCircle.fill = new Fill({ color: 'blue' })
-    }
-    if (validObjKey(option.circle, 'stroke')) {
-      optionCircle.stroke = new Stroke(option.circle.stroke)
-    }
-    const circle = new CircleStyle(optionCircle)
-    style.setImage(circle)
-  }
-  if (validObjKey(option, 'text')) {
-    const optionText = option.text
-    const textStyle = setText(optionText)
-    style.setText(textStyle)
-  }
-  return style
 }
 
 /**
@@ -1394,10 +1045,6 @@ export class VMap {
 
   static removeLayerById (val) {
     return removeLayerById(val, VMap.map.map)
-  }
-
-  static restVisibleBaseTile (name, map) {
-    return restVisibleBaseTile(map, name)
   }
 
   static addOverlay (option, target) {

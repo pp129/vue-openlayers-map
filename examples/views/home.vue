@@ -73,15 +73,17 @@
       <!-- 矢量图层 -->
       <v-vector-layer v-for="layer in layers" :key="layer.id" :ref="layer.id" :layer-id="layer.id"  :visible="layer.visible" :features="layer.features"></v-vector-layer>
       <!-- 图形图层 渲染海量点 -->
-      <v-graphic-layer v-if="comGraphic.show" :layer-id="comGraphic.id" :features="comGraphic.features"></v-graphic-layer>
+      <v-graphic-layer
+        v-if="comGraphic.show"
+        :layer-id="comGraphic.id" :features="comGraphic.features" :feature-style="comGraphic.style"></v-graphic-layer>
       <!-- 热力图 -->
       <v-heatmap-layer :layer-id="heatmap.id" :features="heatmap.features"></v-heatmap-layer>
       <!-- 聚合 -->
       <v-cluster-layer :layer-id="cluster.id" :features="cluster.features" :distance="cluster.distance"></v-cluster-layer>
       <!-- arcgis 路径规划服务图层 -->
-      <v-route-layer :route-type="'arcgis'" :service-url="routeLayer.serviceUrl" :method="routeLayer.method" :stops="routeLayer.stops" :impedance-attribute-name="routeLayer.impedanceAttributeName" :route-style="routeLayer.routeStyle"></v-route-layer>
+      <v-route-layer v-if="routeLayer.show" :route-type="'arcgis'" :service-url="routeLayer.serviceUrl" :method="routeLayer.method" :stops="routeLayer.stops" :impedance-attribute-name="routeLayer.impedanceAttributeName" :route-style="routeLayer.routeStyle"></v-route-layer>
       <!-- graphhopper 路径规划服务图层 -->
-      <v-route-layer :route-type="'graphhopper'" :service-url="graphhopper.serviceUrl" :stops="graphhopper.stops"></v-route-layer>
+      <v-route-layer v-if="graphhopper.show" :route-type="'graphhopper'" :service-url="graphhopper.serviceUrl" :stops="graphhopper.stops"></v-route-layer>
       <!-- 遮罩层 -->
       <v-overlay :overlay-id="overlays[0].id" :element="overlays[0].element" :position="overlays[0].position" :auto-pan="true" class="overlay">
         <!-- overlays -->
@@ -111,7 +113,18 @@
 </template>
 
 <script>
-import { VClusterLayer, VGraphicLayer, VHeatmapLayer, VMap, VOverlay, VOverview, VTrack, VVectorLayer, VTileLayer, VRouteLayer } from '~/index'
+import {
+  VClusterLayer,
+  VGraphicLayer,
+  VHeatmapLayer,
+  VMap,
+  VOverlay,
+  VOverview,
+  VRouteLayer,
+  VTileLayer,
+  VTrack,
+  VVectorLayer
+} from '~/index'
 import mapOption from '@/utils/mapOption.js'
 import MapOverlay from '@/components/overlay'
 import { heatmap } from '@/utils/heatmap'
@@ -191,7 +204,8 @@ export default {
       ],
       comGraphic: {
         show: false,
-        features: []
+        features: [],
+        style: {}
       },
       layers: [
         {
@@ -240,6 +254,21 @@ export default {
                   }
                   style.setText(textStyle)
                   return minZoom <= viewZoom && viewZoom <= maxZoom ? style : null
+                }
+              },
+              properties: {
+                name: 'feature1'
+              }
+            },
+            {
+              id: 'point2',
+              coordinates: [118.168742, 24.487505],
+              style: {
+                circle: {
+                  radius: 5,
+                  fill: {
+                    color: 'red'
+                  }
                 }
               },
               properties: {
@@ -380,6 +409,7 @@ export default {
         }
       ],
       graphhopper: {
+        show: false,
         serviceUrl: 'http://172.16.28.74:9999/route',
         stops: [
           [118.106298, 24.506290],
@@ -387,6 +417,7 @@ export default {
         ]
       },
       routeLayer: {
+        show: false,
         serviceUrl: '/arcgis/rest/services/tx/NAServer/Route/solve',
         method: 'POST',
         stops: [
@@ -642,31 +673,54 @@ export default {
       }
     },
     graphicLayer () {
-      const features = []
+      this.comGraphic.features = []
       const mockData = this.setMockData(31548)
-      mockData.array.forEach((val, i) => {
-        const randomNum = Mock.mock({
-          'number|1-6': 3
-        })
-        // console.log(randomNum)
-        const pic = require(`@/assets/img/point_${randomNum.number}.png`)
-        const image = new Image()
-        image.src = pic
-        features.push({
-          style: {
-            icon: {
-              img: image,
-              imgSize: [40, 40]
-            }
-          },
-          coordinates: val,
-          properties: {
-            name: `graphic-${i}`
+      const image = new Image()
+      image.src = require('@/assets/img/point_1.png')
+
+      // mockData.array.forEach((val, i) => {
+      //   // const image = new Image()
+      //   // const randomNum = Mock.mock({
+      //   //   'number|1-6': 3
+      //   // })
+      //   // image.src = require(`@/assets/img/point_${randomNum.number}.png`)
+      //   this.comGraphic.features.push({
+      //     coordinates: val,
+      //     properties: {
+      //       name: `graphic-${i}`
+      //     }
+      //   })
+      // })
+      this.comGraphic.features = []
+      this.setFeaturesByData(mockData.array).then(res => {
+        this.comGraphic.style = {
+          icon: {
+            img: image,
+            imgSize: [34, 47]
           }
-        })
+        }
+        this.comGraphic.features = res
+        this.comGraphic.show = true
       })
-      this.comGraphic.features = features
-      this.comGraphic.show = true
+    },
+    setFeaturesByData (data) {
+      const output = []
+      return new Promise(resolve => {
+        data.forEach((val, i) => {
+          // const image = new Image()
+          // const randomNum = Mock.mock({
+          //   'number|1-6': 3
+          // })
+          // image.src = require(`@/assets/img/point_${randomNum.number}.png`)
+          output.push({
+            coordinates: val,
+            properties: {
+              name: `graphic-${i}`
+            }
+          })
+        })
+        resolve(output)
+      })
     },
     removeGraphicLayer () {
       this.comGraphic.show = !this.comGraphic.show
