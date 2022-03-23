@@ -1,13 +1,12 @@
-<template>
-<div><slot></slot></div>
-</template>
-
 <script>
 import { uuid } from '~/utils'
 import PathSimplifier from '~/VMap/src/utils/track'
 
 export default {
   name: 'v-track',
+  render (createElement, context) {
+    return null
+  },
   inject: ['VMap'],
   props: {
     id: {

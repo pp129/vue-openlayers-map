@@ -1,7 +1,3 @@
-<template>
-  <div><slot></slot></div>
-</template>
-
 <script>
 import BaseLayer from '~/VLayers/BaseLayer'
 import { addClusterLayer, addVectorSource, setFeatures, uuid } from '~/utils'
@@ -9,6 +5,9 @@ import { Cluster } from 'ol/source'
 
 export default {
   name: 'v-cluster-layer',
+  render (createElement, context) {
+    return null
+  },
   extends: BaseLayer,
   inject: ['VMap'],
   props: {

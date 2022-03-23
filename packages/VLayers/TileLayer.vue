@@ -1,9 +1,3 @@
-<template>
-  <div>
-    <slot></slot>
-  </div>
-</template>
-
 <script>
 import BaseLayer from './BaseLayer'
 import { getBDMap, uuid, validObjKey } from '~/utils'
@@ -12,6 +6,9 @@ import { Tile as TileLayer } from 'ol/layer'
 import { OSM, XYZ } from 'ol/source'
 export default {
   name: 'v-tile-layer',
+  render (createElement, context) {
+    return null
+  },
   extends: BaseLayer,
   inject: ['VMap'],
   props: {

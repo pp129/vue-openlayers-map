@@ -1,13 +1,12 @@
-<template>
-  <div><slot></slot></div>
-</template>
-
 <script>
 import { addOverviewMapControl } from '~/utils'
 import { View } from 'ol'
 
 export default {
   name: 'v-overview',
+  render (createElement, context) {
+    return null
+  },
   inject: ['VMap'],
   props: {
     collapsible: {

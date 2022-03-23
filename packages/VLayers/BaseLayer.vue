@@ -1,9 +1,8 @@
-<template>
-  <div></div>
-</template>
-
 <script>
 export default {
+  render (createElement, context) {
+    return null
+  },
   props: {
     className: {
       type: String,

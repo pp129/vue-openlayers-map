@@ -1,7 +1,3 @@
-<template>
-  <div></div>
-</template>
-
 <script>
 import BaseLayer from './BaseLayer'
 import axios from 'axios'
@@ -12,6 +8,9 @@ import { Vector as VectorSource } from 'ol/source'
 
 export default {
   name: 'v-route-layer',
+  render (createElement, context) {
+    return null
+  },
   extends: BaseLayer,
   inject: ['VMap'],
   props: {

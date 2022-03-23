@@ -1,7 +1,3 @@
-<template>
-  <div><slot></slot></div>
-</template>
-
 <script>
 import BaseLayer from '~/VLayers/BaseLayer'
 import { Heatmap as HeatmapLayer } from 'ol/layer'
@@ -9,6 +5,9 @@ import { addVectorSource, setFeatures, uuid } from '~/utils'
 
 export default {
   name: 'v-heatmap-layer',
+  render (createElement, context) {
+    return null
+  },
   extends: BaseLayer,
   inject: ['VMap'],
   data () {

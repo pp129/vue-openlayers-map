@@ -693,12 +693,6 @@ export default {
       // })
       this.comGraphic.features = []
       this.setFeaturesByData(mockData.array).then(res => {
-        this.comGraphic.style = {
-          icon: {
-            img: image,
-            imgSize: [34, 47]
-          }
-        }
         this.comGraphic.features = res
         this.comGraphic.show = true
       })
@@ -707,13 +701,19 @@ export default {
       const output = []
       return new Promise(resolve => {
         data.forEach((val, i) => {
-          // const image = new Image()
-          // const randomNum = Mock.mock({
-          //   'number|1-6': 3
-          // })
-          // image.src = require(`@/assets/img/point_${randomNum.number}.png`)
+          const image = new Image()
+          const randomNum = Mock.mock({
+            'number|1-6': 3
+          })
+          image.src = require(`@/assets/img/point_${randomNum.number}.png`)
           output.push({
             coordinates: val,
+            style: {
+              icon: {
+                img: image,
+                imgSize: [34, 37]
+              }
+            },
             properties: {
               name: `graphic-${i}`
             }

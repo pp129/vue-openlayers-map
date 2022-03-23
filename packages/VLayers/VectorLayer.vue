@@ -1,7 +1,3 @@
-<template>
-  <div><slot></slot></div>
-</template>
-
 <script>
 import BaseLayer from './BaseLayer'
 import VectorLayer from 'ol/layer/Vector'
@@ -10,6 +6,9 @@ import { addVectorSource, setFeatures, setStyle, uuid } from '~/utils'
 
 export default {
   name: 'v-vector-layer',
+  render (createElement, context) {
+    return null
+  },
   extends: BaseLayer,
   inject: ['VMap'],
   props: {

@@ -1,7 +1,3 @@
-<template>
-<div><slot></slot></div>
-</template>
-
 <script>
 import BaseLayer from '~/VLayers/BaseLayer'
 import ImageCanvasSource from 'ol/source/ImageCanvas'
@@ -13,6 +9,9 @@ import { setImage, setStyle, uuid, validObjKey } from '~/utils'
 
 export default {
   name: 'v-graphic-layer',
+  render (createElement, context) {
+    return null
+  },
   extends: BaseLayer,
   inject: ['VMap'],
   data () {
