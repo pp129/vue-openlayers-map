@@ -9,6 +9,7 @@ module.exports = {
       filename: 'index.html'
     }
   },
+  productionSourceMap: false,
   devServer: {
     hotOnly: true,
     open: true,
