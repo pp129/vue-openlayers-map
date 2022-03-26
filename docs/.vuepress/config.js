@@ -5,7 +5,8 @@ module.exports = {
     sidebar: 'auto',
     lastUpdated: 'Last Updated', // string | boolean
     nav: [
-      { text: 'Home', link: '/' }
+      { text: 'Home', link: '/' },
+      { text: '开发文档', link: '/DEV.html' }
     ]
   }
 }
