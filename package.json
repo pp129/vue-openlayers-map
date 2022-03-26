@@ -8,7 +8,9 @@
     "build": "vue-cli-service build",
     "clean:lib": "rimraf lib",
     "build:lib": "vue-cli-service build --target lib --name vue-openlayers-map --dest lib packages/index.js",
-    "lint": "vue-cli-service lint"
+    "lint": "vue-cli-service lint",
+    "docs:dev": "vuepress dev docs",
+    "docs:build": "vuepress build docs"
   },
   "dependencies": {
     "mockjs": "^1.1.0",

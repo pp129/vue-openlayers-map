@@ -1,0 +1,452 @@
+<!DOCTYPE html>
+<html lang="en-US">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>VuePress</title>
+    <meta name="generator" content="VuePress 1.9.7">
+    
+    <meta name="description" content="">
+    
+    <link rel="preload" href="/assets/css/0.styles.a8c216e1.css" as="style"><link rel="preload" href="/assets/js/app.9c73bfa9.js" as="script"><link rel="preload" href="/assets/js/2.dc7a1b67.js" as="script"><link rel="preload" href="/assets/js/16.8ebacb07.js" as="script"><link rel="prefetch" href="/assets/js/10.ecb6e4e1.js"><link rel="prefetch" href="/assets/js/11.3199c188.js"><link rel="prefetch" href="/assets/js/12.fa14d53b.js"><link rel="prefetch" href="/assets/js/13.90fecc14.js"><link rel="prefetch" href="/assets/js/14.5ccf59de.js"><link rel="prefetch" href="/assets/js/15.a767d298.js"><link rel="prefetch" href="/assets/js/17.34c10904.js"><link rel="prefetch" href="/assets/js/18.dd89ccd0.js"><link rel="prefetch" href="/assets/js/19.cd4c451b.js"><link rel="prefetch" href="/assets/js/20.cf3af2fc.js"><link rel="prefetch" href="/assets/js/21.f005e6b7.js"><link rel="prefetch" href="/assets/js/22.0ed65735.js"><link rel="prefetch" href="/assets/js/3.35341bb8.js"><link rel="prefetch" href="/assets/js/4.8f0cb69f.js"><link rel="prefetch" href="/assets/js/5.6fff5096.js"><link rel="prefetch" href="/assets/js/6.7eff7698.js"><link rel="prefetch" href="/assets/js/7.f9f0427a.js"><link rel="prefetch" href="/assets/js/8.7c24fed7.js"><link rel="prefetch" href="/assets/js/9.cdd57282.js">
+    <link rel="stylesheet" href="/assets/css/0.styles.a8c216e1.css">
+  </head>
+  <body>
+    <div id="app" data-server-rendered="true"><div class="theme-container"><header class="navbar"><div class="sidebar-button"><svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true" role="img" viewBox="0 0 448 512" class="icon"><path fill="currentColor" d="M436 124H12c-6.627 0-12-5.373-12-12V80c0-6.627 5.373-12 12-12h424c6.627 0 12 5.373 12 12v32c0 6.627-5.373 12-12 12zm0 160H12c-6.627 0-12-5.373-12-12v-32c0-6.627 5.373-12 12-12h424c6.627 0 12 5.373 12 12v32c0 6.627-5.373 12-12 12zm0 160H12c-6.627 0-12-5.373-12-12v-32c0-6.627 5.373-12 12-12h424c6.627 0 12 5.373 12 12v32c0 6.627-5.373 12-12 12z"></path></svg></div> <a href="/" class="home-link router-link-active"></a> <div class="links"><div class="search-box"><input aria-label="Search" autocomplete="off" spellcheck="false" value=""> <!----></div> <nav class="nav-links can-hide"><div class="nav-item"><a href="/" class="nav-link">
+  Home
+</a></div> <a href="https://github.com/pp129/vue-openlayers-map" target="_blank" rel="noopener noreferrer" class="repo-link">
+    GitHub
+    <span><svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false" x="0px" y="0px" viewBox="0 0 100 100" width="15" height="15" class="icon outbound"><path fill="currentColor" d="M18.8,85.1h56l0,0c2.2,0,4-1.8,4-4v-32h-8v28h-48v-48h28v-8h-32l0,0c-2.2,0-4,1.8-4,4v56C14.8,83.3,16.6,85.1,18.8,85.1z"></path> <polygon fill="currentColor" points="45.7,48.7 51.3,54.3 77.2,28.5 77.2,37.2 85.2,37.2 85.2,14.9 62.8,14.9 62.8,22.9 71.5,22.9"></polygon></svg> <span class="sr-only">(opens new window)</span></span></a></nav></div></header> <div class="sidebar-mask"></div> <aside class="sidebar"><nav class="nav-links"><div class="nav-item"><a href="/" class="nav-link">
+  Home
+</a></div> <a href="https://github.com/pp129/vue-openlayers-map" target="_blank" rel="noopener noreferrer" class="repo-link">
+    GitHub
+    <span><svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false" x="0px" y="0px" viewBox="0 0 100 100" width="15" height="15" class="icon outbound"><path fill="currentColor" d="M18.8,85.1h56l0,0c2.2,0,4-1.8,4-4v-32h-8v28h-48v-48h28v-8h-32l0,0c-2.2,0-4,1.8-4,4v56C14.8,83.3,16.6,85.1,18.8,85.1z"></path> <polygon fill="currentColor" points="45.7,48.7 51.3,54.3 77.2,28.5 77.2,37.2 85.2,37.2 85.2,14.9 62.8,14.9 62.8,22.9 71.5,22.9"></polygon></svg> <span class="sr-only">(opens new window)</span></span></a></nav>  <ul class="sidebar-links"><li><section class="sidebar-group depth-0"><p class="sidebar-heading open"><span></span> <!----></p> <!----></section></li></ul> </aside> <main class="page"> <div class="theme-default-content content__default"><div class="language-js extra-class"><pre class="language-js"><code><span class="token keyword">const</span> resolutions <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token punctuation">]</span>
+<span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">let</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> <span class="token number">19</span><span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
+  resolutions<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">=</span> Math<span class="token punctuation">.</span><span class="token function">pow</span><span class="token punctuation">(</span><span class="token number">2</span><span class="token punctuation">,</span> <span class="token number">18</span> <span class="token operator">-</span> i<span class="token punctuation">)</span>
+<span class="token punctuation">}</span>
+<span class="token keyword">export</span> <span class="token keyword">default</span> <span class="token punctuation">{</span>
+  <span class="token comment">/**
+   * 地图容器id
+   * 可选
+   * 单页面生成多地图时必填且不重复
+   * @param {String} [target='map']
+   */</span>
+  <span class="token literal-property property">target</span><span class="token operator">:</span> <span class="token string">'map'</span><span class="token punctuation">,</span>
+  <span class="token comment">/**
+   * 控件
+   * 可选
+   * 继承control：https://openlayers.org/en/latest/apidoc/module-ol_control.html
+   * @param {Object} [controls={zoom: false, rotate: false}]
+   */</span>
+  <span class="token literal-property property">controls</span><span class="token operator">:</span> <span class="token punctuation">{</span><span class="token punctuation">}</span><span class="token punctuation">,</span>
+  <span class="token comment">/**
+   * 基础图层
+   * 可选
+   * @param {Array} [baseTile=['td']] 数组内元素可以是字符串或对象，默认天地图矢量图层
+   */</span>
+  <span class="token literal-property property">baseTile</span><span class="token operator">:</span> <span class="token punctuation">[</span>
+    <span class="token string">'td'</span><span class="token punctuation">,</span> <span class="token comment">// 天地图-矢量</span>
+    <span class="token string">'td_img'</span><span class="token punctuation">,</span> <span class="token comment">// 天地图-影像</span>
+    <span class="token string">'bd'</span><span class="token punctuation">,</span> <span class="token comment">// 百度</span>
+    <span class="token comment">/**
+     * 自定义图层 以高德地图为例
+     * @param {String} [type]
+     * @param {String} [name]
+     * @param {Array} [option]
+     */</span>
+    <span class="token punctuation">{</span>
+      <span class="token literal-property property">type</span><span class="token operator">:</span> <span class="token string">'xyz'</span><span class="token punctuation">,</span>
+      <span class="token literal-property property">name</span><span class="token operator">:</span> <span class="token string">'gd'</span><span class="token punctuation">,</span>
+      <span class="token literal-property property">option</span><span class="token operator">:</span> <span class="token punctuation">[</span>
+        <span class="token punctuation">{</span>
+          <span class="token literal-property property">url</span><span class="token operator">:</span> <span class="token string">'http://wprd0{1-4}.is.autonavi.com/appmaptile?x={x}&amp;y={y}&amp;z={z}&amp;lang=zh_cn&amp;size=1&amp;scl=1&amp;style=7'</span>
+        <span class="token punctuation">}</span>
+      <span class="token punctuation">]</span>
+    <span class="token punctuation">}</span><span class="token punctuation">,</span>
+    <span class="token comment">/**
+     * 自定义图层 接受完整XYZ参数
+     * 继承 https://openlayers.org/en/latest/apidoc/module-ol_source_XYZ-XYZ.html
+     */</span>
+    <span class="token punctuation">{</span>
+      <span class="token literal-property property">type</span><span class="token operator">:</span> <span class="token string">'xyz'</span><span class="token punctuation">,</span>
+      <span class="token literal-property property">name</span><span class="token operator">:</span> <span class="token string">'xyz_bd'</span><span class="token punctuation">,</span>
+      <span class="token literal-property property">option</span><span class="token operator">:</span> <span class="token punctuation">[</span>
+        <span class="token punctuation">{</span>
+          <span class="token literal-property property">projection</span><span class="token operator">:</span> <span class="token string">'baidu'</span><span class="token punctuation">,</span>
+          <span class="token literal-property property">tileGrid</span><span class="token operator">:</span> <span class="token punctuation">{</span>
+            <span class="token literal-property property">origin</span><span class="token operator">:</span> <span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">,</span> <span class="token comment">// 设置原点坐标</span>
+            <span class="token literal-property property">resolutions</span><span class="token operator">:</span> resolutions <span class="token comment">// 设置分辨率</span>
+          <span class="token punctuation">}</span><span class="token punctuation">,</span>
+          <span class="token function-variable function">tileUrlFunction</span><span class="token operator">:</span> <span class="token keyword">function</span> <span class="token punctuation">(</span><span class="token parameter">tileCoord<span class="token punctuation">,</span> pixelRatio<span class="token punctuation">,</span> proj</span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
+            <span class="token keyword">if</span> <span class="token punctuation">(</span><span class="token operator">!</span>tileCoord<span class="token punctuation">)</span> <span class="token punctuation">{</span>
+              <span class="token keyword">return</span> <span class="token string">''</span>
+            <span class="token punctuation">}</span>
+            <span class="token keyword">const</span> z <span class="token operator">=</span> tileCoord<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span>
+            <span class="token keyword">const</span> x <span class="token operator">=</span> tileCoord<span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">]</span>
+            <span class="token keyword">const</span> y <span class="token operator">=</span> <span class="token operator">-</span>tileCoord<span class="token punctuation">[</span><span class="token number">2</span><span class="token punctuation">]</span> <span class="token operator">-</span> <span class="token number">1</span>
+            <span class="token keyword">return</span> <span class="token string">'https://maponline1.bdimg.com/tile/?qt=vtile&amp;x='</span> <span class="token operator">+</span>
+              x <span class="token operator">+</span> <span class="token string">'&amp;y='</span> <span class="token operator">+</span> y <span class="token operator">+</span> <span class="token string">'&amp;z='</span> <span class="token operator">+</span> z <span class="token operator">+</span>
+              <span class="token string">'&amp;styles=pl&amp;scaler=1&amp;udt=20220113&amp;from=jsapi2_0'</span>
+          <span class="token punctuation">}</span>
+        <span class="token punctuation">}</span>
+      <span class="token punctuation">]</span>
+    <span class="token punctuation">}</span>
+  <span class="token punctuation">]</span><span class="token punctuation">,</span>
+  <span class="token comment">/**
+   * 默认可视切片
+   * 多个基础图层情况下默认显示的图层,与baseTile中的元素对应
+   * 可选
+   * @param {String|Object} [visibleTile=baseTile[0]]
+   */</span>
+  <span class="token literal-property property">visibleTile</span><span class="token operator">:</span> <span class="token string">'td'</span><span class="token punctuation">,</span>
+  <span class="token comment">/**
+   * 鹰眼显示图层
+   * 参考baseTile中元素，可以是字符串也可以是对象，不设置此属性或值为false则不显示鹰眼
+   */</span>
+  <span class="token literal-property property">overview</span><span class="token operator">:</span> <span class="token string">'td'</span><span class="token punctuation">,</span>
+  <span class="token comment">/**
+   * 视图 view
+   * 继承view ： https://openlayers.org/en/latest/apidoc/module-ol_View-View.html
+   * 可选
+   * @param {Object} [view={center: [0, 0],zoom: 12,constrainResolution: true,projection: 'EPSG:4326'}]
+   */</span>
+  <span class="token literal-property property">view</span><span class="token operator">:</span> <span class="token punctuation">{</span>
+    <span class="token literal-property property">center</span><span class="token operator">:</span> <span class="token punctuation">[</span><span class="token number">118.045456</span><span class="token punctuation">,</span> <span class="token number">24.567489</span><span class="token punctuation">]</span><span class="token punctuation">,</span>
+    <span class="token literal-property property">zoom</span><span class="token operator">:</span> <span class="token number">10</span><span class="token punctuation">,</span>
+    <span class="token literal-property property">constrainResolution</span><span class="token operator">:</span> <span class="token boolean">true</span> <span class="token comment">// 设置视图是否应允许中间缩放级别。true:鼠标缩放地图,每次缩放级别为整数1</span>
+  <span class="token punctuation">}</span><span class="token punctuation">,</span>
+  <span class="token comment">/**
+   * 矢量图层集合
+   * @param {Array} [layers=[]]
+   */</span>
+  <span class="token literal-property property">layers</span><span class="token operator">:</span> <span class="token punctuation">[</span>
+    <span class="token comment">/**
+     * 示例图层 layer
+     * 继承layer：https://openlayers.org/en/latest/apidoc/module-ol_layer_Layer-Layer.html
+     * 可选
+     * @param {Object}
+     */</span>
+    <span class="token punctuation">{</span>
+      <span class="token literal-property property">id</span><span class="token operator">:</span> <span class="token string">'layer1'</span><span class="token punctuation">,</span>
+      <span class="token literal-property property">visible</span><span class="token operator">:</span> <span class="token boolean">true</span><span class="token punctuation">,</span>
+      <span class="token comment">/**
+       * 图层来源 source
+       * 继承VectorSource：https://openlayers.org/en/latest/apidoc/module-ol_source_Vector-VectorSource.html
+       * 可选
+       * @param {Object}
+       */</span>
+      <span class="token literal-property property">source</span><span class="token operator">:</span> <span class="token punctuation">{</span>
+        <span class="token literal-property property">features</span><span class="token operator">:</span> <span class="token punctuation">[</span>
+          <span class="token punctuation">{</span>
+            <span class="token literal-property property">coordinates</span><span class="token operator">:</span> <span class="token punctuation">[</span><span class="token number">118.140448</span><span class="token punctuation">,</span> <span class="token number">24.512917</span><span class="token punctuation">]</span><span class="token punctuation">,</span>
+            <span class="token literal-property property">convert</span><span class="token operator">:</span> <span class="token string">'bd-84'</span><span class="token punctuation">,</span> <span class="token comment">// 特殊属性，经纬度转化。支持：百度(bd)、高德(gd)、wgs84(84)互转</span>
+            <span class="token comment">/**
+             * 样式：https://openlayers.org/en/latest/apidoc/module-ol_style_Style-Style.html
+             */</span>
+            <span class="token literal-property property">style</span><span class="token operator">:</span> <span class="token punctuation">{</span>
+              <span class="token comment">/**
+               * 点位图标：https://openlayers.org/en/latest/apidoc/module-ol_style_Icon-Icon.html
+               */</span>
+              <span class="token literal-property property">icon</span><span class="token operator">:</span> <span class="token punctuation">{</span>
+                <span class="token literal-property property">scale</span><span class="token operator">:</span> <span class="token number">0.6</span><span class="token punctuation">,</span>
+                <span class="token literal-property property">src</span><span class="token operator">:</span> <span class="token function">require</span><span class="token punctuation">(</span><span class="token string">'@/assets/img/point_red.png'</span><span class="token punctuation">)</span>
+              <span class="token punctuation">}</span><span class="token punctuation">,</span>
+              <span class="token comment">/**
+               * 文本样式：https://openlayers.org/en/latest/apidoc/module-ol_style_Text-Text.html
+               */</span>
+              <span class="token literal-property property">text</span><span class="token operator">:</span> <span class="token punctuation">{</span>
+                <span class="token literal-property property">text</span><span class="token operator">:</span> <span class="token string">'百度转84'</span><span class="token punctuation">,</span>
+                <span class="token literal-property property">font</span><span class="token operator">:</span> <span class="token string">'13px sans-serif'</span><span class="token punctuation">,</span>
+                <span class="token literal-property property">fill</span><span class="token operator">:</span> <span class="token punctuation">{</span>
+                  <span class="token literal-property property">color</span><span class="token operator">:</span> <span class="token string">'#3d73e8'</span>
+                <span class="token punctuation">}</span><span class="token punctuation">,</span>
+                <span class="token literal-property property">backgroundFill</span><span class="token operator">:</span> <span class="token punctuation">{</span>
+                  <span class="token literal-property property">color</span><span class="token operator">:</span> <span class="token string">'#ffffff'</span>
+                <span class="token punctuation">}</span><span class="token punctuation">,</span>
+                <span class="token literal-property property">stroke</span><span class="token operator">:</span> <span class="token punctuation">{</span>
+                  <span class="token literal-property property">color</span><span class="token operator">:</span> <span class="token string">'#ffffff'</span><span class="token punctuation">,</span>
+                  <span class="token literal-property property">width</span><span class="token operator">:</span> <span class="token number">1</span>
+                <span class="token punctuation">}</span><span class="token punctuation">,</span>
+                <span class="token literal-property property">backgroundStroke</span><span class="token operator">:</span> <span class="token punctuation">{</span>
+                  <span class="token literal-property property">color</span><span class="token operator">:</span> <span class="token string">'#000000'</span><span class="token punctuation">,</span>
+                  <span class="token literal-property property">width</span><span class="token operator">:</span> <span class="token number">1</span>
+                <span class="token punctuation">}</span><span class="token punctuation">,</span>
+                <span class="token literal-property property">offsetX</span><span class="token operator">:</span> <span class="token number">0</span><span class="token punctuation">,</span>
+                <span class="token literal-property property">offsetY</span><span class="token operator">:</span> <span class="token number">30</span>
+              <span class="token punctuation">}</span><span class="token punctuation">,</span>
+              <span class="token comment">/**
+               * 要素样式自定义方法
+               * @param feature
+               * @param resolution
+               * @param map
+               * @param style
+               * @returns {*|null}
+               */</span>
+              <span class="token function-variable function">styleFunction</span><span class="token operator">:</span> <span class="token keyword">function</span> <span class="token punctuation">(</span><span class="token parameter">feature<span class="token punctuation">,</span> resolution<span class="token punctuation">,</span> map<span class="token punctuation">,</span> style</span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
+                <span class="token keyword">const</span> viewZoom <span class="token operator">=</span> map<span class="token punctuation">.</span><span class="token function">getView</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">getZoom</span><span class="token punctuation">(</span><span class="token punctuation">)</span>
+                <span class="token keyword">const</span> minZoom <span class="token operator">=</span> <span class="token number">12</span>
+                <span class="token keyword">const</span> maxZoom <span class="token operator">=</span> <span class="token number">16</span>
+                <span class="token keyword">const</span> textStyle <span class="token operator">=</span> style<span class="token punctuation">.</span><span class="token function">getText</span><span class="token punctuation">(</span><span class="token punctuation">)</span>
+                <span class="token keyword">if</span> <span class="token punctuation">(</span>viewZoom <span class="token operator">&gt;=</span> <span class="token number">14</span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
+                  textStyle<span class="token punctuation">.</span><span class="token function">setText</span><span class="token punctuation">(</span><span class="token string">'百度转84'</span><span class="token punctuation">)</span>
+                <span class="token punctuation">}</span>
+                <span class="token keyword">if</span> <span class="token punctuation">(</span>viewZoom <span class="token operator">&gt;=</span> <span class="token number">15</span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
+                  textStyle<span class="token punctuation">.</span><span class="token function">setText</span><span class="token punctuation">(</span><span class="token string">'根据层级显示不同内容'</span><span class="token punctuation">)</span>
+                <span class="token punctuation">}</span>
+                style<span class="token punctuation">.</span><span class="token function">setText</span><span class="token punctuation">(</span>textStyle<span class="token punctuation">)</span>
+                <span class="token keyword">return</span> minZoom <span class="token operator">&lt;=</span> viewZoom <span class="token operator">&amp;&amp;</span> viewZoom <span class="token operator">&lt;=</span> maxZoom <span class="token operator">?</span> style <span class="token operator">:</span> <span class="token keyword">null</span>
+              <span class="token punctuation">}</span>
+            <span class="token punctuation">}</span><span class="token punctuation">,</span>
+            <span class="token comment">// 需要附加在元素上的属性，一般用于点击获取点位信息，使用feature.get('properties')读取</span>
+            <span class="token literal-property property">properties</span><span class="token operator">:</span> <span class="token punctuation">{</span>
+              <span class="token literal-property property">name</span><span class="token operator">:</span> <span class="token string">'feature1'</span>
+            <span class="token punctuation">}</span>
+          <span class="token punctuation">}</span><span class="token punctuation">,</span>
+          <span class="token punctuation">{</span>
+            <span class="token literal-property property">coordinates</span><span class="token operator">:</span> <span class="token punctuation">[</span><span class="token number">118.0501900989113</span><span class="token punctuation">,</span> <span class="token number">24.58279368463898</span><span class="token punctuation">]</span><span class="token punctuation">,</span>
+            <span class="token literal-property property">style</span><span class="token operator">:</span> <span class="token punctuation">{</span>
+              <span class="token literal-property property">icon</span><span class="token operator">:</span> <span class="token punctuation">{</span>
+                <span class="token literal-property property">src</span><span class="token operator">:</span> <span class="token function">require</span><span class="token punctuation">(</span><span class="token string">'@/assets/img/point_blue.png'</span><span class="token punctuation">)</span>
+              <span class="token punctuation">}</span>
+            <span class="token punctuation">}</span><span class="token punctuation">,</span>
+            <span class="token literal-property property">properties</span><span class="token operator">:</span> <span class="token punctuation">{</span>
+              <span class="token literal-property property">name</span><span class="token operator">:</span> <span class="token string">'feature2'</span>
+            <span class="token punctuation">}</span>
+          <span class="token punctuation">}</span>
+        <span class="token punctuation">]</span>
+      <span class="token punctuation">}</span>
+    <span class="token punctuation">}</span><span class="token punctuation">,</span>
+    <span class="token comment">/**
+     * 示例图层 继承layer
+     * features为多边形、折线、圆形
+     */</span>
+    <span class="token punctuation">{</span>
+      <span class="token literal-property property">id</span><span class="token operator">:</span> <span class="token string">'polygon'</span><span class="token punctuation">,</span>
+      <span class="token literal-property property">visible</span><span class="token operator">:</span> <span class="token boolean">true</span><span class="token punctuation">,</span>
+      <span class="token literal-property property">source</span><span class="token operator">:</span> <span class="token punctuation">{</span>
+        <span class="token literal-property property">features</span><span class="token operator">:</span> <span class="token punctuation">[</span>
+          <span class="token punctuation">{</span>
+            <span class="token literal-property property">type</span><span class="token operator">:</span> <span class="token string">'polygon'</span><span class="token punctuation">,</span> <span class="token comment">// 除了普通icon点位，其他元素需注明元素类型</span>
+            <span class="token literal-property property">style</span><span class="token operator">:</span> <span class="token punctuation">{</span>
+              <span class="token literal-property property">fill</span><span class="token operator">:</span> <span class="token punctuation">{</span>
+                <span class="token literal-property property">color</span><span class="token operator">:</span> <span class="token string">'rgba(67,126,152,0.15)'</span>
+              <span class="token punctuation">}</span><span class="token punctuation">,</span>
+              <span class="token literal-property property">stroke</span><span class="token operator">:</span> <span class="token punctuation">{</span>
+                <span class="token literal-property property">color</span><span class="token operator">:</span> <span class="token string">'rgba(67,126,255,1)'</span><span class="token punctuation">,</span>
+                <span class="token literal-property property">width</span><span class="token operator">:</span> <span class="token number">1</span><span class="token punctuation">,</span>
+                <span class="token literal-property property">lineDash</span><span class="token operator">:</span> <span class="token punctuation">[</span><span class="token number">20</span><span class="token punctuation">,</span> <span class="token number">10</span><span class="token punctuation">,</span> <span class="token number">20</span><span class="token punctuation">,</span> <span class="token number">10</span><span class="token punctuation">]</span>
+              <span class="token punctuation">}</span><span class="token punctuation">,</span>
+              <span class="token literal-property property">text</span><span class="token operator">:</span> <span class="token punctuation">{</span>
+                <span class="token literal-property property">text</span><span class="token operator">:</span> <span class="token string">'多边形'</span><span class="token punctuation">,</span>
+                <span class="token literal-property property">font</span><span class="token operator">:</span> <span class="token string">'13px sans-serif'</span><span class="token punctuation">,</span>
+                <span class="token literal-property property">fill</span><span class="token operator">:</span> <span class="token punctuation">{</span>
+                  <span class="token literal-property property">color</span><span class="token operator">:</span> <span class="token string">'#3d73e8'</span>
+                <span class="token punctuation">}</span>
+              <span class="token punctuation">}</span>
+            <span class="token punctuation">}</span><span class="token punctuation">,</span>
+            <span class="token literal-property property">updateStyle</span><span class="token operator">:</span> <span class="token punctuation">{</span>
+              <span class="token literal-property property">fill</span><span class="token operator">:</span> <span class="token punctuation">{</span>
+                <span class="token literal-property property">color</span><span class="token operator">:</span> <span class="token string">'rgba(4,3,43,0.5)'</span>
+              <span class="token punctuation">}</span>
+            <span class="token punctuation">}</span><span class="token punctuation">,</span>
+            <span class="token literal-property property">coordinates</span><span class="token operator">:</span> <span class="token punctuation">[</span>
+              <span class="token punctuation">[</span><span class="token number">118.23048075355373</span><span class="token punctuation">,</span> <span class="token number">24.587052571002776</span><span class="token punctuation">]</span><span class="token punctuation">,</span> <span class="token punctuation">[</span><span class="token number">118.25051461705989</span><span class="token punctuation">,</span> <span class="token number">24.592192894082423</span><span class="token punctuation">]</span><span class="token punctuation">,</span>
+              <span class="token punctuation">[</span><span class="token number">118.24383041710121</span><span class="token punctuation">,</span> <span class="token number">24.561810933485354</span><span class="token punctuation">]</span><span class="token punctuation">,</span> <span class="token punctuation">[</span><span class="token number">118.23048075355373</span><span class="token punctuation">,</span> <span class="token number">24.587052571002776</span><span class="token punctuation">]</span>
+            <span class="token punctuation">]</span>
+          <span class="token punctuation">}</span><span class="token punctuation">,</span>
+          <span class="token punctuation">{</span>
+            <span class="token literal-property property">type</span><span class="token operator">:</span> <span class="token string">'polyline'</span><span class="token punctuation">,</span>
+            <span class="token literal-property property">style</span><span class="token operator">:</span> <span class="token punctuation">{</span>
+              <span class="token literal-property property">stroke</span><span class="token operator">:</span> <span class="token punctuation">{</span>
+                <span class="token literal-property property">color</span><span class="token operator">:</span> <span class="token string">'rgba(220,171,119,1)'</span><span class="token punctuation">,</span>
+                <span class="token literal-property property">width</span><span class="token operator">:</span> <span class="token number">2</span>
+                <span class="token comment">// lineDash: [20, 10, 20, 10]</span>
+              <span class="token punctuation">}</span>
+            <span class="token punctuation">}</span><span class="token punctuation">,</span>
+            <span class="token literal-property property">coordinates</span><span class="token operator">:</span> <span class="token punctuation">[</span><span class="token punctuation">[</span><span class="token number">118.20513460817911</span><span class="token punctuation">,</span> <span class="token number">24.6005204040184</span><span class="token punctuation">]</span><span class="token punctuation">,</span> <span class="token punctuation">[</span><span class="token number">118.22511304202654</span><span class="token punctuation">,</span> <span class="token number">24.607323827184675</span><span class="token punctuation">]</span><span class="token punctuation">,</span> <span class="token punctuation">[</span><span class="token number">118.22998527470209</span><span class="token punctuation">,</span> <span class="token number">24.627570481933592</span><span class="token punctuation">]</span><span class="token punctuation">]</span>
+          <span class="token punctuation">}</span><span class="token punctuation">,</span>
+          <span class="token punctuation">{</span>
+            <span class="token literal-property property">type</span><span class="token operator">:</span> <span class="token string">'circle'</span><span class="token punctuation">,</span>
+            <span class="token literal-property property">center</span><span class="token operator">:</span> <span class="token punctuation">[</span><span class="token number">118.25945470514871</span><span class="token punctuation">,</span> <span class="token number">24.608883531726836</span><span class="token punctuation">]</span><span class="token punctuation">,</span>
+            <span class="token literal-property property">radius</span><span class="token operator">:</span> <span class="token number">500</span><span class="token punctuation">,</span>
+            <span class="token literal-property property">style</span><span class="token operator">:</span> <span class="token punctuation">{</span>
+              <span class="token literal-property property">text</span><span class="token operator">:</span> <span class="token punctuation">{</span>
+                <span class="token literal-property property">text</span><span class="token operator">:</span> <span class="token string">'圆形'</span>
+              <span class="token punctuation">}</span>
+            <span class="token punctuation">}</span>
+          <span class="token punctuation">}</span>
+        <span class="token punctuation">]</span>
+      <span class="token punctuation">}</span>
+    <span class="token punctuation">}</span>
+  <span class="token punctuation">]</span><span class="token punctuation">,</span>
+  <span class="token comment">/**
+   * 图形图层，使用ImageCanvas渲染图层。建议海量点业务使用此图层
+   */</span>
+  <span class="token literal-property property">graphicLayers</span><span class="token operator">:</span> <span class="token punctuation">[</span>
+    <span class="token punctuation">{</span>
+      <span class="token literal-property property">source</span><span class="token operator">:</span> <span class="token punctuation">{</span>
+        <span class="token literal-property property">features</span><span class="token operator">:</span> <span class="token punctuation">[</span><span class="token punctuation">{</span>
+          <span class="token literal-property property">id</span><span class="token operator">:</span> <span class="token string">'point2'</span><span class="token punctuation">,</span>
+          <span class="token literal-property property">coordinates</span><span class="token operator">:</span> <span class="token punctuation">[</span><span class="token number">118.106671</span><span class="token punctuation">,</span> <span class="token number">24.449304</span><span class="token punctuation">]</span><span class="token punctuation">,</span>
+          <span class="token literal-property property">properties</span><span class="token operator">:</span> <span class="token punctuation">{</span>
+            <span class="token literal-property property">name</span><span class="token operator">:</span> <span class="token string">'feature2'</span>
+          <span class="token punctuation">}</span>
+        <span class="token punctuation">}</span><span class="token punctuation">]</span>
+      <span class="token punctuation">}</span><span class="token punctuation">,</span>
+      <span class="token literal-property property">style</span><span class="token operator">:</span> <span class="token punctuation">{</span>
+        <span class="token literal-property property">icon</span><span class="token operator">:</span> <span class="token punctuation">{</span>
+          <span class="token literal-property property">src</span><span class="token operator">:</span> <span class="token function">require</span><span class="token punctuation">(</span><span class="token string">'@/assets/img/point_red.png'</span><span class="token punctuation">)</span>
+        <span class="token punctuation">}</span>
+      <span class="token punctuation">}</span>
+    <span class="token punctuation">}</span>
+  <span class="token punctuation">]</span><span class="token punctuation">,</span>
+  <span class="token comment">/**
+   * 聚合图层集合
+   */</span>
+  <span class="token literal-property property">clusters</span><span class="token operator">:</span> <span class="token punctuation">[</span>
+    <span class="token punctuation">{</span>
+      <span class="token literal-property property">visible</span><span class="token operator">:</span> <span class="token boolean">true</span><span class="token punctuation">,</span>
+      <span class="token literal-property property">minZoom</span><span class="token operator">:</span> <span class="token number">10</span><span class="token punctuation">,</span>
+      <span class="token literal-property property">maxZoom</span><span class="token operator">:</span> <span class="token number">16</span><span class="token punctuation">,</span>
+      <span class="token comment">/**
+       * 聚合：https://openlayers.org/en/latest/apidoc/module-ol_source_Cluster-Cluster.html
+       */</span>
+      <span class="token literal-property property">cluster</span><span class="token operator">:</span> <span class="token punctuation">{</span>
+        <span class="token comment">// 继承source</span>
+        <span class="token literal-property property">source</span><span class="token operator">:</span> <span class="token punctuation">{</span>
+          <span class="token literal-property property">features</span><span class="token operator">:</span> <span class="token punctuation">[</span>
+            <span class="token punctuation">{</span>
+              <span class="token literal-property property">coordinates</span><span class="token operator">:</span> <span class="token punctuation">[</span><span class="token number">117.96768937292673</span><span class="token punctuation">,</span> <span class="token number">24.51616895381355</span><span class="token punctuation">]</span><span class="token punctuation">,</span>
+              <span class="token literal-property property">style</span><span class="token operator">:</span> <span class="token punctuation">{</span>
+                <span class="token literal-property property">icon</span><span class="token operator">:</span> <span class="token punctuation">{</span>
+                  <span class="token literal-property property">src</span><span class="token operator">:</span> <span class="token function">require</span><span class="token punctuation">(</span><span class="token string">'@/assets/img/point_red.png'</span><span class="token punctuation">)</span>
+                <span class="token punctuation">}</span>
+              <span class="token punctuation">}</span>
+            <span class="token punctuation">}</span><span class="token punctuation">,</span>
+            <span class="token punctuation">{</span>
+              <span class="token literal-property property">coordinates</span><span class="token operator">:</span> <span class="token punctuation">[</span><span class="token number">117.97481324839465</span><span class="token punctuation">,</span> <span class="token number">24.502306340499445</span><span class="token punctuation">]</span><span class="token punctuation">,</span>
+              <span class="token literal-property property">style</span><span class="token operator">:</span> <span class="token punctuation">{</span>
+                <span class="token literal-property property">icon</span><span class="token operator">:</span> <span class="token punctuation">{</span>
+                  <span class="token literal-property property">src</span><span class="token operator">:</span> <span class="token function">require</span><span class="token punctuation">(</span><span class="token string">'@/assets/img/point_blue.png'</span><span class="token punctuation">)</span>
+                <span class="token punctuation">}</span>
+              <span class="token punctuation">}</span>
+            <span class="token punctuation">}</span>
+          <span class="token punctuation">]</span><span class="token punctuation">,</span>
+          <span class="token literal-property property">extent</span><span class="token operator">:</span> <span class="token punctuation">[</span><span class="token number">117.882223</span><span class="token punctuation">,</span> <span class="token number">24.386902</span><span class="token punctuation">,</span> <span class="token number">118.373857</span><span class="token punctuation">,</span> <span class="token number">24.90727</span><span class="token punctuation">]</span>
+        <span class="token punctuation">}</span><span class="token punctuation">,</span>
+        <span class="token literal-property property">distance</span><span class="token operator">:</span> <span class="token number">120</span><span class="token punctuation">,</span> <span class="token comment">// 要素将聚集在一起的像素距离。</span>
+        <span class="token literal-property property">minDistance</span><span class="token operator">:</span> <span class="token number">1</span><span class="token comment">// 聚合之间的最小距离（以像素为单位）。将被限制在配置的距离。默认情况下，不设置最小距离。此配置可用于避免重叠图标。作为权衡，聚合要素的位置将不再是其所有要素的中心。</span>
+      <span class="token punctuation">}</span>
+    <span class="token punctuation">}</span>
+  <span class="token punctuation">]</span><span class="token punctuation">,</span>
+  <span class="token comment">/**
+   * 热力图图层集合
+   */</span>
+  <span class="token literal-property property">heatmaps</span><span class="token operator">:</span> <span class="token punctuation">[</span>
+    <span class="token comment">/**
+     * 示例图层 继承layer
+     * 热力图：https://openlayers.org/en/latest/apidoc/module-ol_layer_Heatmap-Heatmap.html
+     */</span>
+    <span class="token punctuation">{</span>
+      <span class="token literal-property property">id</span><span class="token operator">:</span> <span class="token string">'heatmap'</span><span class="token punctuation">,</span>
+      <span class="token literal-property property">visible</span><span class="token operator">:</span> <span class="token boolean">true</span><span class="token punctuation">,</span>
+      <span class="token comment">// 继承source</span>
+      <span class="token literal-property property">source</span><span class="token operator">:</span> <span class="token punctuation">{</span>
+        <span class="token literal-property property">features</span><span class="token operator">:</span> <span class="token punctuation">[</span><span class="token punctuation">]</span>
+      <span class="token punctuation">}</span><span class="token punctuation">,</span>
+      <span class="token literal-property property">blur</span><span class="token operator">:</span> <span class="token number">15</span><span class="token punctuation">,</span> <span class="token comment">// 模糊大小 控制热力图热度深浅</span>
+      <span class="token literal-property property">radius</span><span class="token operator">:</span> <span class="token number">5</span><span class="token punctuation">,</span> <span class="token comment">// 半径大小 点扩散的范围</span>
+      <span class="token comment">/**
+       * 用于权重的特征属性或从特征返回权重的函数。权重值的范围应为 0 到 1（超出范围的值将被限制在该范围内）。
+       * type: string | function
+       * (defaults to 'weight')
+       */</span>
+      <span class="token literal-property property">weight</span><span class="token operator">:</span> <span class="token string">'weight'</span>
+    <span class="token punctuation">}</span>
+  <span class="token punctuation">]</span><span class="token punctuation">,</span>
+  <span class="token comment">/**
+   * 叠加（弹框）https://openlayers.org/en/latest/apidoc/module-ol_Overlay-Overlay.html
+   */</span>
+  <span class="token literal-property property">overlays</span><span class="token operator">:</span> <span class="token punctuation">[</span>
+    <span class="token punctuation">{</span>
+      <span class="token literal-property property">id</span><span class="token operator">:</span> <span class="token string">'overlay1'</span><span class="token punctuation">,</span>
+      <span class="token literal-property property">element</span><span class="token operator">:</span> <span class="token string">'overlay1'</span><span class="token punctuation">,</span> <span class="token comment">// 仅支持dom元素id，不支持直接设置HTMLElement</span>
+      <span class="token literal-property property">position</span><span class="token operator">:</span> <span class="token keyword">undefined</span>
+    <span class="token punctuation">}</span><span class="token punctuation">,</span>
+    <span class="token punctuation">{</span>
+      <span class="token literal-property property">id</span><span class="token operator">:</span> <span class="token string">'drawEnd'</span><span class="token punctuation">,</span>
+      <span class="token literal-property property">element</span><span class="token operator">:</span> <span class="token string">'drawEnd'</span><span class="token punctuation">,</span>
+      <span class="token literal-property property">position</span><span class="token operator">:</span> <span class="token keyword">undefined</span><span class="token punctuation">,</span>
+      <span class="token literal-property property">offset</span><span class="token operator">:</span> <span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">]</span>
+    <span class="token punctuation">}</span>
+  <span class="token punctuation">]</span><span class="token punctuation">,</span>
+  <span class="token comment">/**
+   * 轨迹动画集合
+   */</span>
+  <span class="token literal-property property">track</span><span class="token operator">:</span> <span class="token punctuation">[</span>
+    <span class="token punctuation">{</span>
+      <span class="token literal-property property">id</span><span class="token operator">:</span> <span class="token string">'track1'</span><span class="token punctuation">,</span>
+      <span class="token literal-property property">speed</span><span class="token operator">:</span> <span class="token number">45</span><span class="token punctuation">,</span>
+      <span class="token literal-property property">routes</span><span class="token operator">:</span> <span class="token punctuation">[</span>
+        <span class="token punctuation">[</span><span class="token number">118.171545</span><span class="token punctuation">,</span> <span class="token number">24.460156</span><span class="token punctuation">]</span><span class="token punctuation">,</span>
+        <span class="token punctuation">[</span><span class="token number">118.169381</span><span class="token punctuation">,</span> <span class="token number">24.459420</span><span class="token punctuation">]</span><span class="token punctuation">,</span>
+        <span class="token punctuation">[</span><span class="token number">118.167310</span><span class="token punctuation">,</span> <span class="token number">24.457971</span><span class="token punctuation">]</span><span class="token punctuation">,</span>
+        <span class="token punctuation">[</span><span class="token number">118.166292</span><span class="token punctuation">,</span> <span class="token number">24.456996</span><span class="token punctuation">]</span><span class="token punctuation">,</span>
+        <span class="token punctuation">[</span><span class="token number">118.165197</span><span class="token punctuation">,</span> <span class="token number">24.456315</span><span class="token punctuation">]</span><span class="token punctuation">,</span>
+        <span class="token punctuation">[</span><span class="token number">118.163195</span><span class="token punctuation">,</span> <span class="token number">24.455480</span><span class="token punctuation">]</span><span class="token punctuation">,</span>
+        <span class="token punctuation">[</span><span class="token number">118.161864</span><span class="token punctuation">,</span> <span class="token number">24.454370</span><span class="token punctuation">]</span><span class="token punctuation">,</span>
+        <span class="token punctuation">[</span><span class="token number">118.161154</span><span class="token punctuation">,</span> <span class="token number">24.454048</span><span class="token punctuation">]</span><span class="token punctuation">,</span>
+        <span class="token punctuation">[</span><span class="token number">118.159665</span><span class="token punctuation">,</span> <span class="token number">24.454158</span><span class="token punctuation">]</span><span class="token punctuation">,</span>
+        <span class="token punctuation">[</span><span class="token number">118.157046</span><span class="token punctuation">,</span> <span class="token number">24.453941</span><span class="token punctuation">]</span>
+      <span class="token punctuation">]</span><span class="token punctuation">,</span>
+      <span class="token literal-property property">start</span><span class="token operator">:</span> <span class="token punctuation">{</span>
+        <span class="token literal-property property">icon</span><span class="token operator">:</span> <span class="token punctuation">{</span>
+          <span class="token literal-property property">scale</span><span class="token operator">:</span> <span class="token number">0.05</span><span class="token punctuation">,</span>
+          <span class="token literal-property property">src</span><span class="token operator">:</span> <span class="token function">require</span><span class="token punctuation">(</span><span class="token string">'@/assets/img/point_start.png'</span><span class="token punctuation">)</span>
+        <span class="token punctuation">}</span>
+      <span class="token punctuation">}</span><span class="token punctuation">,</span>
+      <span class="token literal-property property">end</span><span class="token operator">:</span> <span class="token punctuation">{</span>
+        <span class="token literal-property property">icon</span><span class="token operator">:</span> <span class="token punctuation">{</span>
+          <span class="token literal-property property">scale</span><span class="token operator">:</span> <span class="token number">0.05</span><span class="token punctuation">,</span>
+          <span class="token literal-property property">src</span><span class="token operator">:</span> <span class="token function">require</span><span class="token punctuation">(</span><span class="token string">'@/assets/img/point_end.png'</span><span class="token punctuation">)</span>
+        <span class="token punctuation">}</span>
+      <span class="token punctuation">}</span><span class="token punctuation">,</span>
+      <span class="token literal-property property">geoMarker</span><span class="token operator">:</span> <span class="token punctuation">{</span>
+        <span class="token literal-property property">icon</span><span class="token operator">:</span> <span class="token punctuation">{</span>
+          <span class="token literal-property property">scale</span><span class="token operator">:</span> <span class="token number">0.1</span><span class="token punctuation">,</span>
+          <span class="token literal-property property">src</span><span class="token operator">:</span> <span class="token function">require</span><span class="token punctuation">(</span><span class="token string">'@/assets/img/car.png'</span><span class="token punctuation">)</span><span class="token punctuation">,</span>
+          <span class="token literal-property property">rotation</span><span class="token operator">:</span> <span class="token number">180</span>
+        <span class="token punctuation">}</span>
+      <span class="token punctuation">}</span><span class="token punctuation">,</span>
+      <span class="token literal-property property">state</span><span class="token operator">:</span> <span class="token string">''</span><span class="token comment">// start、pause、continue、stop</span>
+    <span class="token punctuation">}</span>
+  <span class="token punctuation">]</span><span class="token punctuation">,</span>
+  <span class="token comment">/**
+   * 除去默认的交互选项： https://openlayers.org/en/latest/apidoc/module-ol_interaction.html#~DefaultsOptions
+   * 要新加的交互类型集合
+   * 目前支持:
+   * select -- 选择要素
+   * modify -- 更改要素
+   * draw ---- 绘制地理要素
+   */</span>
+  <span class="token literal-property property">interaction</span><span class="token operator">:</span> <span class="token punctuation">[</span><span class="token punctuation">]</span><span class="token punctuation">,</span>
+  <span class="token comment">/**
+   * 测量工具
+   * 可选
+   * @param {String} [type] LineString：测线 Polygon：测面
+   * @param {Boolean} [segments] 是否显示分段测量值
+   * @param {Boolean} [clear] 是否清空上次测量
+   * {
+          type: '',
+          segments: true,
+          clear: true
+   * }
+   * 当值为false/null/undefined时为不设置或清空测量
+   */</span>
+  <span class="token literal-property property">measure</span><span class="token operator">:</span> <span class="token boolean">false</span>
+<span class="token punctuation">}</span>
+
+</code></pre></div></div> <footer class="page-edit"><!----> <!----></footer> <!----> </main></div><div class="global-ui"></div></div>
+    <script src="/assets/js/app.9c73bfa9.js" defer></script><script src="/assets/js/2.dc7a1b67.js" defer></script><script src="/assets/js/16.8ebacb07.js" defer></script>
+  </body>
+</html>
