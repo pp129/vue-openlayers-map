@@ -13,12 +13,12 @@
     "docs:build": "vuepress build docs"
   },
   "dependencies": {
+    "@turf/turf": "^6.5.0",
+    "axios": "^0.26.1",
+    "core-js": "^3.6.5",
     "mockjs": "^1.1.0",
     "ol": "^6.13.0",
     "qs": "^6.10.3",
-    "axios": "^0.26.1",
-    "core-js": "^3.6.5",
-    "@turf/turf": "^6.5.0",
     "vue": "^2.6.11"
   },
   "devDependencies": {
@@ -38,7 +38,8 @@
     "sass": "^1.26.5",
     "sass-loader": "^8.0.2",
     "vue-router": "^3.5.3",
-    "vue-template-compiler": "^2.6.11"
+    "vue-template-compiler": "^2.6.11",
+    "vuepress": "^1.9.7"
   },
   "repository": {
     "type": "git",
