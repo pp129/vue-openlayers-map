@@ -1,6 +1,6 @@
 <script>
 import { uuid } from '~/utils'
-import PathSimplifier from '~/VMap/src/utils/track'
+import PathSimplifier from '~/VTrack/track'
 
 export default {
   name: 'v-track',
