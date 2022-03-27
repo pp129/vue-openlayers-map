@@ -1,10 +1,12 @@
+# RouteLayer
+
 ```javascript
 import { VRouteLayer } from 'vue-openlayers-map'
 ```
 
 路径规划图层。支持由arcgis、graphhopper发布的最短路径规划服务所获取的数据生成图层。
 
-# props
+## props
 
 > 参数
 
@@ -18,13 +20,13 @@ import { VRouteLayer } from 'vue-openlayers-map'
 | `routeType`  | String |                          | **必填**，路径规划数据类型。可选值：`arcgis`   `graphhopper` |
 | `stops`      | Array  | `[]`                     | 路线计算坐标。                                               |
 
-## arcgis props
+### arcgis props
 
 当`routeType`为`arcgis`时组件的可选参数。
 
 [实在太多了，还是去官网看吧~](https://developers.arcgis.com/rest/network/api-reference/route-synchronous-service.htm)
 
-## graphhopper props
+### graphhopper props
 
 当`routeType`为`graphhopper`时组件的可选参数。只封装了如下部分。
 
@@ -39,7 +41,7 @@ import { VRouteLayer } from 'vue-openlayers-map'
 | type            | string                       | 否（json）         | 返回值类型                                                   |
 | weighting       | string                       | 否（fastest）      | 最佳路径计算标准（shortest，fastest）                        |
 
-# use
+## use
 
 ```vue
 <template>

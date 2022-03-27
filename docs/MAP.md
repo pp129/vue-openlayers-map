@@ -70,11 +70,11 @@ export default{
 
 
 
-# events
+## events
 
 > 事件
 
-## load
+### load
 
 地图对象生成完成事件
 
@@ -95,7 +95,7 @@ export default{
 </script>
 ```
 
-## click
+### click
 
 点击事件
 
@@ -117,7 +117,7 @@ export default{
 </script>
 ```
 
-## onClickFeature
+### onClickFeature
 
 点击要素
 
@@ -141,7 +141,7 @@ export default{
 
 
 
-## changeZoom
+### changeZoom
 
 层级变化事件
 
@@ -164,35 +164,35 @@ export default{
 
 
 
-## drawstart
+### drawstart
 
 绘制开始事件
 
-## drawend
+### drawend
 
 绘制完成事件
 
-## modifystart
+### modifystart
 
 编辑开始事件
 
-## modifyend
+### modifyend
 
 编辑结束事件
 
-## measurestart
+### measurestart
 
 测量开始事件
 
-## measureend
+### measureend
 
 测量完成事件
 
-# methods
+## methods
 
 > 方法
 
-## panTo
+### panTo
 
 移动地图中心点
 
@@ -204,7 +204,7 @@ const param = {
 this.$refs.map.panTo(param)
 ```
 
-## getDistancePoint
+### getDistancePoint
 
 获取两点之间距离
 
@@ -218,15 +218,15 @@ this.$refs.map.panTo(param)
 const distance = this.$refs.map.getDistancePoint(from, to, units)
 ```
 
-## getDistanceString
+### getDistanceString
 
 获取两线之间距离
 
-## setFeature
+### setFeature
 
 主动生成要素
 
-## getCenterByExtent
+### getCenterByExtent
 
 获取区域中心点
 
@@ -237,7 +237,7 @@ const polygonFeature = feature.getGeometry().getExtent()
 const center = this.$refs.map.getCenterByExtent(polygonFeature)
 ```
 
-## getFeatureById
+### getFeatureById
 
 根据指定图层id获取该图层下指定id的要素
 

@@ -1,10 +1,13 @@
+# GraphicLayer
+
 ```javascript
 import {VGraphicLayer} from 'vue-openlayers-map'
 ```
 
 实际上是一个资源为[ImageCanvasSource](https://openlayers.org/en/latest/apidoc/module-ol_source_ImageCanvas-ImageCanvasSource.html)生成的[ImageLayer](https://openlayers.org/en/latest/apidoc/module-ol_layer_Image-ImageLayer.html)。建议用于非常大量的矢量数据渲染。
 
-# props
+
+## props
 
 > 参数
 

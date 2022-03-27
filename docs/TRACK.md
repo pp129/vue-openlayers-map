@@ -1,10 +1,12 @@
+# Track
+
 ```javascript
 import { VTrack } from 'vue-openlayers-map'
 ```
 
 轨迹动画组件
 
-# props
+## props
 
 > 参数
 
@@ -21,7 +23,7 @@ import { VTrack } from 'vue-openlayers-map'
 | `centerAtCar`         | Boolean              | `false`           | 视图是否跟随小车                                    |
 | `options`             | Object               | `{}`              | 小车参数                                            |
 
-## paths
+### paths
 
 > 轨迹点数据
 
@@ -37,7 +39,7 @@ const paths = [
 ]
 ```
 
-## option
+### option
 
 > 小车参数
 
@@ -67,7 +69,7 @@ const options = {
 }
 ```
 
-# use
+## use
 
 ```vue
 <template>
@@ -166,11 +168,11 @@ export default{
 
 
 
-# methods
+## methods
 
 > 可调用方法
 
-## start
+### start
 
 开始轨迹动画。
 
@@ -178,7 +180,7 @@ export default{
 this.$refs.track.start()
 ```
 
-## pause
+### pause
 
 暂停轨迹动画，执行`start`方法将继续动画。
 
@@ -186,7 +188,7 @@ this.$refs.track.start()
 this.$refs.track.pause()
 ```
 
-## stop
+### stop
 
 结束轨迹动画。小车将回到起始点。
 
@@ -194,7 +196,7 @@ this.$refs.track.pause()
 this.$refs.track.stop()
 ```
 
-## dispose
+### dispose
 
 清除轨迹动画。
 
@@ -202,7 +204,7 @@ this.$refs.track.stop()
 this.$refs.track.dispose()
 ```
 
-# event
+## event
 
 > 事件
 

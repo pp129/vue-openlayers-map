@@ -1,10 +1,12 @@
+# HeatmapLayer
+
 ```javascript
 import { VHeatmapLayer } from 'vue-openlayers-map'
 ```
 
 用于将矢量数据渲染为热力图的图层。
 
-# props
+## props
 
 > 参数
 

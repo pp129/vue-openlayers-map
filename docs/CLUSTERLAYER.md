@@ -1,10 +1,12 @@
+# ClusterLayer
+
 ```javascript
 import { VClusterLayer } from 'vue-openlayers-map'
 ```
 
 用于聚合类矢量数据的图层。
 
-# props
+## props
 
 > 参数
 
