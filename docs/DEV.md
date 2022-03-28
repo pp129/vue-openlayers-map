@@ -90,3 +90,10 @@ export default {
 
 [轨迹动画组件](TRACK.md)
 
+### v-draw
+
+[绘制组件](DRAW.md)
+
+### v-measure
+
+[测量组件](MEASURE.md)

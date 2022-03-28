@@ -20,3 +20,15 @@ import { VMeasure } from 'vue-openlayers-map'
 
 - `Polygon`面积
 - `LineString`线长
+
+## events
+
+> 事件
+
+### measurestart
+
+测量开始
+
+### measureend
+
+测量结束

@@ -41,3 +41,22 @@ import { VDraw } from 'vue-openlayers-map'
 - `GeometryCollection`
 - `Circle`圆
 
+## events
+
+> 事件
+
+### drawstart
+
+绘制开始事件
+
+### drawend
+
+绘制结束事件
+
+### modifystart
+
+编辑开始事件
+
+### modifyend
+
+编辑结束事件
