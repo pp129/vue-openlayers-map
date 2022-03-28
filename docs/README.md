@@ -38,13 +38,8 @@
 - [x] 弹框 [Overlay](OVERLAY.md)
 - [x] 轨迹动画 [Track](TRACK.md)
 - [x] 交互 Interaction
-  - [x] 编辑 modify
-  - [x] 选中 select
-  - [x] 绘制 draw
-    - [x] 自定义参数clear-清除上一次绘制
-    - [x] 自定义参数endRight-鼠标右键结束绘制
-    - [x] 自定义参数editable-结束绘制后可选中编辑
-- [x] 测量 Measure
+  - [x] 绘制 [Draw](DRAW.md)
+  - [x] 测量 [Measure](MEASURE.md)
 
 ## docs
 
