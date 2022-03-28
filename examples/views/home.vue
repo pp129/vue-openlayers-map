@@ -56,11 +56,7 @@
       :height="height"
       :width="width"
       :view="option.view"
-      :interaction="option.interaction"
-      :measure="option.measure"
       @load="onLoad"
-      @drawend="drawEnd"
-      @measureend="measureEnd"
       @click="onClick"
       @onClickFeature="onClickFeature"
       @changeZoom="onChangeZoom">
@@ -111,6 +107,10 @@
       </v-overlay>
       <!-- 轨迹动画 -->
       <v-track v-if="track.paths.length>0" ref="track" :id="track.id" :paths="track.paths" :options="track.options" @onLoad="onLoadTrack"></v-track>
+      <!-- 绘制 -->
+      <v-draw v-if="showInteraction" :type="interaction.type" :clear="interaction.clear" :freehand="interaction.freehand" :end-right="interaction.endRight" :editable="interaction.editable" @drawend="drawEnd"></v-draw>
+      <!-- 测量 -->
+      <v-measure v-if="showMeasure" :type="measureOpt.type" :segments="measureOpt.segments" :clear="measureOpt.clear" @measureend="measureEnd"></v-measure>
     </v-map>
   </div>
 </template>
@@ -127,7 +127,9 @@ import {
   VRouteLayer,
   VTileLayer,
   VTrack,
-  VVectorLayer
+  VVectorLayer,
+  VDraw,
+  VMeasure
 } from '~/index'
 import mapOption from '@/utils/mapOption.js'
 import MapOverlay from '@/components/overlay'
@@ -149,7 +151,9 @@ export default {
     VOverlay,
     VOverview,
     VTrack,
-    MapOverlay
+    MapOverlay,
+    VDraw,
+    VMeasure
   },
   data () {
     const resolutions = []
@@ -157,6 +161,20 @@ export default {
       resolutions[i] = Math.pow(2, 18 - i)
     }
     return {
+      showInteraction: false,
+      interaction: {
+        type: '',
+        clear: true,
+        freehand: false,
+        endRight: true,
+        editable: true
+      },
+      showMeasure: false,
+      measureOpt: {
+        type: '',
+        segments: true,
+        clear: true
+      },
       webglLayer: {
         features: [],
         style: {
@@ -773,45 +791,21 @@ export default {
       this.$refs.map.setLayerVisibleById(value, visible)
     },
     changeInteractions () {
-      this.option.interaction = []
       if (this.drawType !== 'none') {
-        this.option.interaction.push({
-          type: 'draw',
-          value: this.drawType,
-          freehand: true,
-          clear: true,
-          endRight: true,
-          editable: false
-        })
+        this.interaction.type = this.drawType
+        this.showInteraction = true
+      } else {
+        this.interaction.type = ''
+        this.showInteraction = false
       }
     },
     save () {
-      const index = this.option.layers.findIndex(x => x.id === 'polygon')
-      if (index > -1) {
-        this.option.layers[index].source.features.push({
-          type: 'polygon', // 除了普通icon点位，其他元素需注明元素类型
-          style: {
-            fill: {
-              color: 'rgba(167,26,12,0.15)'
-            },
-            stroke: {
-              color: 'rgba(67,126,255,1)',
-              width: 1,
-              lineDash: [20, 10, 20, 10]
-            }
-          },
-          coordinates: this.drawCoors
-        })
-      }
       this.hideOverlayById('drawEnd')
     },
     clearDraw () {
-      const index = this.option.interaction.findIndex(x => x.type === 'draw')
-      if (index > -1) {
-        this.option.interaction.splice(index, 1)
-        this.hideOverlayById('drawEnd')
-        this.drawType = 'none'
-      }
+      this.interaction.type = ''
+      this.hideOverlayById('drawEnd')
+      this.drawType = 'none'
     },
     hideOverlayById (id) {
       this.overlays.forEach(overlay => {
@@ -829,14 +823,13 @@ export default {
       }
     },
     measure () {
-      this.option.measure = false
-      if (this.measureType !== 'none') {
-        this.option.measure = {
-          type: this.measureType,
-          segments: true,
-          clear: true
-        }
-      }
+      this.showMeasure = false
+      this.measureOpt = Object.assign({}, {
+        type: this.measureType === 'none' ? '' : this.measureType,
+        segments: true,
+        clear: true
+      })
+      this.showMeasure = true
     },
     getHeatmapData () {
       const data = []

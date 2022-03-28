@@ -45,18 +45,6 @@ export default {
           projection: 'EPSG:4326'
         }
       }
-    },
-    interaction: {
-      type: Array,
-      default () {
-        return []
-      }
-    },
-    measure: {
-      type: [Boolean, Array],
-      default () {
-        return false
-      }
     }
   },
   computed: {
@@ -64,9 +52,7 @@ export default {
       return {
         target: this.target,
         view: this.view,
-        controls: this.controls,
-        interaction: this.interaction,
-        measure: this.measure
+        controls: this.controls
       }
     },
     map () {
@@ -74,26 +60,10 @@ export default {
     }
   },
   watch: {
-    interaction: {
-      handler (value) {
-        console.log('interaction change', value)
-        this.setInteraction(value)
-      }
-    },
-    measure: {
-      handler (value) {
-        console.log('measure change', value)
-        this.setMeasure(value)
-      }
-    }
   },
   data () {
     return {
-      load: false,
-      changeObj: {
-        layers: [],
-        overlays: []
-      }
+      load: false
     }
   },
   mounted () {
@@ -123,9 +93,6 @@ export default {
     this.dispose()
   },
   methods: {
-    validObjKey (obj, key) {
-      return obj && Object.prototype.hasOwnProperty.call(obj, key) && Object.keys(obj).length > 0
-    },
     init () {
       return new Promise((resolve, reject) => {
         console.log(this.mapOption)
@@ -162,46 +129,8 @@ export default {
         this.zoomEnd(evt)
       })
     },
-    reloadLayer (layers) {
-      layers.forEach(layer => { this.setLayer(layer) })
-    },
     getMap () {
       return VMap.map
-    },
-    addLayer (layer) {
-      this.map.addLayer(layer)
-    },
-    setLayer (layer) {
-      return VMap.setLayer(layer, this.map)
-    },
-    setLayers (layers) {
-      const output = []
-      this.map.getLayers().forEach(layer => {
-        let index = -1
-        if (layer && layer.get('users')) {
-          layers.forEach(item => {
-            if (item.id === layer.get('id')) {
-              index++
-            }
-          })
-          if (index < 0) {
-            VMap.removeLayer(layer)
-          }
-        }
-      })
-      layers.forEach(layer => {
-        output.push(this.setLayer(layer))
-      })
-    },
-    updateFeatures (layerId, data) {
-      this.map.getLayers().getArray().forEach(val => {
-        if (val.get('id') === layerId) {
-          console.log(val)
-          val.getSource().clear()
-          const features = VMap.setFeatures(data)
-          val.getSource().addFeatures(features)
-        }
-      })
     },
     updateFeatureById (layerId, featureId, update) {
       this.map.getLayers().getArray().forEach(val => {
@@ -223,63 +152,6 @@ export default {
         }
       })
     },
-    setHeatmaps (layers) {
-      this.map.getLayers().forEach(layer => {
-        let index = -1
-        if (layer && layer.get('type') === 'heatmap') {
-          layers.forEach(item => {
-            if (item.id === layer.get('id')) {
-              index++
-            }
-          })
-          if (index < 0) {
-            VMap.removeLayer(layer)
-          }
-        }
-      })
-      layers.forEach(val => {
-        const layer = { ...{ id: `heatmap-${uuid()}`, type: 'heatmap' }, ...val }
-        this.setLayer(layer)
-      })
-    },
-    setClusters (layers) {
-      this.map.getLayers().forEach(layer => {
-        let index = -1
-        if (layer && layer.get('type') === 'cluster') {
-          layers.forEach(item => {
-            if (item.id === layer.get('id')) {
-              index++
-            }
-          })
-          if (index < 0) {
-            VMap.removeLayer(layer)
-          }
-        }
-      })
-      layers.forEach(val => {
-        const layer = { ...{ id: `heatmap-${uuid()}`, type: 'cluster' }, ...val }
-        this.setLayer(layer)
-      })
-    },
-    setGraphicLayers (layers) {
-      this.map.getLayers().forEach(layer => {
-        let index = -1
-        if (layer && layer.get('type') === 'graphicLayer') {
-          layers.forEach(item => {
-            if (item.id === layer.get('id')) {
-              index++
-            }
-          })
-          if (index < 0) {
-            VMap.removeLayer(layer)
-          }
-        }
-      })
-      layers.forEach(val => {
-        const layer = { ...{ id: `heatmap-${uuid()}`, type: 'graphicLayer' }, ...val }
-        this.setLayer(layer)
-      })
-    },
     removeLayerById (id) {
       VMap.removeLayerById(id)
     },
@@ -295,74 +167,10 @@ export default {
         layer.getSource().clear()
       }
     },
-    restVisibleBaseTile (visibleTile) {
-      console.log('reset tile')
-      VMap.restVisibleBaseTile(visibleTile, this.map)
-    },
-    setOverlays (overlays) {
-      let output = []
-      overlays.forEach(val => {
-        output = VMap.addOverlay(val, this.map)
-      })
-      if (this.load && output.length > 0) {
-        this.changeObj.overlays = output.getArray()
-        this.$emit('change', this.changeObj)
-      }
-    },
     setOverlayPosition (overlays) {
       overlays.forEach(overlay => {
         VMap.setOverlayPosition(overlay)
       })
-    },
-    setInteraction (value) {
-      VMap.setInteraction(value)
-      let modify
-      let draw
-      this.map.getInteractions().forEach(item => {
-        if (item.get('type') === 'modify') {
-          modify = item
-        }
-        if (item.get('type') === 'draw') {
-          draw = item
-        }
-      })
-      if (modify) {
-        modify.on('modifystart', evt => {
-          this.$emit('modifystart', evt, this.map)
-        })
-        modify.on('modifyend', evt => {
-          this.$emit('modifyend', evt, this.map)
-        })
-      }
-      if (draw) {
-        draw.on('drawstart', evt => {
-          this.$emit('drawstart', evt, this.map)
-        })
-        draw.on('drawend', evt => {
-          this.$emit('drawend', evt, this.map)
-        })
-      }
-    },
-    setMeasure (value) {
-      VMap.setMeasure(value)
-      let measure
-      this.map.getInteractions().forEach(item => {
-        if (item.get('measureDraw')) {
-          measure = item
-          if (!value) {
-            VMap.removeInteraction(measure)
-            return false
-          }
-        }
-      })
-      if (measure) {
-        measure.on('drawstart', evt => {
-          this.$emit('measurestart', evt, this.map)
-        })
-        measure.on('drawend', evt => {
-          this.$emit('measureend', evt, this.map)
-        })
-      }
     },
     setFeature (option) {
       return VMap.setFeature(option)
