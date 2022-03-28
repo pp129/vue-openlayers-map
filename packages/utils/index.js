@@ -234,14 +234,18 @@ export function setStyle (option) {
 }
 
 export function setImage (option) {
-  const style = new Style()
-  if (validObjKey(option, 'icon')) {
-    style.setImage(new Icon(option.icon))
-  } else if (validObjKey(option, 'circle')) {
-    const circle = setCircleStyle(option.circle)
-    style.setImage(circle)
-  }
-  return style
+  return new Promise(resolve => {
+    const image = new Image()
+    image.src = option.src
+    image.onload = () => {
+      return resolve(new Style({
+        image: new Icon({
+          img: image,
+          imgSize: [34, 37]
+        })
+      }))
+    }
+  })
 }
 
 function setCircleStyle (option) {

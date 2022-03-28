@@ -1,13 +1,13 @@
 import Vue from 'vue'
 import VMap from '~/VMap/src/index.vue'
-import { VTileLayer, VVectorLayer, VGraphicLayer, VHeatmapLayer, VClusterLayer, VRouteLayer } from '~/VLayers'
+import { VTileLayer, VVectorLayer, VGraphicLayer, VHeatmapLayer, VClusterLayer, VRouteLayer, VWebglpointsLayer } from '~/VLayers'
 import { VOverlay } from '~/VOverlay'
 import { VOverview } from '~/VControls'
 import { VTrack } from '~/VTrack'
 
 Vue.component(VMap.name, VMap)
 // import VMap from '~/VMap/index.js'
-const components = [VMap, VTileLayer, VVectorLayer, VGraphicLayer, VHeatmapLayer, VClusterLayer, VRouteLayer, VOverlay, VOverview, VTrack]
+const components = [VMap, VTileLayer, VVectorLayer, VGraphicLayer, VHeatmapLayer, VClusterLayer, VRouteLayer, VWebglpointsLayer, VOverlay, VOverview, VTrack]
 
 const install = function (Vue) {
   if (install.installed) return
@@ -29,6 +29,7 @@ export default {
   VHeatmapLayer,
   VClusterLayer,
   VRouteLayer,
+  VWebglpointsLayer,
   VOverlay,
   VOverview,
   VTrack
@@ -41,6 +42,7 @@ export {
   VHeatmapLayer,
   VClusterLayer,
   VRouteLayer,
+  VWebglpointsLayer,
   VOverlay,
   VOverview,
   VTrack

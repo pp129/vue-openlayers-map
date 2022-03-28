@@ -4,6 +4,7 @@
     <div class="tools">
 <!--      <button class="btn" @click="webGlPoint">海量点(webGl)</button>-->
       <button class="btn" @click="graphicLayer">海量点</button>
+      <button class="btn" @click="webGlPoint">海量点(webgl)</button>
       <button class="btn" @click="removeGraphicLayer">删除海量点</button>
       <button class="btn" @click="clusterLayer">海量点聚合</button>
       <button class="btn" @click="setModify">{{modifyStatus?'结束':'开始'}}编辑矢量元素</button>
@@ -68,6 +69,8 @@
         <!-- 鹰眼内使用瓦片图层组件，未引用自定义图层则显示默认瓦片 -->
         <v-tile-layer v-if="!useDefault" :tile-type="'BD'"></v-tile-layer>
       </v-overview>
+      <!-- webGL -->
+      <v-webglpoints-layer :features="webglLayer.features" :styles="webglLayer.style"></v-webglpoints-layer>
       <!-- 瓦片图层 -->
       <v-tile-layer v-if="showTile" :tile-type="tileType" :xyz="xyz[tileType]" :preload="Infinity"></v-tile-layer>
       <!-- 矢量图层 -->
@@ -114,6 +117,7 @@
 
 <script>
 import {
+  VWebglpointsLayer,
   VClusterLayer,
   VGraphicLayer,
   VHeatmapLayer,
@@ -135,6 +139,7 @@ export default {
   name: 'home',
   components: {
     VMap,
+    VWebglpointsLayer,
     VTileLayer,
     VVectorLayer,
     VGraphicLayer,
@@ -152,6 +157,19 @@ export default {
       resolutions[i] = Math.pow(2, 18 - i)
     }
     return {
+      webglLayer: {
+        features: [],
+        style: {
+          symbol: {
+            symbolType: 'image',
+            src: require('@/assets/img/car.png'),
+            size: [18, 28],
+            color: 'lightyellow',
+            rotateWithView: false,
+            offset: [0, 9]
+          }
+        }
+      },
       track: {
         id: '',
         paths: [],
@@ -203,9 +221,13 @@ export default {
         }
       ],
       comGraphic: {
-        show: false,
+        show: true,
         features: [],
-        style: {}
+        style: {
+          icon: {
+            src: 'http://localhost:8080/img/car.fadde920.png'
+          }
+        }
       },
       layers: [
         {
@@ -609,54 +631,10 @@ export default {
       const mockData = this.setMockData(60000)
       mockData.array.forEach(val => {
         features.push({
-          coordinates: val,
-          text: {
-            text: 'webGLPoints',
-            font: '13px sans-serif',
-            fill: {
-              color: '#3d73e8'
-            },
-            backgroundFill: {
-              color: '#ffffff'
-            },
-            stroke: {
-              color: '#ffffff',
-              width: 1
-            },
-            backgroundStroke: {
-              color: '#000000',
-              width: 1
-            },
-            offsetX: 0,
-            offsetY: 30
-          }
+          coordinates: val
         })
       })
-      const option = {
-        id: 'webGLPoints',
-        type: 'webGLPoints',
-        visible: true,
-        source: {
-          features: features
-        },
-        // disableHitDetection: true,
-        symbol: {
-          symbolType: 'circle',
-          src: require('@/assets/img/car.png'),
-          size: [18, 28],
-          color: 'lightyellow',
-          rotateWithView: false,
-          offset: [0, 9]
-        }
-      }
-      if (this.option.updateLayers.indexOf('webGLPoints') < 0) {
-        this.option.updateLayers.push('webGLPoints')
-      }
-      const index = this.option.layers.map(item => item.id).indexOf('webGLPoints')
-      if (index > -1) {
-        this.option.layers.splice(index, 1)
-      }
-      this.option.layers.push(option)
+      this.webglLayer.features = features
     },
     VectorImageLayer () {
       const features = []
@@ -674,10 +652,9 @@ export default {
     },
     graphicLayer () {
       this.comGraphic.features = []
-      const mockData = this.setMockData(31548)
-      const image = new Image()
-      image.src = require('@/assets/img/point_1.png')
-
+      const mockData = this.setMockData(1111)
+      // const image = new Image()
+      // image.src = require('@/assets/img/point_1.png')
       // mockData.array.forEach((val, i) => {
       //   // const image = new Image()
       //   // const randomNum = Mock.mock({
@@ -693,6 +670,11 @@ export default {
       // })
       this.comGraphic.features = []
       this.setFeaturesByData(mockData.array).then(res => {
+        this.comGraphic.style = Object.assign({}, {
+          icon: {
+            src: 'http://localhost:8080/img/car.fadde920.png'
+          }
+        })
         this.comGraphic.features = res
         this.comGraphic.show = true
       })
@@ -708,12 +690,12 @@ export default {
           image.src = require(`@/assets/img/point_${randomNum.number}.png`)
           output.push({
             coordinates: val,
-            style: {
-              icon: {
-                img: image,
-                imgSize: [34, 37]
-              }
-            },
+            // style: {
+            //   icon: {
+            //     img: image,
+            //     imgSize: [34, 37]
+            //   }
+            // },
             properties: {
               name: `graphic-${i}`
             }

@@ -4,6 +4,7 @@ import VGraphicLayer from './GraphicLayer'
 import VHeatmapLayer from './HeatmapLayer'
 import VClusterLayer from './ClusterLayer'
 import VRouteLayer from './RouteLayer'
+import VWebglpointsLayer from './WebGlPointsLayer'
 
 function install (app) {
   if (install.installed) {
@@ -18,6 +19,7 @@ function install (app) {
   app.component(VHeatmapLayer.name, VHeatmapLayer)
   app.component(VClusterLayer.name, VClusterLayer)
   app.component(VRouteLayer.name, VRouteLayer)
+  app.component(VWebglpointsLayer.name, VWebglpointsLayer)
 }
 
 export default install
@@ -29,5 +31,6 @@ export {
   VGraphicLayer,
   VHeatmapLayer,
   VClusterLayer,
-  VRouteLayer
+  VRouteLayer,
+  VWebglpointsLayer
 }
