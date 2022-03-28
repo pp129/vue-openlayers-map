@@ -445,7 +445,11 @@ export default {
         },
         {
           name: 'PGIS',
-          value: 'PGIS'
+          value: 'PGIS_TILE'
+        },
+        {
+          name: 'PGIS影像',
+          value: 'PGIS_HPYX'
         }
       ],
       graphhopper: {
@@ -979,104 +983,5 @@ export default {
 </script>
 
 <style lang="scss">
-.home{
-  width: 100%;
-  height: 100%;
-  .tools{
-    z-index: 2;
-    position: absolute;
-    top: 10px;
-    right: 20px;
-    display: flex;
-    flex-direction: row;
-    flex-wrap: wrap;
-    justify-content: flex-start;
-    align-content: center;
-    button,select{
-      cursor: pointer;
-    }
-    .btn{
-      display: flex;
-      align-items: center;
-      margin-left: 20px;
-      margin-bottom: 10px;
-      background: white;
-      padding: 10px;
-      font-size: 12px;
-      &-input{
-        width: 85px;
-        margin-right: 10px;
-      }
-    }
-    .checkbox-group{
-      padding: 5px;
-      .checkbox-item{
-        margin-right: 10px;
-        input{
-          cursor: pointer;
-        }
-      }
-    }
-  }
-  .map{
-    z-index: 1;
-    position: absolute;
-    top: 0;
-    right: 0;
-  }
-  .overlay{
-    width: 100px;
-    height: 100px;
-    background: white;
-  }
-  .animate-icon{
-    height: 40px;
-    display: flex;
-    position: relative;
-  }
-  .icon{
-    width: 40px;
-    height: 40px;
-    background: url("../assets/img/camera.png") no-repeat;
-    background-size: 100% 100%;
-    cursor: pointer;
-    z-index: 2;
-  }
-  .text{
-    height: 34px;
-    /* width: 100%; */
-    /* line-height: 28px; */
-    /* position: absolute; */
-    /* top: 3px; */
-    /* left: 25px; */
-    padding-left: 20px;
-    padding-right: 10px;
-    box-shadow: 0 1px 13px #6695ff inset;
-    z-index: 1;
-    color: #6695FF;
-    border-radius: 4px;
-    display: flex;
-    align-items: center;
-    font-size: 24px;
-    //margin-left: -15px;
-    //margin-top: 3px;
-  }
-  .slide-fade-enter-active {transition: all .2s ease;}
-  .slide-fade-leave-active {transition: all .2s cubic-bezier(1.0, 0.5, 0.8, 1.0);}
-  .slide-fade-enter, .slide-fade-leave-to{transform: translateX(5px);opacity: 0;}
-  .fade-left-enter-active,.fade-right-enter-active{
-    transition: all 0.8s ease;
-  }
-  .fade-left-leave-active, .fade-right-leave-active {
-    transition: all .3s cubic-bezier(1.0, 0.5, 0.8, 1.0)
-  }
-  .fade-left-leave-to, .fade-right-enter{
-    transform: translate3d(-10%, 0, 0);
-    opacity: 0
-  }
-  .fade-left-enter, .fade-right-leave-to{
-    transform: translate3d(-10%, 0, 0);
-    opacity: 0
-  }
-}
+@import "examples/style/common";
 </style>

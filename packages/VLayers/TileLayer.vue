@@ -127,8 +127,11 @@ export default {
         case 'OSM':
           this.initTileOSM(name)
           break
-        case 'PGIS':
-          this.initPGIS(name)
+        case 'PGIS_TILE':
+          this.initPGIS(name, true)
+          break
+        case 'PGIS_HPYX':
+          this.initPGIS(name, false)
           break
         default:
           this.initTD(name)
@@ -232,7 +235,9 @@ export default {
         this.$parent.init()
       }
     },
-    initPGIS (name) {
+    initPGIS (name, tile = true) {
+      const url = tile ? 'http://44.64.135.5/Tile_sl2019/81326548cf7f46638db93d0ab919f0da/EzMap?Service=getImage&Type=RGB&ZoomOffset=0' : 'http://44.64.135.5/Tile_hpyx2019/81326548cf7f46638db93d0ab919f0da/EzMap?Service=getImage&Type=RGB&ZoomOffset=0'
+      // console.log(url)
       const xyzOpt = {
         projection: 'EPSG:4326',
         tileUrlFunction: (tileCoord, pixelRatio, proj) => {
@@ -240,7 +245,7 @@ export default {
           const z = tileCoord[0]
           const x = tileCoord[1]
           const y = tileCoord[2]
-          return 'http://44.64.135.5/Tile_sl2019/81326548cf7f46638db93d0ab919f0da/EzMap?Service=getImage&Type=RGB&ZoomOffset=0' +
+          return url +
             '&Col=' + x +
             '&Row=' + y +
             '&Zoom=' + z +

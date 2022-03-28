@@ -4,9 +4,9 @@
 
 ## target
 
-| 说明                 | 是否必填             | 类型   | 可选值 | 默认值   |
-| :------------------- | :------------------- | ------ | :----: | -------- |
-| 地图容器的唯一标识。 | 否，多地图时避免重复 | String |   -    | map-uuid |
+| 说明                 | 是否必填             | 类型   | 可选值 | 默认值        |
+| :------------------- | :------------------- | ------ | :----: | ------------- |
+| 地图容器的唯一标识。 | 否，多地图时避免重复 | String |   -    | `map-${uuid}` |
 
 ```vue
 <template>
@@ -35,17 +35,17 @@ export default{
 
 ## controls
 
-| 说明 | 是否必填 | 类型   | 可选值                                                       | 默认值                                  |
-| ---- | -------- | ------ | ------------------------------------------------------------ | --------------------------------------- |
-| 控件 | 否       | Object | 继承 [ol/control](https://openlayers.org/en/latest/apidoc/module-ol_control.html) | {controls={zoom: false, rotate: false}} |
+| 说明 | 是否必填 | 类型   | 可选值                                                       | 默认值                                    |
+| ---- | -------- | ------ | ------------------------------------------------------------ | ----------------------------------------- |
+| 控件 | 否       | Object | 继承 [ol/control](https://openlayers.org/en/latest/apidoc/module-ol_control.html) | `{controls={zoom: false, rotate: false}}` |
 
-默认值说明：不显示层级操作按钮、不显示视图旋转按钮。
+> 默认值说明：不显示层级操作按钮、不显示视图旋转按钮。
 
 ## view
 
 | 说明 | 是否必填 | 类型   | 可选值                                                       | 默认值                                                       |
 | ---- | -------- | ------ | ------------------------------------------------------------ | ------------------------------------------------------------ |
-| 视图 | 否       | Object | 继承[ol/view](https://openlayers.org/en/latest/apidoc/module-ol_View-View.html) | {view={center: [0, 0],zoom: 12,constrainResolution: true,projection: 'EPSG:4326'}} |
+| 视图 | 否       | Object | 继承[ol/view](https://openlayers.org/en/latest/apidoc/module-ol_View-View.html) | `{view={center: [0, 0],zoom: 12,constrainResolution: true,projection: 'EPSG:4326'}}` |
 
 ```vue
 <template>

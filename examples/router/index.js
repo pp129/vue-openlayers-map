@@ -4,6 +4,7 @@ import Home from '../views/home.vue'
 import Simple from '../views/simple.vue'
 import Layers from '../views/layers.vue'
 import Track from '../views/track.vue'
+import Tile from '@/views/tile'
 
 Vue.use(VueRouter)
 
@@ -22,6 +23,11 @@ const routes = [
     path: '/layers',
     name: 'layers',
     component: Layers
+  },
+  {
+    path: '/tile',
+    name: 'tile',
+    component: Tile
   },
   {
     path: '/trackMap',

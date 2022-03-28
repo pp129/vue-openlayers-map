@@ -48,4 +48,4 @@ npm run serve
 ```
 [live demo](https://vue-openlayers-map.netlify.app)
 
-![image](../examples/assets/screenshot/screenshot.png)
+![](../examples/assets/screenshot/screenshot.png)
