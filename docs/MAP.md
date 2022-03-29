@@ -162,32 +162,6 @@ export default{
 </script>
 ```
 
-
-
-### drawstart
-
-绘制开始事件
-
-### drawend
-
-绘制完成事件
-
-### modifystart
-
-编辑开始事件
-
-### modifyend
-
-编辑结束事件
-
-### measurestart
-
-测量开始事件
-
-### measureend
-
-测量完成事件
-
 ## methods
 
 > 方法
