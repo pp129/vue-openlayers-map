@@ -2,7 +2,6 @@
   <div class="home">
     <!-- tools -->
     <div class="tools">
-<!--      <button class="btn" @click="webGlPoint">海量点(webGl)</button>-->
       <button class="btn" @click="graphicLayer">海量点</button>
       <button class="btn" @click="webGlPoint">海量点(webgl)</button>
       <button class="btn" @click="removeGraphicLayer">删除海量点</button>
@@ -674,57 +673,30 @@ export default {
     },
     graphicLayer () {
       this.comGraphic.features = []
-      const mockData = this.setMockData(1111)
+      const mockData = this.setMockData(50000)
       // const image = new Image()
       // image.src = require('@/assets/img/point_1.png')
-      // mockData.array.forEach((val, i) => {
-      //   // const image = new Image()
-      //   // const randomNum = Mock.mock({
-      //   //   'number|1-6': 3
-      //   // })
-      //   // image.src = require(`@/assets/img/point_${randomNum.number}.png`)
-      //   this.comGraphic.features.push({
-      //     coordinates: val,
-      //     properties: {
-      //       name: `graphic-${i}`
-      //     }
-      //   })
-      // })
-      this.comGraphic.features = []
-      this.setFeaturesByData(mockData.array).then(res => {
-        this.comGraphic.style = Object.assign({}, {
-          icon: {
-            src: 'http://localhost:8080/img/car.fadde920.png'
+      mockData.array.forEach((val, i) => {
+        const image = new Image()
+        const randomNum = Mock.mock({
+          'number|1-6': 3
+        })
+        image.src = require(`@/assets/img/point_${randomNum.number}.png`)
+        this.comGraphic.features.push({
+          coordinates: val,
+          style: {
+            icon: {
+              img: image,
+              imgSize: [34, 47],
+              scale: 0.6
+            }
+          },
+          properties: {
+            name: `graphic-${i}`
           }
         })
-        this.comGraphic.features = res
-        this.comGraphic.show = true
       })
-    },
-    setFeaturesByData (data) {
-      const output = []
-      return new Promise(resolve => {
-        data.forEach((val, i) => {
-          const image = new Image()
-          const randomNum = Mock.mock({
-            'number|1-6': 3
-          })
-          image.src = require(`@/assets/img/point_${randomNum.number}.png`)
-          output.push({
-            coordinates: val,
-            // style: {
-            //   icon: {
-            //     img: image,
-            //     imgSize: [34, 37]
-            //   }
-            // },
-            properties: {
-              name: `graphic-${i}`
-            }
-          })
-        })
-        resolve(output)
-      })
+      this.comGraphic.show = true
     },
     removeGraphicLayer () {
       this.comGraphic.show = !this.comGraphic.show
