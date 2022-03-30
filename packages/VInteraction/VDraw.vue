@@ -1,8 +1,6 @@
 <script>
-import VectorLayer from 'ol/layer/Vector'
 import BaseLayer from '~/VLayers/BaseLayer'
-import { addVectorSource, setFeatures, setStyle, uuid } from '~/utils'
-import { Draw, Modify, Select } from 'ol/interaction'
+import { addVectorSource, olDraw, olModify, olSelect, setFeatures, setStyle, uuid, vectorLayer } from '~/utils'
 
 export default {
   name: 'v-draw',
@@ -151,7 +149,7 @@ export default {
         source.addFeatures(features)
       }
       const layerOpt = { ...this.$props, ...{ source: source } }
-      this.layer = new VectorLayer(layerOpt)
+      this.layer = vectorLayer(layerOpt)
       this.layer.setStyle((feature) => {
         if (feature.get('style')) {
           return setStyle(feature.get('style'))
@@ -182,7 +180,7 @@ export default {
       }
     },
     initDraw () {
-      this.draw = new Draw({
+      this.draw = olDraw({
         source: this.layer.getSource(),
         type: this.type,
         freehand: this.freehand,
@@ -217,10 +215,10 @@ export default {
         this.$emit('drawend', evt, this.map)
       })
       if (this.editable) {
-        this.select = new Select()
+        this.select = olSelect()
         this.select.set('type', 'select')
         this.map.addInteraction(this.select)
-        this.modify = new Modify({
+        this.modify = olModify({
           features: this.select.getFeatures()
         })
         this.modify.set('type', 'modify')

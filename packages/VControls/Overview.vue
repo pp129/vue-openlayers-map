@@ -1,6 +1,5 @@
 <script>
-import { addOverviewMapControl } from '~/utils'
-import { View } from 'ol'
+import { addOverviewMapControl, olView } from '~/utils'
 
 export default {
   name: 'v-overview',
@@ -55,7 +54,7 @@ export default {
         ...this.view
       }
       const option = {
-        view: new View(viewOptDefault),
+        view: olView(viewOptDefault),
         layers: this.layers,
         collapsible: this.collapsible,
         collapsed: this.collapsed

@@ -55,6 +55,7 @@
       :height="height"
       :width="width"
       :view="option.view"
+      :controls="option.controls"
       @load="onLoad"
       @click="onClick"
       @onClickFeature="onClickFeature"

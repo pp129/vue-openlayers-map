@@ -1,7 +1,6 @@
 <script>
 import BaseLayer from '~/VLayers/BaseLayer'
-import { addClusterLayer, addVectorSource, setFeatures, uuid } from '~/utils'
-import { Cluster } from 'ol/source'
+import { addClusterLayer, addVectorSource, olCluster, setFeatures, uuid } from '~/utils'
 
 export default {
   name: 'v-cluster-layer',
@@ -126,7 +125,7 @@ export default {
         distance: this.distance,
         minDistance: this.minDistance
       }
-      this.cluster = new Cluster(option)
+      this.cluster = olCluster(option)
       const layerOpt = { ...this.$props, ...{ source: this.cluster, style: this.FeatureStyle } }
       this.layer = addClusterLayer(layerOpt, this.map)
       this.layer.set('id', this.layerId)

@@ -21,7 +21,9 @@ export default {
    * 继承control：https://openlayers.org/en/latest/apidoc/module-ol_control.html
    * @param {Object} [controls={zoom: false, rotate: false}]
    */
-  controls: {},
+  controls: {
+    zoom: true
+  },
   /**
    * 基础图层
    * 可选

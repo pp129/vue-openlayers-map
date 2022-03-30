@@ -1,10 +1,9 @@
 <template>
-  <div :id="target" :style="{'width':width,'height':height}"><slot v-if="load"></slot></div>
+  <div :id="target" :style="{'width':mapWidth,'height':mapHeight}"><slot v-if="load"></slot></div>
 </template>
 
 <script>
-import { VMap } from '~/VMap/src/VMap.js'
-import { uuid } from '~/utils'
+import { VMap, uuid } from '~/utils'
 
 export default {
   name: 'v-map',
@@ -16,11 +15,15 @@ export default {
   props: {
     width: {
       type: [String, Number],
-      default: '1920px'
+      default () {
+        return '100%'
+      }
     },
     height: {
       type: [String, Number],
-      default: '960px'
+      default () {
+        return '100%'
+      }
     },
     target: {
       type: String,
@@ -57,6 +60,12 @@ export default {
     },
     map () {
       return VMap.map.map
+    },
+    mapWidth () {
+      return typeof this.width === 'string' ? this.width : this.width.toString() + 'px'
+    },
+    mapHeight () {
+      return typeof this.height === 'string' ? this.height : this.height.toString() + 'px'
     }
   },
   watch: {
@@ -71,10 +80,8 @@ export default {
       if (res === 'success') {
         this.load = true
         // 点击事件
-        this.map.on('click', evt => {
-          this.$emit('click', evt, this.map)
-        })
         this.map.on('singleclick', (r) => {
+          this.$emit('click', r, this.map)
           this.map.forEachSmFeatureAtPixel(r.pixel, (i, e) => {
             this.$emit('onClickFeature', i, e)
           }, {}, r)

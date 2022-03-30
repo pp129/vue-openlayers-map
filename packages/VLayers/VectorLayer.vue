@@ -1,8 +1,6 @@
 <script>
 import BaseLayer from './BaseLayer'
-import VectorLayer from 'ol/layer/Vector'
-// import { Vector as VectorSource } from 'ol/source'
-import { addVectorSource, setFeatures, setStyle, uuid } from '~/utils'
+import { addVectorSource, setFeatures, setStyle, uuid, vectorLayer } from '~/utils'
 
 export default {
   name: 'v-vector-layer',
@@ -98,7 +96,7 @@ export default {
       source.addFeatures(features)
     }
     const layerOpt = { ...this.$props, ...{ source: source } }
-    this.layer = new VectorLayer(layerOpt)
+    this.layer = vectorLayer(layerOpt)
     this.layer.setStyle((feature) => {
       if (feature.get('style')) {
         return setStyle(feature.get('style'))

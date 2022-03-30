@@ -5,8 +5,7 @@
 </template>
 
 <script>
-import { uuid } from '~/utils'
-import Overlay from 'ol/Overlay'
+import { olOverlay, uuid } from '~/utils'
 
 export default {
   name: 'v-overlay',
@@ -85,7 +84,7 @@ export default {
       overlayEl = document.getElementById(this.element.toString())
     }
     const overlayOption = { ...this.$props, ...{ id: this.overlayId, element: overlayEl } }
-    this.overlay = new Overlay(overlayOption)
+    this.overlay = olOverlay(overlayOption)
     this.map.addOverlay(this.overlay)
   },
   beforeDestroy () {

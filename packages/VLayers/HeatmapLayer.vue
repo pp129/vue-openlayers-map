@@ -1,7 +1,6 @@
 <script>
 import BaseLayer from '~/VLayers/BaseLayer'
-import { Heatmap as HeatmapLayer } from 'ol/layer'
-import { addVectorSource, setFeatures, uuid } from '~/utils'
+import { addVectorSource, HeatmapLayer, setFeatures, uuid } from '~/utils'
 
 export default {
   name: 'v-heatmap-layer',
@@ -126,7 +125,7 @@ export default {
       source.addFeatures(features)
     }
     const layerOpt = { ...this.$props, ...{ source: source } }
-    this.layer = new HeatmapLayer(layerOpt)
+    this.layer = HeatmapLayer(layerOpt)
     this.layer.set('id', this.layerId)
     this.layer.set('type', 'heatmap')
     this.layer.set('users', true)

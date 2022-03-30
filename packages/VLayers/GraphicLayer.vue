@@ -1,11 +1,16 @@
 <script>
 import BaseLayer from '~/VLayers/BaseLayer'
-import ImageCanvasSource from 'ol/source/ImageCanvas'
-import ImageLayer from 'ol/layer/Image'
-import { toContext } from 'ol/render'
-import { Point } from 'ol/geom'
-import { FeatureExt } from '~/VMap/src/VMap'
-import { setImage, setStyle, uuid, validObjKey } from '~/utils'
+import {
+  setImage,
+  setStyle,
+  uuid,
+  validObjKey,
+  FeatureExt,
+  imageCanvasSource,
+  imageLayer,
+  olToContext,
+  olPoint
+} from '~/utils'
 
 export default {
   name: 'v-graphic-layer',
@@ -104,14 +109,14 @@ export default {
       // console.log(style.getImage().getImageState())
     },
     setSource (style) {
-      const source = new ImageCanvasSource({
+      const source = imageCanvasSource({
         canvasFunction: (extent, resolution, pixelRatio, size, projection) => {
           // console.log(style.getImage().getImageState())
           const geoms = []
           const canvas = document.createElement('canvas')
           const width = size[0] / pixelRatio
           const height = size[1] / pixelRatio
-          const vectorContext = toContext(canvas.getContext('2d'), { size: [width, height] })
+          const vectorContext = olToContext(canvas.getContext('2d'), { size: [width, height] })
           if (style) {
             vectorContext.setStyle(style)
           }
@@ -130,7 +135,7 @@ export default {
                 return [(e[0] - t[0]) * r + t[0], (e[1] - t[1]) * r + t[1]]
               }(l, u, 1)), h, u))
               const d = [c[0] + s[0], c[1] + s[1]]
-              const p = new Point(d, 'XY')
+              const p = olPoint(d, 'XY')
               const geom = new FeatureExt(p)
               geom._coordinates = r
               for (const i in feature) {
@@ -156,7 +161,7 @@ export default {
     },
     setLayer (source) {
       const layerOpt = { ...this.$props, ...{ source: source } }
-      this.layer = new ImageLayer(layerOpt)
+      this.layer = imageLayer(layerOpt)
       this.layer.set('id', this.layerId)
       this.layer.set('type', 'graphic')
       this.layer.set('users', true)

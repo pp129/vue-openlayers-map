@@ -1,9 +1,6 @@
 <script>
 import BaseLayer from './BaseLayer'
-import { getBDMap, uuid, validObjKey } from '~/utils'
-import TileGrid from 'ol/tilegrid/TileGrid'
-import { Tile as TileLayer } from 'ol/layer'
-import { OSM, XYZ } from 'ol/source'
+import { getBDMap, olOSM, olTileGrid, olTileLayer, olXYZ, uuid, validObjKey } from '~/utils'
 export default {
   name: 'v-tile-layer',
   render (createElement, context) {
@@ -141,12 +138,12 @@ export default {
     initTileXYZ (name) {
       let tileGrid
       if (validObjKey(this.xyz, 'tileGrid')) {
-        tileGrid = new TileGrid(this.xyz.tileGrid)
+        tileGrid = olTileGrid(this.xyz.tileGrid)
       }
       const xyzOpt = { ...this.xyz, ...{ tileGrid: tileGrid } }
-      const source = new XYZ(xyzOpt)
+      const source = olXYZ(xyzOpt)
       const layerOpt = { ...this.$props, ...{ source: source } }
-      this.layer = new TileLayer(layerOpt)
+      this.layer = olTileLayer(layerOpt)
       this.layer.set('base', true)
       this.layer.setZIndex(0)
       this.layers = [this.layer]
@@ -159,9 +156,9 @@ export default {
     },
     initXYZbyURL (url) {
       const xyzOpt = { ...this.$props.xyz, ...{ url: url } }
-      const source = new XYZ(xyzOpt)
+      const source = olXYZ(xyzOpt)
       const layerOpt = { ...this.$props, ...{ source: source } }
-      const layer = new TileLayer(layerOpt)
+      const layer = olTileLayer(layerOpt)
       layer.set('base', true)
       layer.setZIndex(0)
       return layer
@@ -222,9 +219,9 @@ export default {
       }
     },
     initTileOSM (name) {
-      const source = new OSM()
+      const source = olOSM()
       const layerOpt = { ...this.$props, ...{ source: source } }
-      this.layer = new TileLayer(layerOpt)
+      this.layer = olTileLayer(layerOpt)
       this.layer.set('base', true)
       this.layer.setZIndex(0)
       this.layers = [this.layer]
@@ -253,9 +250,9 @@ export default {
         },
         crossOrigin: 'anonymous'
       }
-      const source = new XYZ(xyzOpt)
+      const source = olXYZ(xyzOpt)
       const layerOpt = { ...this.$props, ...{ source: source } }
-      this.layer = new TileLayer(layerOpt)
+      this.layer = olTileLayer(layerOpt)
       this.layer.set('base', true)
       this.layer.setZIndex(0)
       this.layers = [this.layer]

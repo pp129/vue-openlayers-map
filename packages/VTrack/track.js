@@ -1,23 +1,8 @@
-import { Vector as VectorLayer } from 'ol/layer'
-import { Vector as VectorSource } from 'ol/source'
 import { fromLonLat, toLonLat } from 'ol/proj'
 import { Circle as CircleStyle, Fill, Icon, Stroke, Style, Text } from 'ol/style'
 import { containsCoordinate } from 'ol/extent'
-import Overlay from 'ol/Overlay'
-import { LineString, Point, Polygon } from 'ol/geom'
-import Feature from 'ol/Feature'
 import * as olSphere from 'ol/sphere'
-import { uuid } from '~/utils'
-
-Feature.prototype.setPosition = function (coordinates) {
-  this.getGeometry().setCoordinates(coordinates)
-}
-Feature.prototype.getPosition = function () {
-  return this.getGeometry().getCoordinates()
-}
-Feature.prototype.setRotateAngle = function (angle) {
-  this.getStyle().getImage().setRotation(angle)
-}
+import { uuid, olOverlay, FeatureExt, vectorLayer, olVectorSource, olPolygon, olLineString, olPoint } from '~/utils'
 
 /**
  * 根据id获取图层
@@ -85,29 +70,29 @@ export class LushuTrack {
     this._tracePointsFromTime = []
     // 轨迹回放是否结束
     this._traceEnd = false
-    this.traceLayer = new VectorLayer({
-      source: new VectorSource(),
+    this.traceLayer = vectorLayer({
+      source: olVectorSource(),
       zIndex: 99
     })
     this.traceLayer.set('isTrack', true)
     map.addLayer(this.traceLayer)
     // 通过动画轨迹线
-    this.tracePassLayer = new VectorLayer({
-      source: new VectorSource(),
+    this.tracePassLayer = vectorLayer({
+      source: olVectorSource(),
       zIndex: 100
     })
     this.tracePassLayer.set('isTrack', true)
     map.addLayer(this.tracePassLayer)
     // 方向箭头图层
-    this.arrowsLayer = new VectorLayer({
-      source: new VectorSource(),
+    this.arrowsLayer = vectorLayer({
+      source: olVectorSource(),
       zIndex: 101
     })
     this.arrowsLayer.set('isTrack', true)
     map.addLayer(this.arrowsLayer)
     // 小车图层
-    this.carLayer = new VectorLayer({
-      source: new VectorSource(),
+    this.carLayer = vectorLayer({
+      source: olVectorSource(),
       zIndex: 102
     })
     this.carLayer.set('isTrack', true)
@@ -344,8 +329,8 @@ LushuTrack.prototype.tracePointsPlay = function () {
       }
       passPath.push([pathInfo[me._pointIndex].longitude, pathInfo[me._pointIndex].latitude])
       if (me._opts.passFlag) { // 增加参数限制20190819
-        const passlineFeature = new Feature({
-          geometry: new LineString([
+        const passlineFeature = new FeatureExt({
+          geometry: olLineString([
             [pathInfo[me._pointIndex - 1].longitude, pathInfo[me._pointIndex - 1].latitude],
             [pathInfo[me._pointIndex].longitude, pathInfo[me._pointIndex].latitude]
           ])
@@ -379,8 +364,8 @@ LushuTrack.prototype.tracePointsPlay = function () {
 
       me.carMarker.setPosition([pathInfo[me._pointIndex].longitude, pathInfo[me._pointIndex].latitude])
       if (me._opts.passFlag) {
-        const passlineFeature = new Feature({
-          geometry: new LineString([
+        const passlineFeature = new FeatureExt({
+          geometry: olLineString([
             [pathInfo[me._pointIndex - 1].longitude, pathInfo[me._pointIndex - 1].latitude],
             [pathInfo[me._pointIndex].longitude, pathInfo[me._pointIndex].latitude]
           ])
@@ -470,8 +455,8 @@ LushuTrack.prototype.timePointsPlay = function () {
           passPath.push(countPass[p].coordinate)
         }
         if (me._opts.passFlag) {
-          const passlineFeature = new Feature({
-            geometry: new LineString(passPath)
+          const passlineFeature = new FeatureExt({
+            geometry: olLineString(passPath)
           })
           passlineFeature.setStyle(new Style({
             stroke: new Stroke({
@@ -504,8 +489,8 @@ LushuTrack.prototype.timePointsPlay = function () {
           passPath.push(countPass[p].coordinate)
         }
         if (me._opts.passFlag) {
-          const passlineFeature = new Feature({
-            geometry: new LineString(passPath)
+          const passlineFeature = new FeatureExt({
+            geometry: olLineString(passPath)
           })
           passlineFeature.setStyle(new Style({
             stroke: new Stroke({
@@ -634,7 +619,7 @@ LushuTrack.prototype._addInfoWin = function () {
   const div = document.createElement('div')
   div.className = 'carOverlay-class'
   div.innerText = ''
-  const overlay = new Overlay({
+  const overlay = olOverlay({
     element: document.getElementById(me._opts.overlay.element.toString()),
     position: position,
     stopEvent: true,
@@ -829,8 +814,8 @@ LushuTrack.prototype._initLinesAndMarkers = function () {
       const markerPosition = [wholePaths[i].longitude, wholePaths[i].latitude]
       const id = wholePaths[i].id
       if (i > 0 && i < wholePaths.length - 1) {
-        const nodeMarker = new Feature({
-          geometry: new Point(markerPosition)
+        const nodeMarker = new FeatureExt({
+          geometry: olPoint(markerPosition)
         })
         nodeMarker.set('id', id)
         nodeMarker.set('number', parseInt(i) + 1)
@@ -850,16 +835,16 @@ LushuTrack.prototype._initLinesAndMarkers = function () {
         })
       } else {
         if (i === 0) {
-          const starMarker = new Feature({
-            geometry: new Point([wholePaths[i].longitude, wholePaths[i].latitude])
+          const starMarker = new FeatureExt({
+            geometry: olPoint([wholePaths[i].longitude, wholePaths[i].latitude])
           })
           starMarker.set('type', 'start')
           starMarker.set('id', id)
           starMarker.set('number', parseInt(i) + 1)
           me.traceNodes.push(starMarker)
         } else if (i === wholePaths.length - 1) {
-          const endMarker = new Feature({
-            geometry: new Point([wholePaths[i].longitude, wholePaths[i].latitude + 0.00000001])
+          const endMarker = new FeatureExt({
+            geometry: olPoint([wholePaths[i].longitude, wholePaths[i].latitude + 0.00000001])
           })
           endMarker.set('type', 'end')
           endMarker.set('id', id)
@@ -872,8 +857,8 @@ LushuTrack.prototype._initLinesAndMarkers = function () {
     for (let p = 0; p < me._pathInfo.length - 1; p++) {
       const pathS = [me._pathInfo[p].longitude, me._pathInfo[p].latitude]
       const pathE = [me._pathInfo[p + 1].longitude, me._pathInfo[p + 1].latitude]
-      const lineFeature = new Feature({
-        geometry: new LineString([pathS, pathE])
+      const lineFeature = new FeatureExt({
+        geometry: olLineString([pathS, pathE])
       })
       lineFeature.setStyle(me._traceLineSytle('route'))
       me.traceLayer.getSource().addFeature(lineFeature)
@@ -949,8 +934,8 @@ LushuTrack.prototype.createArrows = function () {
   for (let b = 0; b < breakPoints.length; b++) {
     const coordinates = breakPoints[b].coordinate
     const rotate = breakPoints[b].rotate
-    const marker = new Feature({
-      geometry: new Point(coordinates)
+    const marker = new FeatureExt({
+      geometry: olPoint(coordinates)
     })
     marker.setStyle(new Style({
       image: new Icon({
@@ -1152,8 +1137,8 @@ function formatDateTime (theDate) {
 }
 
 function carMarker (lnglat, config) {
-  const feature = new Feature({
-    geometry: new Point(lnglat)
+  const feature = new FeatureExt({
+    geometry: olPoint(lnglat)
   })
   feature.setStyle(new Style({
     image: new Icon(config.carIcon)
@@ -1163,8 +1148,8 @@ function carMarker (lnglat, config) {
 
 function addNameLayer (map, pointsArr, zoom) {
   var textBounds = []
-  var textLayer = new VectorLayer({
-    source: new VectorSource()
+  var textLayer = vectorLayer({
+    source: olVectorSource()
   })
   if (map.getView().getZoom() >= zoom) {
     drawText(map, pointsArr, zoom, textBounds, textLayer)
@@ -1308,13 +1293,13 @@ function drawText (map, pointsArr, zoom, textBounds, textLayer) {
     var rightTop = map.getCoordinateFromPixel([maxx, miny])
     var rightBom = map.getCoordinateFromPixel([maxx, maxy])
     var leftBom = map.getCoordinateFromPixel([minx, maxy])
-    const textBack = new Feature({
-      geometry: new Polygon([leftTop, rightTop, rightBom, leftBom])
+    const textBack = new FeatureExt({
+      geometry: olPolygon([leftTop, rightTop, rightBom, leftBom])
     })
     textLayer.getSource().addFeature(textBack)
     polylineCenter = map.getCoordinateFromPixel(polylineCenter)
-    const polyline = new Feature({
-      geometry: new LineString([element.position, polylineCenter])
+    const polyline = new FeatureExt({
+      geometry: olLineString([element.position, polylineCenter])
     })
     textLayer.getSource().addFeature(polyline)
     textLayer.setStyle(new Style({

@@ -1,7 +1,7 @@
 <script>
 import BaseLayer from './BaseLayer'
-import { addVectorSource, setFeatures, uuid } from '~/utils'
-import WebGLPointsLayer from 'ol/layer/WebGLPoints'
+import { addVectorSource, setFeatures, uuid, WebGLPointsLayer } from '~/utils'
+
 export default {
   name: 'v-webglpoints-layer',
   render (createElement, context) {
@@ -79,7 +79,7 @@ export default {
       console.log(this.styles)
       const layerOpt = { ...this.$props, ...{ source: source, style: this.styles } }
       console.log(layerOpt)
-      this.layer = new WebGLPointsLayer(layerOpt)
+      this.layer = WebGLPointsLayer(layerOpt)
       this.map.addLayer(this.layer)
     }
   }
