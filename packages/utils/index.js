@@ -24,12 +24,13 @@ export const validObjKey = (obj, key) => {
  * 设置多元素
  * @param features
  * @param map
+ * @param hasStyle
  * @returns {*[]}
  */
-export function setFeatures (features, map) {
+export function setFeatures (features, map, hasStyle = false) {
   const output = []
   features.forEach(val => {
-    output.push(setFeature(val, map))
+    output.push(setFeature(val, map, hasStyle))
   })
   return output
 }
@@ -38,14 +39,15 @@ export function setFeatures (features, map) {
  * 设置元素
  * @param option
  * @param map
+ * @param hasStyle
  * @returns {FeatureExt}
  */
-function setFeature (option, map) {
+function setFeature (option, map, hasStyle = false) {
   if (validObjKey(option, 'type')) {
     const type = option.type
     switch (type) {
       case 'point':
-        return setPointFeature(option, map)
+        return setPointFeature(option, map, hasStyle)
       case 'polygon':
         return setPolygon(option)
       case 'polyline':
@@ -53,10 +55,10 @@ function setFeature (option, map) {
       case 'circle':
         return setCircle(option, map)
       default:
-        return setPointFeature(option, map)
+        return setPointFeature(option, map, hasStyle)
     }
   } else {
-    return setPointFeature(option, map)
+    return setPointFeature(option, map, hasStyle)
   }
 }
 
@@ -64,9 +66,10 @@ function setFeature (option, map) {
  * 获取点类型元素
  * @param option
  * @param map
+ * @param hasStyle
  * @returns {FeatureExt}
  */
-export function setPointFeature (option, map) {
+export function setPointFeature (option, map, hasStyle = false) {
   let coordinates
   if (validObjKey(option, 'convert') && option.convert) {
     switch (option.convert) {
@@ -109,7 +112,7 @@ export function setPointFeature (option, map) {
     } else {
       feature.setStyle(featureStyle)
     }
-  } else {
+  } else if (!hasStyle) {
     feature.setStyle(new Style({
       image: new CircleStyle({
         radius: 4,

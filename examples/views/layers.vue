@@ -6,26 +6,35 @@
   <v-map ref="map"
          class="map"
          :view="option.view"
-         :layers="option.layers"
          :height="height"
-         :width="width"></v-map>
+         :width="width">
+    <v-vector-layer :features="features" :feature-style="style"/>
+  </v-map>
 </div>
 </template>
 
 <script>
-import { VMap } from '~/index'
+import { VMap, VVectorLayer } from '~/index'
 import layersOption from '@/utils/layersOption'
 import Mock from 'mockjs'
 export default {
   name: 'layers',
   components: {
-    VMap
+    VMap,
+    VVectorLayer
   },
   data () {
     return {
       height: '100%',
       width: '100%',
-      option: layersOption
+      option: layersOption,
+      features: [],
+      style: {
+        icon: {
+          src: require('@/assets/img/point_1.png'),
+          scale: 0.6
+        }
+      }
     }
   },
   methods: {
@@ -37,63 +46,21 @@ export default {
       ]
       return Mock.mock(option)
     },
-    getFeatures (index) {
+    getFeatures () {
       const features = []
       const mockData = this.setMockData()
       mockData.array.forEach(val => {
         features.push({
-          coordinates: val,
-          style: {
-            icon: {
-              src: require('@/assets/img/point_red.png')
-            },
-            text: {
-              text: `layer-${index + 1}`,
-              font: '13px sans-serif',
-              fill: {
-                color: '#3d73e8'
-              },
-              backgroundFill: {
-                color: '#ffffff'
-              },
-              stroke: {
-                color: '#ffffff',
-                width: 1
-              },
-              backgroundStroke: {
-                color: '#000000',
-                width: 1
-              },
-              offsetX: 0,
-              offsetY: 30
-            }
-          }
+          coordinates: val
         })
       })
       return features
     },
-    initLayers () {
-      for (let i = 0; i < 20; i++) {
-        this.option.layers.push({
-          id: `layer${i + 1}`,
-          source: {
-            features: this.getFeatures(i)
-          }
-        })
-      }
-    },
     addLayer () {
-      const index = this.option.layers.length
-      this.option.layers.push({
-        id: `layer${index}`,
-        source: {
-          features: this.getFeatures(index)
-        }
-      })
+      this.features = this.getFeatures()
     }
   },
   mounted () {
-    this.initLayers()
   }
 }
 </script>

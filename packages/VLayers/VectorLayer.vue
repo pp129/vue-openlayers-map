@@ -53,7 +53,7 @@ export default {
         console.log('layer features change', value)
         this.layer.getSource().clear()
         if (value && value.length > 0) {
-          const features = setFeatures(value, this.map)
+          const features = setFeatures(value, this.map, true)
           this.layer.getSource().addFeatures(features)
         }
       },
