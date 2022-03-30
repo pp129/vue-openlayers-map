@@ -94,7 +94,7 @@ export default {
   mounted () {
     const source = addVectorSource(this.source, this.map)
     if (this.source.features.length <= 0 && this.features.length > 0) {
-      const features = setFeatures(this.features, this.map)
+      const features = setFeatures(this.features, this.map, true)
       source.addFeatures(features)
     }
     const layerOpt = { ...this.$props, ...{ source: source } }

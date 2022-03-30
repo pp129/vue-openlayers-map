@@ -1,7 +1,7 @@
 <template>
 <div class="layers">
   <div class="tools">
-    <button class="btn" @click="addLayer">新增layer</button>
+    <button class="btn" @click="addLayer">更新features</button>
   </div>
   <v-map ref="map"
          class="map"
@@ -28,7 +28,11 @@ export default {
       height: '100%',
       width: '100%',
       option: layersOption,
-      features: [],
+      features: [
+        {
+          coordinates: [118.045456, 24.567489]
+        }
+      ],
       style: {
         icon: {
           src: require('@/assets/img/point_1.png'),
@@ -49,9 +53,18 @@ export default {
     getFeatures () {
       const features = []
       const mockData = this.setMockData()
+      const randomNum = Mock.mock({
+        'number|1-6': 3
+      })
       mockData.array.forEach(val => {
         features.push({
-          coordinates: val
+          coordinates: val,
+          style: {
+            icon: {
+              src: require(`@/assets/img/point_${randomNum.number}.png`),
+              scale: 0.6
+            }
+          }
         })
       })
       return features
