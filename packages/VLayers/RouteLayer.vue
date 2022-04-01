@@ -26,7 +26,10 @@ export default {
     },
     method: {
       type: String,
-      default: 'GET'
+      default: 'GET',
+      validator (value) {
+        return ['GET', 'POST', 'get', 'post'].includes(value)
+      }
     },
     stops: {
       type: Array,
@@ -36,7 +39,26 @@ export default {
     },
     routeType: {
       type: String,
-      require: true
+      require: true,
+      validator (value) {
+        return ['arcgis', 'graphhopper'].includes(value)
+      }
+    },
+    showStart: {
+      type: Boolean,
+      default: false
+    },
+    showPass: {
+      type: Boolean,
+      default: false
+    },
+    showEnd: {
+      type: Boolean,
+      default: false
+    },
+    routeStyle: {
+      type: Object,
+      default: undefined
     },
     // arcgis
     barriers: {
@@ -171,10 +193,6 @@ export default {
       type: String,
       default: 'pjson'
     },
-    routeStyle: {
-      type: Object,
-      default: undefined
-    },
     // graphhopper
     type: {
       type: String,
@@ -211,9 +229,59 @@ export default {
     return {
       layer: null,
       defaultStyle: {
-        stroke: {
-          color: 'rgba(67,126,255,1)',
-          width: 5
+        line: {
+          stroke: {
+            color: 'rgba(67,126,255,1)',
+            width: 4
+          }
+        },
+        start: {
+          circle: {
+            radius: 15,
+            fill: {
+              color: 'rgba(255,255,255,1)'
+            },
+            stroke: {
+              color: 'rgba(67,126,255,1)',
+              width: 2
+            }
+          },
+          text: {
+            text: '起',
+            fill: {
+              color: '#3d73e8'
+            }
+          }
+        },
+        end: {
+          circle: {
+            radius: 15,
+            fill: {
+              color: 'rgba(255,255,255,1)'
+            },
+            stroke: {
+              color: 'rgba(67,126,255,1)',
+              width: 2
+            }
+          },
+          text: {
+            text: '终',
+            fill: {
+              color: '#3d73e8'
+            }
+          }
+        },
+        pass: {
+          circle: {
+            radius: 8,
+            fill: {
+              color: 'rgba(255,255,255,1)'
+            },
+            stroke: {
+              color: 'tomato',
+              width: 4
+            }
+          }
         }
       }
     }
@@ -226,6 +294,7 @@ export default {
   watch: {
     stops: {
       handler (value) {
+        if (value.length < 2) return false
         this.routeType === 'arcgis' ? this.updateArcgisRoute() : this.updateGraphhopperRoute()
       },
       immediate: false,
@@ -275,7 +344,7 @@ export default {
       let params = this.$props
       if (this.stops.length > 0) {
         params = { ...this.$props, ...{ stops: this.stops.join(';') } }
-        if (this.method === 'POST') {
+        if (this.method.toUpperCase() === 'POST') {
           return axios.post(this.serviceUrl, qs.stringify(params)).then(res => {
             return this.getArcgisData(res)
           })
@@ -292,12 +361,36 @@ export default {
       if (res.status === 200 && res.data && res.data.routes.features.length > 0) {
         const routes = res.data.routes
         if (routes.features[0].geometry.paths.length > 0) {
-          const line = [{
+          const routesFeatures = []
+          if (this.showStart) {
+            routesFeatures.push({
+              type: 'point',
+              style: this.routeStyle ? this.routeStyle.start : this.defaultStyle.start,
+              coordinates: routes.features[0].geometry.paths[0][0]
+            })
+          }
+          routesFeatures.push({
             type: 'polyline',
-            style: this.routeStyle || this.defaultStyle,
+            style: this.routeStyle ? this.routeStyle.line : this.defaultStyle.line,
             coordinates: routes.features[0].geometry.paths[0]
-          }]
-          return setFeatures(line, this.map)
+          })
+          if (this.showPass) {
+            this.stops.slice(1, this.stops.length - 1).forEach(point => {
+              routesFeatures.push({
+                type: 'point',
+                style: this.routeStyle ? this.routeStyle.pass : this.defaultStyle.pass,
+                coordinates: point
+              })
+            })
+          }
+          if (this.showEnd) {
+            routesFeatures.push({
+              type: 'point',
+              style: this.routeStyle ? this.routeStyle.end : this.defaultStyle.end,
+              coordinates: routes.features[0].geometry.paths[0][routes.features[0].geometry.paths[0].length - 1]
+            })
+          }
+          return setFeatures(routesFeatures, this.map)
         }
       } else {
         return []
@@ -311,7 +404,7 @@ export default {
           points = points + point[1] + ',' + point[0] + (index < this.stops.length - 1 ? '&point=' : '')
         })
         params = params + points
-        if (this.method === 'POST') {
+        if (this.method.toUpperCase() === 'POST') {
           return axios.post(this.serviceUrl, params).then(res => {
             return this.getGraphhopperData(res)
           })
@@ -325,15 +418,40 @@ export default {
       }
     },
     getGraphhopperData (res) {
+      console.log(res.data)
       if (res.status === 200 && res.data && res.data.paths[0].points.coordinates.length > 0) {
         const routes = res.data.paths[0]
         if (routes.points.coordinates.length > 0) {
-          const line = [{
+          const routesFeatures = []
+          if (this.showStart) {
+            routesFeatures.push({
+              type: 'point',
+              style: this.routeStyle ? this.routeStyle.start : this.defaultStyle.start,
+              coordinates: routes.points.coordinates[0]
+            })
+          }
+          routesFeatures.push({
             type: 'polyline',
-            style: this.routeStyle || this.defaultStyle,
+            style: this.routeStyle ? this.routeStyle.line : this.defaultStyle.line,
             coordinates: routes.points.coordinates
-          }]
-          return setFeatures(line, this.map)
+          })
+          if (this.showPass) {
+            this.stops.slice(1, this.stops.length - 1).forEach(point => {
+              routesFeatures.push({
+                type: 'point',
+                style: this.routeStyle ? this.routeStyle.pass : this.defaultStyle.pass,
+                coordinates: point
+              })
+            })
+          }
+          if (this.showEnd) {
+            routesFeatures.push({
+              type: 'point',
+              style: this.routeStyle ? this.routeStyle.end : this.defaultStyle.end,
+              coordinates: routes.points.coordinates[routes.points.coordinates.length - 1]
+            })
+          }
+          return setFeatures(routesFeatures, this.map)
         }
       } else {
         return []
@@ -380,6 +498,9 @@ export default {
       this.layer.getSource().clear()
       const features = await this.getGraphhopperRouteData()
       this.layer.getSource().addFeatures(features)
+    },
+    setStopsFeatures () {
+
     }
   }
 }

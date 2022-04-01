@@ -1,5 +1,5 @@
 <template>
-  <div :id="element">
+  <div :id="element" :class="className">
     <slot :position="position"></slot>
   </div>
 </template>

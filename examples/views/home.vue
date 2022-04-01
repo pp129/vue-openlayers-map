@@ -46,7 +46,8 @@
       <button class="btn" @click="pauseTrack('track1')">暂停</button>
       <button class="btn" @click="stopTrack('track1')">停止</button>
       <button class="btn" @click="disposeTrack('track1')">清除轨迹</button>
-      <button class="btn" @click="initAnimateIcons()">动画弹框</button>
+      <button class="btn" @click="initAnimateIcons">动画弹框</button>
+      <button class="btn" @click="exportPNG">导出png</button>
     </div>
     <!-- map -->
     <v-map
@@ -303,14 +304,6 @@ export default {
             {
               id: 'point2',
               coordinates: [118.168742, 24.487505],
-              style: {
-                circle: {
-                  radius: 5,
-                  fill: {
-                    color: 'red'
-                  }
-                }
-              },
               properties: {
                 name: 'feature1'
               }
@@ -453,11 +446,11 @@ export default {
         }
       ],
       graphhopper: {
-        show: false,
+        show: true,
         serviceUrl: 'http://172.16.28.74:9999/route',
         stops: [
           [118.106298, 24.506290],
-          [118.181858, 24.491986]
+          [118.182088, 24.487228]
         ]
       },
       routeLayer: {
@@ -465,9 +458,9 @@ export default {
         serviceUrl: '/arcgis/rest/services/tx/NAServer/Route/solve',
         method: 'POST',
         stops: [
-          [120.557909, 30.644344],
-          [120.555485, 30.635603],
-          [120.547913, 30.621760]
+          [118.106298, 24.506290],
+          [118.132400, 24.509894],
+          [118.182088, 24.487228]
         ],
         impedanceAttributeName: '长度',
         routeStyle: {
@@ -950,6 +943,9 @@ export default {
           overlay: 'animate'
         })
       })
+    },
+    exportPNG () {
+      this.$refs.map.exportPNG('xm')
     }
   }
 }

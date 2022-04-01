@@ -1,9 +1,14 @@
 <template>
-  <div :id="target" :style="{'width':mapWidth,'height':mapHeight}"><slot v-if="load"></slot></div>
+  <div :id="target" :style="{'width':mapWidth,'height':mapHeight}">
+    <a :id="downLoadId" :download="downloadName"></a>
+    <v-tile-layer v-if="noBase" :tile-type="defaultTile" :properties="properties"></v-tile-layer>
+    <slot v-if="load"></slot>
+  </div>
 </template>
 
 <script>
 import { VMap, uuid } from '~/utils'
+import { VTileLayer } from '~/VLayers'
 
 export default {
   name: 'v-map',
@@ -11,6 +16,9 @@ export default {
     return {
       VMap: this
     }
+  },
+  components: {
+    VTileLayer
   },
   props: {
     width: {
@@ -48,6 +56,10 @@ export default {
           projection: 'EPSG:4326'
         }
       }
+    },
+    defaultTile: {
+      type: String,
+      default: 'TD'
     }
   },
   computed: {
@@ -72,13 +84,21 @@ export default {
   },
   data () {
     return {
-      load: false
+      load: false,
+      downLoadId: `download-${uuid()}`,
+      downloadName: 'map.png',
+      noBase: false,
+      properties: {
+        isDefault: true
+      }
     }
   },
   mounted () {
     this.init().then(res => {
       if (res === 'success') {
         this.load = true
+        // 业务代码中未引入tile组件则添加默认图层
+        this.noBase = this.map.getLayers().getArray().findIndex(x => x.get('base')) < 0
         // 点击事件
         this.map.on('singleclick', (r) => {
           this.$emit('click', r, this.map)
@@ -174,11 +194,6 @@ export default {
         layer.getSource().clear()
       }
     },
-    setOverlayPosition (overlays) {
-      overlays.forEach(overlay => {
-        VMap.setOverlayPosition(overlay)
-      })
-    },
     setFeature (option) {
       return VMap.setFeature(option)
     },
@@ -204,6 +219,18 @@ export default {
       const layers = this.map.getLayers().getArray()
       const layer = layers.find(x => x.get('id') === id)
       if (layer) layer.setVisible(visible)
+    },
+    exportPNG (downloadName) {
+      if (downloadName) {
+        if (downloadName.indexOf('.png') > -1) {
+          this.downloadName = downloadName
+        } else {
+          this.downloadName = downloadName + '.png'
+        }
+      } else {
+        this.downloadName = `map-export-${uuid()}.png`
+      }
+      VMap.exportPNG(this.downLoadId)
     }
   }
 }

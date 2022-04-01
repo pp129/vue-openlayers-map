@@ -24,15 +24,15 @@ const sphericalMercator = {
   MAX_LATITUDE: 85.0511287798,
   RAD_PER_DEG: Math.PI / 180,
   forward: forEachPoint(function (input, output, offset) {
-    const lat = Math.max(Math.min(this.MAX_LATITUDE, input[offset + 1]), -this.MAX_LATITUDE)
-    const sin = Math.sin(lat * this.RAD_PER_DEG)
+    const lat = Math.max(Math.min(sphericalMercator.MAX_LATITUDE, input[offset + 1]), -sphericalMercator.MAX_LATITUDE)
+    const sin = Math.sin(lat * sphericalMercator.RAD_PER_DEG)
 
-    output[offset] = this.RADIUS * input[offset] * this.RAD_PER_DEG
-    output[offset + 1] = this.RADIUS * Math.log((1 + sin) / (1 - sin)) / 2
+    output[offset] = sphericalMercator.RADIUS * input[offset] * sphericalMercator.RAD_PER_DEG
+    output[offset + 1] = sphericalMercator.RADIUS * Math.log((1 + sin) / (1 - sin)) / 2
   }),
   inverse: forEachPoint(function (input, output, offset) {
-    output[offset] = input[offset] / this.RADIUS / this.RAD_PER_DEG
-    output[offset + 1] = (2 * Math.atan(Math.exp(input[offset + 1] / this.RADIUS)) - (Math.PI / 2)) / this.RAD_PER_DEG
+    output[offset] = input[offset] / sphericalMercator.RADIUS / sphericalMercator.RAD_PER_DEG
+    output[offset + 1] = (2 * Math.atan(Math.exp(input[offset + 1] / sphericalMercator.RADIUS)) - (Math.PI / 2)) / sphericalMercator.RAD_PER_DEG
   })
 }
 
@@ -293,6 +293,24 @@ const projzh = {
   ll2bmerc: function (input, optOutput, optDimension) {
     const output = bd09.fromWGS84(input, optOutput, optDimension)
     return baiduMercator.forward(output, output, optDimension)
+  },
+  mc2gcj02mc: function (input, optOutput, optDimension) {
+    let output = sphericalMercator.inverse(input, optOutput, optDimension)
+    output = gcj02.fromWGS84(output, output, optDimension)
+    return sphericalMercator.forward(output, output, optDimension)
+  },
+  gcj02mc2mc: function (input, optOutput, optDimension) {
+    let output = sphericalMercator.inverse(input, optOutput, optDimension)
+    output = gcj02.toWGS84(output, output, optDimension)
+    return sphericalMercator.forward(output, output, optDimension)
+  },
+  gcj02mc2ll: function (input, optOutput, optDimension) {
+    const output = sphericalMercator.inverse(input, optOutput, optDimension)
+    return gcj02.toWGS84(output, output, optDimension)
+  },
+  ll2gcj02mc: function (input, optOutput, optDimension) {
+    const output = gcj02.fromWGS84(input, optOutput, optDimension)
+    return sphericalMercator.forward(output, output, optDimension)
   },
   ll2smerc: sphericalMercator.forward,
   smerc2ll: sphericalMercator.inverse

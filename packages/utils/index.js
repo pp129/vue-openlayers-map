@@ -2,13 +2,13 @@ import 'ol/ol.css'
 import { Map, View } from 'ol'
 import { Circle, LineString, Point, Polygon } from 'ol/geom'
 import { Circle as CircleStyle, Fill, Icon, Stroke, Style, Text } from 'ol/style'
-import { Vector as VectorSource, XYZ, Cluster, OSM } from 'ol/source'
+import { Vector as VectorSource, XYZ, Cluster, OSM, TileWMS } from 'ol/source'
 import { Tile as TileLayer, Vector as VectorLayer, Heatmap, WebGLPoints } from 'ol/layer'
 import { defaults as defaultControls, OverviewMap } from 'ol/control'
 import Feature from 'ol/Feature'
 import TileGrid from 'ol/tilegrid/TileGrid'
 import ImageCanvasSource from 'ol/source/ImageCanvas'
-import { containsExtent, getCenter, containsCoordinate } from 'ol/extent'
+import { containsExtent, getCenter, containsCoordinate, applyTransform } from 'ol/extent'
 import ImageLayer from 'ol/layer/Image'
 import { toContext } from 'ol/render'
 import { Draw, Modify, Select } from 'ol/interaction'
@@ -206,6 +206,10 @@ export function olXYZ (option) {
   return new XYZ(option)
 }
 
+export function WMS (option) {
+  return new TileWMS(option)
+}
+
 export function olOSM (option) {
   return new OSM(option)
 }
@@ -238,15 +242,24 @@ export function olVectorSource (option) {
   return new VectorSource(option)
 }
 
+// 注册百度坐标系
 const baiduMercatorProj = new Projection({
   code: 'baidu',
   // extent: applyTransform(extent, projzh.ll2bmerc),
   units: 'm'
 })
-
 addProjection(baiduMercatorProj)
 addCoordinateTransforms('EPSG:4326', baiduMercatorProj, projzh.ll2bmerc, projzh.bmerc2ll)
 addCoordinateTransforms('EPSG:3857', baiduMercatorProj, projzh.smerc2bmerc, projzh.bmerc2smerc)
+// 注册高德坐标系
+const AMapMercatorProj = new Projection({
+  code: 'GCJ02',
+  extent: applyTransform([-180, -90, 180, 90], projzh.ll2gcj02mc),
+  units: 'm'
+})
+addProjection(AMapMercatorProj)
+addCoordinateTransforms('EPSG:4326', AMapMercatorProj, projzh.ll2gcj02mc, projzh.gcj02mc2ll)
+addCoordinateTransforms('EPSG:3857', AMapMercatorProj, projzh.mc2gcj02mc, projzh.gcj02mc2mc)
 
 export const uuid = () => {
   const tempUrl = URL.createObjectURL(new Blob())
@@ -672,105 +685,12 @@ export function addOverviewMapControl (option) {
 }
 
 /**
- * 设置地图基础切片图层
- * @param option
- * @param visible
- * @returns {*[]}
- */
-export function baseTile (option, visible) {
-  let layers = []
-  if (typeof option === 'string') {
-    layers = getBaseTile({ type: option }, visible)
-  } else if (typeof option === 'object') {
-    if (option instanceof Array) {
-      option.forEach(item => {
-        if (typeof item === 'string') {
-          const layer = getBaseTile({ type: item }, visible)
-          layers = layers.concat(layer)
-        } else if (typeof item === 'object') {
-          const layer = getBaseTile(item, visible)
-          layers = layers.concat(layer)
-        }
-      })
-    } else {
-      const layer = getBaseTile(option, visible)
-      layers = layers.concat(layer)
-    }
-  }
-  return layers
-}
-
-/**
- * 获取地图基础切片图层
- * @param option
- * @param visible
- * @returns {*[]}
- */
-function getBaseTile (option, visible) {
-  switch (option.type) {
-    case 'td':
-      return getTDMap(visible)
-    case 'td_img':
-      return getTDImg(visible)
-    case 'xyz':
-      option.base = true
-      return getCustomerTileXYZ(option, visible)
-    case 'bd':
-      return getBDMap(option, visible)
-    default:
-      return getTDMap(visible)
-  }
-}
-
-/**
- * 天地图-矢量图
- * @param visible
- * @returns {*[]}
- */
-function getTDMap (visible) {
-  return getCustomerTileXYZ({
-    option: [
-      {
-        url: 'http://t4.tianditu.com/DataServer?T=vec_w&x={x}&y={y}&l={z}&tk=88e2f1d5ab64a7477a7361edd6b5f68a'
-      },
-      {
-        url: 'http://t3.tianditu.com/DataServer?T=cva_w&x={x}&y={y}&l={z}&tk=88e2f1d5ab64a7477a7361edd6b5f68a'
-      }
-    ],
-    type: 'td',
-    name: 'td',
-    base: true
-  }, visible)
-}
-
-/**
- * 天地图-影像图
- * @param visible
- * @returns {*[]}
- */
-function getTDImg (visible) {
-  return getCustomerTileXYZ({
-    option: [
-      {
-        url: 'http://t4.tianditu.com/DataServer?T=img_w&x={x}&y={y}&l={z}&tk=88e2f1d5ab64a7477a7361edd6b5f68a'
-      },
-      {
-        url: 'http://t3.tianditu.com/DataServer?T=cia_w&x={x}&y={y}&l={z}&tk=88e2f1d5ab64a7477a7361edd6b5f68a'
-      }
-    ],
-    type: 'td_img',
-    name: 'td_img',
-    base: true
-  }, visible)
-}
-
-/**
  * 百度地图
- * @param option
- * @param visible
  * @returns {TileLayer<TileSourceType>[]}
+ * @param xyz
+ * @param tileLayer
  */
-export function getBDMap (option, visible) {
+export function getBDMap (xyz, tileLayer) {
   // const extent = [72.004, 0.8293, 137.8347, 55.8271]//中国范围
   // 计算百度使用的分辨率
   const resolutions = []
@@ -783,38 +703,49 @@ export function getBDMap (option, visible) {
     resolutions: resolutions // 设置分辨率
   })
   // 创建百度地图的数据源
-  const tile = new XYZ({
-    projection: 'baidu',
-    tileGrid: tilegrid,
-    tileUrlFunction: function (tileCoord, pixelRatio, proj) {
-      if (!tileCoord) {
-        return ''
-      }
-      const z = tileCoord[0]
-      const x = tileCoord[1]
-      const y = -tileCoord[2] - 1
-      return 'https://maponline1.bdimg.com/tile/?qt=vtile&x=' +
-        x + '&y=' + y + '&z=' + z +
-        '&styles=pl&scaler=1&udt=20220113&from=jsapi2_0'
-    },
-    crossOrigin: 'anonymous'
-  })
+  const xyzOpt = {
+    ...xyz,
+    ...{
+      projection: 'baidu',
+      tileGrid: tilegrid,
+      tileUrlFunction: function (tileCoord, pixelRatio, proj) {
+        if (!tileCoord) {
+          return ''
+        }
+        const z = tileCoord[0]
+        const x = tileCoord[1]
+        const y = -tileCoord[2] - 1
+        return 'https://maponline1.bdimg.com/tile/?qt=vtile&x=' +
+          x + '&y=' + y + '&z=' + z +
+          '&styles=pl&scaler=1&udt=20220113&from=jsapi2_0'
+      },
+      crossOrigin: 'anonymous'
+    }
+  }
+  const tile = new XYZ(xyzOpt)
   // 百度地图层
-  const layer = new TileLayer({
-    visible: false,
-    source: tile
-  })
-  let visibleTile = ''
-  if (typeof visible === 'string') {
-    visibleTile = visible
-  } else if (typeof visible === 'object') {
-    visibleTile = visible.name
+  const layerOpt = { ...tileLayer, ...{ source: tile } }
+  const layer = new TileLayer(layerOpt)
+  layer.set('type', 'bd')
+  layer.set('name', 'bd')
+  layer.set('base', true)
+  return [layer]
+}
+
+export function getAMap (xyz, tileLayer) {
+  const xyzOpt = {
+    ...xyz,
+    ...{
+      url: 'http://wprd0{1-4}.is.autonavi.com/appmaptile?x={x}&y={y}&z={z}&lang=zh_cn&size=1&scl=1&style=7',
+      projection: 'GCJ02',
+      crossOrigin: 'anonymous'
+    }
   }
-  if (option.name === visibleTile) {
-    layer.setVisible(true)
-  }
-  layer.set('type', option.type || 'bd')
-  layer.set('name', option.name || 'bd')
+  const tile = new XYZ(xyzOpt)
+  const layerOpt = { ...tileLayer, ...{ source: tile } }
+  const layer = new TileLayer(layerOpt)
+  layer.set('type', 'AMap')
+  layer.set('name', 'AMap')
   layer.set('base', true)
   return [layer]
 }
@@ -884,15 +815,6 @@ function removeLayerById (id, map) {
 }
 
 /**
- * 更新弹框位置
- * @param overlay
- * @param position
- */
-function setOverlayPosition (overlay, position) {
-  overlay.setPosition(position)
-}
-
-/**
  * 地图移动动画
  * @param map
  * @param center
@@ -929,6 +851,73 @@ function getDistanceString (lines, units = 'kilometers') {
   return length(line, options)
 }
 
+/**
+ * 地图导出png
+ * @param map 地图对象
+ * @param downLoadId 下载标签
+ */
+function exportPNG (map, downLoadId) {
+  map.once('rendercomplete', function () {
+    const mapCanvas = document.createElement('canvas')
+    const size = map.getSize()
+    mapCanvas.width = size[0]
+    mapCanvas.height = size[1]
+    const mapContext = mapCanvas.getContext('2d')
+    Array.prototype.forEach.call(
+      map.getViewport().querySelectorAll('.ol-layer canvas, canvas.ol-layer'),
+      function (canvas) {
+        if (canvas.width > 0) {
+          const opacity =
+            canvas.parentNode.style.opacity || canvas.style.opacity
+          mapContext.globalAlpha = opacity === '' ? 1 : Number(opacity)
+
+          const backgroundColor = canvas.parentNode.style.backgroundColor
+          if (backgroundColor) {
+            mapContext.fillStyle = backgroundColor
+            mapContext.fillRect(0, 0, canvas.width, canvas.height)
+          }
+
+          let matrix
+          const transform = canvas.style.transform
+          if (transform) {
+            // Get the transform parameters from the style's transform matrix
+            matrix = transform
+              // eslint-disable-next-line no-useless-escape
+              .match(/^matrix\(([^\(]*)\)$/)[1]
+              .split(',')
+              .map(Number)
+          } else {
+            matrix = [
+              parseFloat(canvas.style.width) / canvas.width,
+              0,
+              0,
+              parseFloat(canvas.style.height) / canvas.height,
+              0,
+              0
+            ]
+          }
+          // Apply the transform to the export map context
+          CanvasRenderingContext2D.prototype.setTransform.apply(
+            mapContext,
+            matrix
+          )
+          mapContext.drawImage(canvas, 0, 0)
+        }
+      }
+    )
+    mapContext.globalAlpha = 1
+    if (navigator.msSaveBlob) {
+      // link download attribute does not work on MS browsers
+      navigator.msSaveBlob(mapCanvas.msToBlob(), 'map.png')
+    } else {
+      const link = document.getElementById(downLoadId)
+      link.href = mapCanvas.toDataURL()
+      link.click()
+    }
+  })
+  map.renderSync()
+}
+
 export class VMap {
   static map = VMap
 
@@ -946,15 +935,6 @@ export class VMap {
 
   static getOverlaysById (id) {
     return VMap.map.map.getOverlayById(id)
-  }
-
-  static setOverlayPosition (option) {
-    const overlays = VMap.map.map.getOverlays()
-    overlays.forEach(overlay => {
-      if (overlay.getId() === option.id) {
-        return setOverlayPosition(overlay, option.position)
-      }
-    })
   }
 
   static panTo (center, zoom) {
@@ -981,6 +961,10 @@ export class VMap {
     return getDistanceString(lines, units)
   }
 
+  static exportPNG (downLoadId) {
+    return exportPNG(VMap.map.map, downLoadId)
+  }
+
   constructor (option = {}) {
     // view
     const viewOptDefault = {
@@ -1002,13 +986,6 @@ export class VMap {
 
     this.map.on('contextmenu', evt => {
       evt.preventDefault()
-    })
-
-    // 基础图层
-    const tileLayer = baseTile('td', 'td')
-
-    tileLayer.forEach(layer => {
-      this.map.addLayer(layer)
     })
 
     // 鼠标悬浮

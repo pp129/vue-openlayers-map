@@ -1,11 +1,8 @@
 <script>
 import BaseLayer from '~/VLayers/BaseLayer'
-import { addVectorSource, setFeatures, uuid } from '~/utils'
-import VectorLayer from 'ol/layer/Vector'
+import { addVectorSource, olDraw, olLineString, olModify, olPoint, setFeatures, uuid, vectorLayer } from '~/utils'
 import { Circle as CircleStyle, Fill, RegularShape, Stroke, Style, Text } from 'ol/style'
 import { getArea, getLength } from 'ol/sphere'
-import { Draw, Modify } from 'ol/interaction'
-import { LineString, Point } from 'ol/geom'
 
 export default {
   name: 'v-measure',
@@ -18,7 +15,7 @@ export default {
     layerId: {
       type: String,
       default () {
-        return `draw-layer-${uuid()}`
+        return `measure-layer-${uuid()}`
       }
     },
     features: {
@@ -222,7 +219,7 @@ export default {
         }
         return output
       }
-      this.modify = new Modify({ source: source, style: modifyStyle })
+      this.modify = olModify({ source: source, style: modifyStyle })
       let tipPoint
       const styleFunction = (feature, segments, drawType, tip) => {
         const styles = [style]
@@ -233,9 +230,9 @@ export default {
           if (type === 'Polygon') {
             point = geometry.getInteriorPoint()
             label = formatArea(geometry)
-            line = new LineString(geometry.getCoordinates()[0])
+            line = olLineString(geometry.getCoordinates()[0])
           } else if (type === 'LineString') {
-            point = new Point(geometry.getLastCoordinate())
+            point = olPoint(geometry.getLastCoordinate())
             label = formatLength(geometry)
             line = geometry
           }
@@ -243,12 +240,12 @@ export default {
         if (segments && line) {
           let count = 0
           line.forEachSegment(function (a, b) {
-            const segment = new LineString([a, b])
+            const segment = olLineString([a, b])
             const label = formatLength(segment)
             if (segmentStyles.length - 1 < count) {
               segmentStyles.push(segmentStyle.clone())
             }
-            const segmentPoint = new Point(segment.getCoordinateAt(0.5))
+            const segmentPoint = olPoint(segment.getCoordinateAt(0.5))
             segmentStyles[count].setGeometry(segmentPoint)
             segmentStyles[count].getText().setText(label)
             styles.push(segmentStyles[count])
@@ -272,7 +269,7 @@ export default {
         return styles
       }
       const layerOpt = { ...this.$props, ...{ source: source } }
-      this.layer = new VectorLayer(layerOpt)
+      this.layer = vectorLayer(layerOpt)
       this.layer.setStyle((feature) => {
         return styleFunction(feature, this.segments)
       })
@@ -289,7 +286,7 @@ export default {
         (drawType === 'Polygon' ? '面积' : '长度')
       const idleTip = '点击开始测量'
       let tip = idleTip
-      this.draw = new Draw({
+      this.draw = olDraw({
         source: source,
         type: drawType,
         style: (feature) => {

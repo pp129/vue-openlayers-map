@@ -21,9 +21,11 @@ import { VVectorLayer } from 'vue-openlayers-map'
 
 ## use
 
+> 示例包含：加载矢量图层、在该图层上绘制点、线、面。
+
 ```vue
 <template>
-  <v-map>
+  <v-map ：view="view">
     <v-vector-layer v-for="layer in layers" :key="layer.id" :ref="layer.id" :layer-id="layer.id"  :visible="layer.visible" :features="layer.features"></v-vector-layer>
   </v-map>
 </template>
@@ -32,6 +34,10 @@ import { VMap, VVectorLayer } from 'vue-openlayers-map'
 export default {
   data(){
     return {
+      view: {
+        center: [118.045456, 24.567489],
+        zoom: 10
+      },
        layers: [
         {
           id: 'layer1',
@@ -158,3 +164,20 @@ export default {
 </script>	
 ```
 
+## methods
+
+> 可调用方法
+
+| 方法名                                  | 说明                                                         | 参数                                                         |
+| --------------------------------------- | ------------------------------------------------------------ | ------------------------------------------------------------ |
+| [updateFeatureById](#updateFeatureByid) | 有些时候不想改动原始数据来改变图层中要素属性，可以使用此方法。在使用此方法前需保证生成的要素带有`id`属性。 | (`id`, `update`) 接收两个参数，1. 要素id。2. 要素更新内容(key,value)。可选key：`position`、`style` |
+
+### updateFeatureById
+
+`update.poition`更新要素位置。值为经纬度数组。
+
+`update.style`更新要素样式。值为样式对象。
+
+```javascript
+this.$refs.layer1[0].updateFeatureById(feature.id, { position: position })
+```

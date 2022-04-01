@@ -1,6 +1,6 @@
 <script>
 import BaseLayer from './BaseLayer'
-import { getBDMap, olOSM, olTileGrid, olTileLayer, olXYZ, uuid, validObjKey } from '~/utils'
+import { getAMap, getBDMap, olOSM, olTileGrid, olTileLayer, olXYZ, uuid, validObjKey, WMS } from '~/utils'
 export default {
   name: 'v-tile-layer',
   render (createElement, context) {
@@ -21,7 +21,12 @@ export default {
     },
     tileType: {
       type: String,
-      default: 'TD'
+      default: 'TD',
+      validator: value => ['TD', 'TD_IMG', 'XYZ', 'BD', 'GD', 'OSM', 'PGIS_TILE', 'PGIS_HPYX', 'WMS'].includes(value)
+    },
+    base: {
+      type: Boolean,
+      default: true
     },
     xyz: {
       type: Object,
@@ -29,7 +34,7 @@ export default {
         return {}
       }
     },
-    tileGrid: {
+    wms: {
       type: Object,
       default () {
         return {}
@@ -49,8 +54,9 @@ export default {
   },
   watch: {
     tileType: {
-      handler (value) {
-        if (value) {
+      handler (newValue, oldValue) {
+        if (newValue && newValue !== oldValue) {
+          this.clear(oldValue)
           this.init(this.$parent.$options.name)
         }
       },
@@ -88,7 +94,11 @@ export default {
       immediate: false
     }
   },
+  updated () {
+    this.init(this.$parent.$options.name)
+  },
   mounted () {
+    console.log(this.VMap.noBase)
     this.init(this.$parent.$options.name)
   },
   beforeDestroy () {
@@ -98,16 +108,24 @@ export default {
     })
   },
   methods: {
-    init (name) {
+    clear (oldValue) {
       const layers = this.map.getLayers().getArray().filter(x => x.get('base'))
       if (layers && layers.length > 0) {
         layers.forEach(layer => {
-          this.map.removeLayer(layer)
+          if (layer.get('tileType') === oldValue || layer.get('isDefault')) {
+            this.map.removeLayer(layer)
+          }
         })
       }
+    },
+    init (name) {
+      this.clear(this.tileType)
       switch (this.tileType) {
         case 'XYZ':
           this.initTileXYZ(name)
+          break
+        case 'WMS':
+          this.initTileWMS(name)
           break
         case 'TD':
           this.initTD(name)
@@ -134,6 +152,7 @@ export default {
           this.initTD(name)
           break
       }
+      // console.log(this.map.getLayers().getArray().filter(x => x.get('base')))
     },
     initTileXYZ (name) {
       let tileGrid
@@ -144,7 +163,26 @@ export default {
       const source = olXYZ(xyzOpt)
       const layerOpt = { ...this.$props, ...{ source: source } }
       this.layer = olTileLayer(layerOpt)
-      this.layer.set('base', true)
+      this.layer.set('base', this.base)
+      this.layer.setZIndex(0)
+      this.layers = [this.layer]
+      if (name === 'v-map') {
+        this.map.addLayer(this.layer)
+      } else {
+        this.$parent.layers = this.layers
+        this.$parent.init()
+      }
+    },
+    initTileWMS (name) {
+      let tileGrid
+      if (validObjKey(this.wms, 'tileGrid')) {
+        tileGrid = olTileGrid(this.wms.tileGrid)
+      }
+      const wmsOpt = { ...this.wms, ...{ tileGrid: tileGrid } }
+      const source = WMS(wmsOpt)
+      const layerOpt = { ...this.$props, ...{ source: source } }
+      this.layer = olTileLayer(layerOpt)
+      this.layer.set('base', this.base)
       this.layer.setZIndex(0)
       this.layers = [this.layer]
       if (name === 'v-map') {
@@ -155,7 +193,7 @@ export default {
       }
     },
     initXYZbyURL (url) {
-      const xyzOpt = { ...this.$props.xyz, ...{ url: url } }
+      const xyzOpt = { ...{ crossOrigin: 'anonymous' }, ...this.$props.xyz, ...{ url: url } }
       const source = olXYZ(xyzOpt)
       const layerOpt = { ...this.$props, ...{ source: source } }
       const layer = olTileLayer(layerOpt)
@@ -191,7 +229,7 @@ export default {
       }
     },
     initGD (name) {
-      this.layers = [this.initXYZbyURL('http://wprd0{1-4}.is.autonavi.com/appmaptile?x={x}&y={y}&z={z}&lang=zh_cn&size=1&scl=1&style=7')]
+      this.layers = getAMap(this.xyz, this.$props)
       if (name === 'v-map') {
         this.layers.forEach(layer => {
           this.map.addLayer(layer)
@@ -202,10 +240,10 @@ export default {
       }
     },
     initBD (name) {
-      this.layers = getBDMap({ name: 'bd' }, { name: 'bd' })
+      this.layers = getBDMap(this.xyz, this.$props)
       if (this.layers.length > 0) {
         // this.layer = layers[0]
-        // this.layer.set('base', true)
+        // this.layer.set('base', this.base)
         // this.map.addLayer(this.layer)
         if (name === 'v-map') {
           this.layers.forEach(layer => {
@@ -222,7 +260,7 @@ export default {
       const source = olOSM()
       const layerOpt = { ...this.$props, ...{ source: source } }
       this.layer = olTileLayer(layerOpt)
-      this.layer.set('base', true)
+      this.layer.set('base', this.base)
       this.layer.setZIndex(0)
       this.layers = [this.layer]
       if (name === 'v-map') {
@@ -253,7 +291,7 @@ export default {
       const source = olXYZ(xyzOpt)
       const layerOpt = { ...this.$props, ...{ source: source } }
       this.layer = olTileLayer(layerOpt)
-      this.layer.set('base', true)
+      this.layer.set('base', this.base)
       this.layer.setZIndex(0)
       this.layers = [this.layer]
       if (name === 'v-map') {

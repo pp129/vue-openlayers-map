@@ -51,7 +51,7 @@ export default {
         console.log('layer features change', value)
         this.layer.getSource().clear()
         if (value && value.length > 0) {
-          const features = setFeatures(value, this.map, true)
+          const features = setFeatures(value, this.map, this.FeatureStyle && Object.keys(this.FeatureStyle).length > 0)
           this.layer.getSource().addFeatures(features)
         }
       },
@@ -92,7 +92,7 @@ export default {
   mounted () {
     const source = addVectorSource(this.source, this.map)
     if (this.source.features.length <= 0 && this.features.length > 0) {
-      const features = setFeatures(this.features, this.map, true)
+      const features = setFeatures(this.features, this.map, this.FeatureStyle && Object.keys(this.FeatureStyle).length > 0)
       source.addFeatures(features)
     }
     const layerOpt = { ...this.$props, ...{ source: source } }
@@ -101,7 +101,7 @@ export default {
       if (feature.get('style')) {
         return setStyle(feature.get('style'))
       } else {
-        if (this.FeatureStyle) {
+        if (this.FeatureStyle && Object.keys(this.FeatureStyle).length > 0) {
           return setStyle(this.FeatureStyle)
         } else {
           return setStyle({

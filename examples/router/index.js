@@ -33,6 +33,11 @@ const routes = [
     path: '/trackMap',
     name: 'trackMap',
     component: Track
+  },
+  {
+    path: '/routeMap',
+    name: 'routeMap',
+    component: () => import('@/views/route.vue')
   }
 ]
 

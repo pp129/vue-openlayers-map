@@ -2,6 +2,8 @@
 <div class="layers">
   <div class="tools">
     <button class="btn" @click="addLayer">更新features</button>
+    <button @click="changeTile">更新</button>
+    <input type="checkbox" v-model="showTile">
   </div>
   <v-map ref="map"
          class="map"
@@ -9,22 +11,28 @@
          :height="height"
          :width="width">
     <v-vector-layer :features="features" :feature-style="style"/>
+    <v-tile-layer v-if="showTile" :tile-type="tileType"></v-tile-layer>
+    <v-tile-layer v-if="!showTile" :tile-type="'TD_IMG'"></v-tile-layer>
+    <v-tile-layer :tile-type="tile.type" :wms="tile.wms" :base="false"></v-tile-layer>
   </v-map>
 </div>
 </template>
 
 <script>
-import { VMap, VVectorLayer } from '~/index'
+import { VMap, VVectorLayer, VTileLayer } from '~/index'
 import layersOption from '@/utils/layersOption'
 import Mock from 'mockjs'
 export default {
   name: 'layers',
   components: {
     VMap,
-    VVectorLayer
+    VVectorLayer,
+    VTileLayer
   },
   data () {
     return {
+      tileType: 'GD',
+      showTile: true,
       height: '100%',
       width: '100%',
       option: layersOption,
@@ -37,6 +45,18 @@ export default {
         icon: {
           src: require('@/assets/img/point_1.png'),
           scale: 0.6
+        }
+      },
+      tile: {
+        type: 'WMS',
+        wms: {
+          url: 'http://218.5.80.6:6600/geoserver/softThree/wms',
+          params: {
+            LAYERS: 'softThree:softThreeGaode',
+            TILED: true
+          },
+          serverType: 'geoserver',
+          crossOrigin: 'anonymous'
         }
       }
     }
@@ -71,6 +91,9 @@ export default {
     },
     addLayer () {
       this.features = this.getFeatures()
+    },
+    changeTile () {
+      this.tileType = 'BD'
     }
   },
   mounted () {

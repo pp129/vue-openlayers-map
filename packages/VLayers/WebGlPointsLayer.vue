@@ -13,7 +13,7 @@ export default {
     layerId: {
       type: String,
       default () {
-        return `vector-layer-${uuid()}`
+        return `webgl-layer-${uuid()}`
       }
     },
     source: {

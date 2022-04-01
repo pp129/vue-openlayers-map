@@ -68,7 +68,13 @@ export default{
 </script>
 ```
 
+## defaultTile
 
+业务代码中未引入v-tile-layer组件则添加默认图层（天地图）。
+
+| 说明     | 是否必填 | 类型   | 可选值                                                      | 默认值 |
+| -------- | -------- | ------ | ----------------------------------------------------------- | ------ |
+| 基础图层 | 否       | String | 'TD', 'TD_IMG', 'BD', 'GD', 'OSM', 'PGIS_TILE', 'PGIS_HPYX' | TD     |
 
 ## events
 
@@ -166,21 +172,37 @@ export default{
 
 > 方法
 
+| 方法名                                  | 说明                                                      | 参数                                                         |
+| --------------------------------------- | --------------------------------------------------------- | ------------------------------------------------------------ |
+| [panTo](#panTo)                         | 移动视图动画                                              | {center:中心点数组,zoom:缩放层级数字}接受一个对象参数。      |
+| [getDistancePoint](#getDistancePoint)   | 获取两点之间距离                                          | (from, to, units)接受三个参数，1、起点经纬度，2、终点经纬度，3、距离单位 |
+| [getDistanceString](#getDistanceString) | 计算折线长度                                              | (lines, units)接受两个参数，1、折线经纬度集合，2、长度单位   |
+| [setFeature](#setFeature)               | 主动生成要素                                              | 要素对象。                                                   |
+| [getCenterByExtent](#getCenterByExtent) | 获取区域中心点                                            | (extent)接受一个数组参数。区域范围经纬度集合。               |
+| [getFeatureById](#getFeatureById)       | 根据指定图层id获取该图层下指定id的要素                    | 使用此方法前保证生成的图层和要素带有`id`属性。(layerID, featureID)接受两个参数，1、图层id，2、要素id。 |
+| [exportPNG](#exportPNG)                 | 将当前视图内的地图（包括图层、要素）转成png格式图片导出。 | （pngName）接受一个参数，要导出的图片文件名。                |
+
 ### panTo
 
-移动地图中心点
+`param.center`中心点数组。
+
+`param.zoom`缩放层级数字。
 
 ```js
 const param = {
-  center:[Lon,Lat],//中心点
-  zoom:zoom//层级
+  center: [118,24],//中心点
+  zoom: 12//层级
 }
 this.$refs.map.panTo(param)
 ```
 
 ### getDistancePoint
 
-获取两点之间距离
+`from`测量起点经纬度数组
+
+`to`测量终点经纬度数组
+
+`units`单位默认千米`kilometers`，单位还可以设置为`degrees`, `radians`, `miles`
 
 ```js
 /**
@@ -192,17 +214,7 @@ this.$refs.map.panTo(param)
 const distance = this.$refs.map.getDistancePoint(from, to, units)
 ```
 
-### getDistanceString
-
-获取两线之间距离
-
-### setFeature
-
-主动生成要素
-
 ### getCenterByExtent
-
-获取区域中心点
 
 ```js
 // 多边形经纬度集合
@@ -213,8 +225,6 @@ const center = this.$refs.map.getCenterByExtent(polygonFeature)
 
 ### getFeatureById
 
-根据指定图层id获取该图层下指定id的要素
-
 ```js
 /**
  * @param layerId {String} 图层id
@@ -224,3 +234,11 @@ const center = this.$refs.map.getCenterByExtent(polygonFeature)
 const feature = this.$refs.map.getFeatureById(layerId,featureId)
 ```
 
+### exportPNG
+
+```javascript
+/**
+ * @param name 图片名称 不必填
+ */
+this.$refs.map.exportPNG('xm')
+```

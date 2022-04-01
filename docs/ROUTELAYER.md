@@ -12,13 +12,93 @@ import { VRouteLayer } from 'vue-openlayers-map'
 
 [继承参数查看](LAYER_PROPS.md)
 
-| 参数         | 类型   | 默认值                   | 描述                                                         |
-| ------------ | ------ | ------------------------ | ------------------------------------------------------------ |
-| `layerId`    | String | `vector-layer-${uuid()}` | 图层id                                                       |
-| `serviceUrl` | String |                          | 请求路径。                                                   |
-| `method`     | String | `GET`                    | 请求类型，支持`GET`或  `POST`                                |
-| `routeType`  | String |                          | **必填**，路径规划数据类型。可选值：`arcgis`   `graphhopper` |
-| `stops`      | Array  | `[]`                     | 路线计算坐标。                                               |
+| 参数         | 类型    | 默认值                   | 描述                                                         |
+| ------------ | ------- | ------------------------ | ------------------------------------------------------------ |
+| `layerId`    | String  | `vector-layer-${uuid()}` | 图层id                                                       |
+| `serviceUrl` | String  |                          | 请求路径。                                                   |
+| `method`     | String  | `GET`                    | 请求类型，支持`GET`或  `POST`                                |
+| `routeType`  | String  |                          | **必填**，路径规划数据类型。可选值：`arcgis`   `graphhopper` |
+| `stops`      | Array   | `[]`                     | 路线计算坐标。                                               |
+| `showStart`  | Boolean | `false`                  | 是否显示起点                                                 |
+| `showEnd`    | Boolean | `false`                  | 是否显示终点                                                 |
+| `showPass`   | Boolean | `false`                  | 是否显示途经点                                               |
+| `routeStyle` | Object  | `undefined`              | 路径样式。包含属性：`line` `start` `end`  `pass`。可重写样式属性覆盖默认值。 |
+
+### routeStyle
+
+- `routeStyle.line`道路样式。
+
+默认值：
+
+```json
+stroke: {
+  color: 'rgba(67,126,255,1)',
+  width: 4
+}
+```
+
+- `routeStyle.start`起点样式.
+
+默认值：
+
+```json
+circle: {
+  radius: 15,
+  fill: {
+    color: 'rgba(255,255,255,1)'
+  },
+  stroke: {
+    color: 'rgba(67,126,255,1)',
+    width: 2
+  }
+},
+text: {
+  text: '起',
+  fill: {
+    color: '#3d73e8'
+  }
+}
+```
+
+- `routeStyle.end`终点样式。
+
+默认值：
+
+```json
+circle: {
+  radius: 15,
+  fill: {
+    color: 'rgba(255,255,255,1)'
+  },
+  stroke: {
+    color: 'rgba(67,126,255,1)',
+    width: 2
+  }
+},
+text: {
+  text: '终',
+  fill: {
+    color: '#3d73e8'
+  }
+}
+```
+
+- `routeStyle.pass`途经点样式。
+
+默认值：
+
+```json
+circle: {
+  radius: 8,
+  fill: {
+    color: 'rgba(255,255,255,1)'
+  },
+  stroke: {
+    color: 'tomato',
+    width: 4
+  }
+}
+```
 
 ### arcgis props
 
@@ -45,7 +125,7 @@ import { VRouteLayer } from 'vue-openlayers-map'
 
 ```vue
 <template>
-  <v-map>
+  <v-map :view="view">
     <!-- arcgis 路径规划服务图层 -->
     <v-route-layer :route-type="'arcgis'" :service-url="routeLayer.serviceUrl" :method="routeLayer.method" :stops="routeLayer.stops" :impedance-attribute-name="routeLayer.impedanceAttributeName" :route-style="routeLayer.routeStyle"></v-route-layer>
     <!-- graphhopper 路径规划服务图层 -->
@@ -56,6 +136,10 @@ import { VRouteLayer } from 'vue-openlayers-map'
 export default{
   data(){
     return {
+      view: {
+        center: [118.045456, 24.567489],
+        zoom: 10
+      },
       graphhopper: {
         serviceUrl: '/graphhoppe/route',
         stops: [
@@ -73,10 +157,12 @@ export default{
         ],
         impedanceAttributeName: '长度',
         routeStyle: {
-          stroke: {
-            color: 'red',
-            width: 5,
-            lineDash: [20, 10, 20, 10]
+          line: {
+            stroke: {
+            	color: 'red',
+            	width: 5,
+            	lineDash: [20, 10, 20, 10]
+          	}
           }
         }
       }

@@ -37,6 +37,13 @@
       }
     }
   }
+  .list{
+    position: absolute;
+    left: 10px;
+    top: 10px;
+    background: #ffffff;
+    z-index: 2;
+  }
   .map{
     z-index: 1;
     position: absolute;
