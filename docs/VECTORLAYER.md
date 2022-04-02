@@ -15,8 +15,8 @@ import { VVectorLayer } from 'vue-openlayers-map'
 | 参数           | 类型                          | 默认值                   | 描述                                                         |
 | -------------- | ----------------------------- | ------------------------ | ------------------------------------------------------------ |
 | `layerId`      | String                        | `vector-layer-${uuid()}` | 图层id                                                       |
-| `source`       | Object / `undefined`          | `undefined`              | 资源。数据结构参考                                           |
-| `features`     | Array                         | `[]`                     | 图层中的要素集合，单个要素参数参考：[feature](FEATURE_OPTS.md) |
+| `source`       | Object / `undefined`          | `undefined`              | 资源。数据结构参考：[ol/source/Vector](https://openlayers.org/en/latest/apidoc/module-ol_source_Vector.html) |
+| `features`     | Array                         | `[]`                     | 图层中的要素集合，单个要素参数参考：[feature](FEATURE.md)    |
 | `FeatureStyle` | Object / `null` / `undefined` | `undefined`              | 图层样式。当设置为 时`null`，只有具有自己风格的特征才会被渲染。[`module:ol/style/Style~Style`](https://openlayers.org/en/latest/apidoc/module-ol_style_Style-Style.html)如果未设置，请参阅将使用的默认样式。 |
 
 ## use
