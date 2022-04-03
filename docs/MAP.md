@@ -80,9 +80,16 @@ export default{
 
 > 事件
 
-### load
+| 事件名         | 说明                 | 参数                                                         |
+| -------------- | -------------------- | ------------------------------------------------------------ |
+| load           | 地图对象生成完成事件 | -                                                            |
+| click          | 点击事件             | (evt, map)接受2个参数。1、事件实例[模块：ol/MapEvent~MapEvent](https://openlayers.org/en/latest/apidoc/module-ol_MapEvent-MapEvent.html)。2、地图实例。 |
+| onClickFeature | 点击要素             | (feature, layer)接受2个参数。1、要素实例。2、要素归属的图层实例。 |
+| changeZoom     | 层级变化事件         | (evt,map)接受2个参数。1、事件实例[模块：ol/MapEvent~MapEvent](https://openlayers.org/en/latest/apidoc/module-ol_MapEvent-MapEvent.html)。2、地图实例。 |
 
-地图对象生成完成事件
+
+
+### load
 
 ```vue
 <template>
@@ -103,8 +110,6 @@ export default{
 
 ### click
 
-点击事件
-
 ```vue
 <template>
   <div>
@@ -124,8 +129,6 @@ export default{
 ```
 
 ### onClickFeature
-
-点击要素
 
 ```vue
 <template>
@@ -148,8 +151,6 @@ export default{
 
 
 ### changeZoom
-
-层级变化事件
 
 ```vue
 <template>
@@ -242,3 +243,4 @@ const feature = this.$refs.map.getFeatureById(layerId,featureId)
  */
 this.$refs.map.exportPNG('xm')
 ```
+
