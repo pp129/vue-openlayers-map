@@ -98,7 +98,6 @@ export default {
     this.init(this.$parent.$options.name)
   },
   mounted () {
-    console.log(this.VMap.noBase)
     this.init(this.$parent.$options.name)
   },
   beforeDestroy () {
@@ -152,7 +151,6 @@ export default {
           this.initTD(name)
           break
       }
-      // console.log(this.map.getLayers().getArray().filter(x => x.get('base')))
     },
     initTileXYZ (name) {
       let tileGrid

@@ -96,8 +96,7 @@ export default {
   mounted () {
     this.init().then(res => {
       if (res === 'success') {
-        this.load = true
-        // 业务代码中未引入tile组件则添加默认图层
+        // 业务代码中未引入tile组件则添加默认图层)
         this.noBase = this.map.getLayers().getArray().findIndex(x => x.get('base')) < 0
         // 点击事件
         this.map.on('singleclick', (r) => {
@@ -113,6 +112,7 @@ export default {
           })
         })
         this.$emit('load')
+        this.load = true
       }
     })
   },

@@ -7,13 +7,13 @@
   </div>
   <v-map ref="map"
          class="map"
+         :default-tile="'BD'"
          :view="option.view"
          :height="height"
          :width="width">
     <v-vector-layer :features="features" :feature-style="style"/>
     <v-tile-layer v-if="showTile" :tile-type="tileType"></v-tile-layer>
-    <v-tile-layer v-if="!showTile" :tile-type="'TD_IMG'"></v-tile-layer>
-    <v-tile-layer :tile-type="tile.type" :wms="tile.wms" :base="false"></v-tile-layer>
+    <v-tile-layer v-if="showWMS" :tile-type="tile.type" :wms="tile.wms" :base="false"></v-tile-layer>
   </v-map>
 </div>
 </template>
@@ -33,6 +33,7 @@ export default {
     return {
       tileType: 'GD',
       showTile: true,
+      showWMS: false,
       height: '100%',
       width: '100%',
       option: layersOption,
