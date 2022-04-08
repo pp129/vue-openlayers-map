@@ -71,7 +71,9 @@
       <!-- 瓦片图层 -->
       <v-tile-layer v-if="showTile" :tile-type="tileType" :xyz="xyz[tileType]" :preload="Infinity"></v-tile-layer>
       <!-- 矢量图层 -->
-      <v-vector-layer v-for="layer in layers" :key="layer.id" :ref="layer.id" :layer-id="layer.id"  :visible="layer.visible" :features="layer.features"></v-vector-layer>
+      <v-vector-layer
+        v-for="layer in layers"
+        :key="layer.id" :ref="layer.id" :layer-id="layer.id"  :visible="layer.visible" :features="layer.features"></v-vector-layer>
       <!-- 图形图层 渲染海量点 -->
       <v-graphic-layer
         v-if="comGraphic.show"
@@ -785,11 +787,18 @@ export default {
       })
     },
     setModify () {
-      this.modifyStatus = !this.modifyStatus
-      if (this.modifyStatus) {
-        this.option.interaction = [{ type: 'select' }, { type: 'modify', selectFeature: true }]
+      if (!this.modifyStatus) {
+        this.$refs.map.modifyFeature({
+          end: (evt, map) => {
+            console.log('modify end', evt)
+            console.log('modify end', evt.features.getArray()[0].getGeometry().getCoordinates())
+          },
+          start: () => {
+            this.modifyStatus = true
+          }
+        })
       } else {
-        this.option.interaction = []
+        this.$refs.map.clearModify(this.modifyStatus = false)
       }
     },
     measure () {

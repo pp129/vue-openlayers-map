@@ -7,7 +7,7 @@
 </template>
 
 <script>
-import { VMap, uuid } from '~/utils'
+import { VMap, uuid, olSelect, olModify, validObjKey } from '~/utils'
 import { VTileLayer } from '~/VLayers'
 
 export default {
@@ -90,7 +90,9 @@ export default {
       noBase: false,
       properties: {
         isDefault: true
-      }
+      },
+      modify: null,
+      select: null
     }
   },
   mounted () {
@@ -231,6 +233,34 @@ export default {
         this.downloadName = `map-export-${uuid()}.png`
       }
       VMap.exportPNG(this.downLoadId)
+    },
+    modifyFeature (option) {
+      this.select = olSelect()
+      const features = this.select.getFeatures()
+      this.map.addInteraction(this.select)
+      this.modify = olModify({
+        features: features
+      })
+      this.map.addInteraction(this.modify)
+      if (validObjKey(option, 'start') && typeof option.start === 'function') {
+        this.select.on('select', evt => {
+          // const params = { ...evt, ...{ select: this.select } }
+          option.start(evt, this.map)
+        })
+      }
+      if (validObjKey(option, 'end') && typeof option.end === 'function') {
+        this.modify.on('modifyend', evt => {
+          const params = { ...evt, ...{ select: this.select } }
+          option.end(params, this.map)
+        })
+      }
+    },
+    clearModify (callback) {
+      if (this.select) this.map.removeInteraction(this.select)
+      if (this.modify) this.map.removeInteraction(this.modify)
+      if (callback && typeof callback === 'function') {
+        callback()
+      }
     }
   }
 }

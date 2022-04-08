@@ -1,42 +1,44 @@
 <template>
-<div class="simple">
-  <v-map class="map" :height="height" :width="width" :target="option.target" :view="option.view"></v-map>
-</div>
+  <v-map :view="view" @onClickFeature="onClickFeature" @click="onClick">
+    <v-vector-layer :features="layer.features"></v-vector-layer>
+    <v-overlay style="background: white;" :position="overlay.position">
+      {{content}}<span @click="close">&times;</span>
+    </v-overlay>
+  </v-map>
 </template>
 
 <script>
-import { VMap } from '~/index'
+import { VMap, VVectorLayer, VOverlay } from '~/index'
 export default {
   name: 'simple',
-  components: {
-    VMap
-  },
+  components: { VMap, VVectorLayer, VOverlay },
   data () {
     return {
-      height: '100%',
-      width: '100%',
-      option: {
-        target: 'map',
-        view: {
-          center: [118.045456, 24.567489],
-          zoom: 12
-        }
-      }
+      view: {
+        center: [118.045456, 24.567489],
+        zoom: 12
+      },
+      layer: {
+        features: [{ coordinates: [118.045456, 24.567489], name: 'point' }]
+      },
+      overlay: {
+        position: undefined
+      },
+      content: ''
+    }
+  },
+  methods: {
+    onClickFeature (feature, layer) {
+      console.log(feature, layer)
+      this.overlay.position = feature.get('coordinates')
+      this.content = feature.get('name')
+    },
+    onClick (evt, map) {
+      console.log(evt, map)
+    },
+    close () {
+      this.overlay.position = undefined
     }
   }
 }
 </script>
-
-<style scoped lang="scss">
-.simple{
-  width: 100%;
-  height: 100%;
-  position: relative;
-}
-.map{
-  z-index: 1;
-  position: absolute;
-  top: 0;
-  right: 0;
-}
-</style>
