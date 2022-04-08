@@ -182,6 +182,8 @@ export default{
 | [getCenterByExtent](#getCenterByExtent) | 获取区域中心点                                            | (extent)接受一个数组参数。区域范围经纬度集合。               |
 | [getFeatureById](#getFeatureById)       | 根据指定图层id获取该图层下指定id的要素                    | 使用此方法前保证生成的图层和要素带有`id`属性。(layerID, featureID)接受两个参数，1、图层id，2、要素id。 |
 | [exportPNG](#exportPNG)                 | 将当前视图内的地图（包括图层、要素）转成png格式图片导出。 | （pngName）接受一个参数，要导出的图片文件名。                |
+| [modifyFeature](#modifyFeature)         | 编辑要素                                                  | （param)接受一个对象参数。包含:1、param.start开始编辑时触发的方法。2、param.end结束编辑时触发的方法。 |
+| clearModify                             | 结束编辑                                                  | （callback）接受一个函数参数。编辑结束时回调。               |
 
 ### panTo
 
@@ -242,5 +244,24 @@ const feature = this.$refs.map.getFeatureById(layerId,featureId)
  * @param name 图片名称 不必填
  */
 this.$refs.map.exportPNG('xm')
+```
+
+### modifyFeature
+
+```javascript
+this.$refs.map.modifyFeature({
+    end: (evt, map) => {
+      console.log('modify end', evt)
+    },
+    start: (evt, map) => {
+      console.log('modify end', evt)
+    }
+})
+```
+
+### clearModify
+
+```javascript
+this.$refs.map.clearModify()
 ```
 
