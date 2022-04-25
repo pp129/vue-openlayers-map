@@ -13,6 +13,8 @@
         <option value="LineString">LineString</option>
         <option value="Polygon">Polygon</option>
         <option value="Circle">Circle</option>
+        <option value="Rectangle">Rectangle</option>
+        <option value="Square">Square</option>
       </select>
       <select id="measure" class="btn" v-model="measureType" @change="measure">
         <option value="none">测量</option>
@@ -308,6 +310,16 @@ export default {
               coordinates: [118.168742, 24.487505],
               properties: {
                 name: 'feature1'
+              }
+            },
+            {
+              id: 'point3',
+              coordinates: [121.4899434945231, 24.987527375700928],
+              style: {
+                icon: {
+                  scale: 0.6,
+                  src: require('@/assets/img/point_5.png')
+                }
               }
             }
           ]

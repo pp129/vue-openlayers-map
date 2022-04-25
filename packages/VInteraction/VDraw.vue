@@ -1,6 +1,16 @@
 <script>
 import BaseLayer from '~/VLayers/BaseLayer'
-import { addVectorSource, olDraw, olModify, olSelect, setFeatures, setStyle, uuid, vectorLayer } from '~/utils'
+import {
+  addVectorSource,
+  olDraw,
+  olModify,
+  olSelect,
+  setFeatures,
+  setStyle,
+  uuid,
+  vectorLayer,
+  olCreateBox, olCreateRegularPolygon
+} from '~/utils'
 
 export default {
   name: 'v-draw',
@@ -180,7 +190,7 @@ export default {
       }
     },
     initDraw () {
-      this.draw = olDraw({
+      const option = {
         source: this.layer.getSource(),
         type: this.type,
         freehand: this.freehand,
@@ -194,7 +204,20 @@ export default {
         wrapX: this.wrapX,
         geometryName: this.geometryName,
         geometryFunction: this.geometryFunction
-      })
+      }
+      if (this.type === 'Rectangle') {
+        const drawOpt = {
+          ...option, ...{ type: 'Circle', geometryFunction: olCreateBox() }
+        }
+        this.draw = olDraw(drawOpt)
+      } else if (this.type === 'Square') {
+        const drawOpt = {
+          ...option, ...{ type: 'Circle', geometryFunction: olCreateRegularPolygon(4) }
+        }
+        this.draw = olDraw(drawOpt)
+      } else {
+        this.draw = olDraw(option)
+      }
       this.draw.set('type', 'draw')
       this.map.addInteraction(this.draw)
       if (this.endRight) {

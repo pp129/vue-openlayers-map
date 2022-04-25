@@ -12,6 +12,7 @@ import { containsExtent, getCenter, containsCoordinate, applyTransform } from 'o
 import ImageLayer from 'ol/layer/Image'
 import { toContext } from 'ol/render'
 import { Draw, Modify, Select } from 'ol/interaction'
+import { createBox, createRegularPolygon } from 'ol/interaction/Draw'
 import Overlay from 'ol/Overlay'
 import { addCoordinateTransforms, addProjection, Projection } from 'ol/proj'
 import { distance, length, lineString, point } from '@turf/turf'
@@ -224,6 +225,14 @@ export function olView (option) {
 
 export function olDraw (option) {
   return new Draw(option)
+}
+
+export function olCreateBox () {
+  return createBox()
+}
+
+export function olCreateRegularPolygon (sides, angle) {
+  return createRegularPolygon(sides, angle)
 }
 
 export function olSelect (option) {
