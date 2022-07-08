@@ -19,7 +19,8 @@
     "mockjs": "^1.1.0",
     "ol": "^6.13.0",
     "qs": "^6.10.3",
-    "vue": "^2.6.11"
+    "vue": "^2.6.11",
+    "vue-server-renderer": "2.6.14"
   },
   "devDependencies": {
     "@vue/cli-plugin-babel": "~4.5.0",
@@ -39,7 +40,8 @@
     "sass-loader": "^8.0.2",
     "vue-router": "^3.5.3",
     "vue-template-compiler": "^2.6.11",
-    "vuepress": "^1.9.7"
+    "vuepress": "^1.9.7",
+    "vuepress-theme-reco": "^1.6.13"
   },
   "repository": {
     "type": "git",

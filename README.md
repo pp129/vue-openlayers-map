@@ -4,7 +4,7 @@
 
 ## docs
 
-### [文档](https://vue-openlayers-map-docs.netlify.app/)
+### [文档](https://pp129.github.io/vue-openlayers-map)
 
 ## start
 
