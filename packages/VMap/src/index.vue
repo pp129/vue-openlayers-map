@@ -113,6 +113,10 @@ export default {
             this.zoomEnd(evt)
           })
         })
+        // 鼠标悬浮
+        this.map.on('pointermove', evt => {
+          this.$emit('pointermove', evt)
+        })
         this.$emit('load')
         this.load = true
       }

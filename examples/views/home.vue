@@ -61,6 +61,7 @@
       :controls="option.controls"
       @load="onLoad"
       @click="onClick"
+      @pointermove="pointermove"
       @onClickFeature="onClickFeature"
       @changeZoom="onChangeZoom">
       <!-- 鹰眼 -->
@@ -716,6 +717,9 @@ export default {
         this.animateIcons.position = feature.get('coordinates')
         this.animateIcons.showText = true
       }
+    },
+    pointermove (evt) {
+      // console.log(this.$refs.map.map.getCoordinateFromPixel(evt.pixel_))
     },
     clusterLayer () {
       const features = []
