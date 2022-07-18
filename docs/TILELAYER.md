@@ -84,6 +84,48 @@ export default {
 </script>	
 ```
 
+### 加载自定义瓦片服务路径的xyz图层
+
+> 自定义瓦片服务路径。路径规则参考data.xyz.url
+```vue
+<template>
+  <div class="home">
+    <v-map :view="view">
+      <v-tile-layer :tile-type="tileType" :xyz="xyz"></v-tile-layer>
+    </v-map>
+  </div>
+</template>
+
+<script>
+import { VMap, VTileLayer } from 'vue-openlayers-map'
+export default {
+  name: 'Home',
+  components: {
+    VMap, VTileLayer
+  },
+  data () {
+    return {
+      view: {
+        center: [120.499307, 24.009825],
+        zoom: 10,
+        maxZoom: 18
+      },
+      tileType: 'XYZ',
+      xyz: {
+        url: '/tiles/{z}/{y}/{x}.png'
+      }
+    }
+  }
+}
+</script>
+<style lang="scss" scoped>
+.home{
+  width: 100%;
+  height: 100%;
+}
+</style>
+```
+
 #### 图层切换
 
 > 在测试环境中切换天地图/天地图影像图层。在正式环境中切换PGIS/PGIS航拍影像图层。
