@@ -117,6 +117,10 @@ export default {
         this.map.on('pointermove', evt => {
           this.$emit('pointermove', evt)
         })
+        // 鼠标右键
+        this.map.on('contextmenu', evt => {
+          this.$emit('contextmenu', evt)
+        })
         this.$emit('load')
         this.load = true
       }
