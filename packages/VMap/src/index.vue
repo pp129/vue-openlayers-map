@@ -9,6 +9,7 @@
 <script>
 import { VMap, uuid, olSelect, olModify, validObjKey } from '~/utils'
 import { VTileLayer } from '~/VLayers'
+import { Translate } from 'ol/interaction'
 
 export default {
   name: 'v-map',
@@ -60,6 +61,10 @@ export default {
     defaultTile: {
       type: String,
       default: 'TD'
+    },
+    translate: {
+      type: Boolean,
+      default: false
     }
   },
   computed: {
@@ -81,6 +86,33 @@ export default {
     }
   },
   watch: {
+    translate: {
+      handler (value) {
+        if (value) {
+          if (!this.select) {
+            this.select = olSelect()
+            this.map.addInteraction(this.select)
+          }
+          if (!this.translates) {
+            this.translates = new Translate({
+              features: this.select.getFeatures()
+            })
+            this.map.addInteraction(this.translates)
+            this.translateEvent()
+          }
+        } else {
+          if (this.translates) {
+            this.map.removeInteraction(this.translates)
+            this.translates = null
+            if (!this.startModify && this.select) {
+              this.map.removeInteraction(this.select)
+              this.select = null
+            }
+          }
+        }
+      },
+      immediate: false
+    }
   },
   data () {
     return {
@@ -92,7 +124,8 @@ export default {
         isDefault: true
       },
       modify: null,
-      select: null
+      select: null,
+      translates: null
     }
   },
   mounted () {
@@ -100,6 +133,16 @@ export default {
       if (res === 'success') {
         // 业务代码中未引入tile组件则添加默认图层)
         this.noBase = this.map.getLayers().getArray().findIndex(x => x.get('base')) < 0
+        // 移动要素
+        if (this.translate) {
+          this.select = olSelect()
+          this.translates = new Translate({
+            features: this.select.getFeatures()
+          })
+          this.map.addInteraction(this.select)
+          this.map.addInteraction(this.translates)
+          this.translateEvent()
+        }
         // 点击事件
         this.map.on('singleclick', (r) => {
           this.$emit('click', r, this.map)
@@ -115,11 +158,21 @@ export default {
         })
         // 鼠标悬浮
         this.map.on('pointermove', evt => {
-          this.$emit('pointermove', evt)
+          const pixel = this.map.getEventPixel(evt.originalEvent)
+          const hit = this.map.hasFeatureAtPixel(pixel)
+          // this.map.getTargetElement().style.cursor = hit ? 'pointer' : ''
+          this.map.getLayers().getArray().forEach(layer => {
+            if (layer.get('type') === 'graphic') {
+              const data = layer.getData(evt.pixel)
+              const hitImage = data && data[3] > 0 // transparent pixels have zero for data[3]
+              this.map.getTargetElement().style.cursor = hitImage || hit ? 'pointer' : ''
+            }
+          })
+          this.$emit('pointermove', evt, this.map)
         })
         // 鼠标右键
         this.map.on('contextmenu', evt => {
-          this.$emit('contextmenu', evt)
+          this.$emit('contextmenu', evt, this.map)
         })
         this.$emit('load')
         this.load = true
@@ -243,6 +296,7 @@ export default {
       VMap.exportPNG(this.downLoadId)
     },
     modifyFeature (option) {
+      this.startModify = true
       this.select = olSelect()
       const features = this.select.getFeatures()
       this.map.addInteraction(this.select)
@@ -264,10 +318,24 @@ export default {
       }
     },
     clearModify (callback) {
+      this.startModify = false
       if (this.select) this.map.removeInteraction(this.select)
       if (this.modify) this.map.removeInteraction(this.modify)
       if (callback && typeof callback === 'function') {
         callback()
+      }
+    },
+    translateEvent () {
+      if (this.translates) {
+        this.translates.on('translateend', e => {
+          this.$emit('translateend', e, this.map)
+        })
+        this.translates.on('translatestart', e => {
+          this.$emit('translatestart', e, this.map)
+        })
+        this.translates.on('translating', e => {
+          this.$emit('translating', e, this.map)
+        })
       }
     }
   }

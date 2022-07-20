@@ -76,16 +76,30 @@ export default{
 | -------- | -------- | ------ | ----------------------------------------------------------- | ------ |
 | 基础图层 | 否       | String | 'TD', 'TD_IMG', 'BD', 'GD', 'OSM', 'PGIS_TILE', 'PGIS_HPYX' | TD     |
 
+## translate
+
+是否允许移动要素
+
+| 说明  | 是否必填 | 类型      | 可选值        | 默认值   |
+|-----|------|---------|------------|-------|
+| 否允许移动要素    | 否    | Boolean | `true`/`false` | `false` |
+
+
 ## events
 
 > 事件
 
-| 事件名         | 说明                 | 参数                                                         |
-| -------------- | -------------------- | ------------------------------------------------------------ |
-| load           | 地图对象生成完成事件 | -                                                            |
-| click          | 点击事件             | (evt, map)接受2个参数。1、事件实例[模块：ol/MapEvent~MapEvent](https://openlayers.org/en/latest/apidoc/module-ol_MapEvent-MapEvent.html)。2、地图实例。 |
-| onClickFeature | 点击要素             | (feature, layer)接受2个参数。1、要素实例。2、要素归属的图层实例。 |
-| changeZoom     | 层级变化事件         | (evt,map)接受2个参数。1、事件实例[模块：ol/MapEvent~MapEvent](https://openlayers.org/en/latest/apidoc/module-ol_MapEvent-MapEvent.html)。2、地图实例。 |
+| 事件名         | 说明       | 参数                                                                                                                                 |
+| ------------- |----------|------------------------------------------------------------------------------------------------------------------------------------|
+| load          | 地图对象生成完成事件 | -                                                                                                                                  |
+| click         | 点击事件     | (evt, map)接受2个参数。1、事件实例[模块：ol/MapEvent~MapEvent](https://openlayers.org/en/latest/apidoc/module-ol_MapEvent-MapEvent.html)。2、地图实例。 |
+| onClickFeature | 点击要素     | (feature, layer)接受2个参数。1、要素实例。2、要素归属的图层实例。                                                                                         |
+| changeZoom    | 层级变化事件   | (evt,map)接受2个参数。1、事件实例[模块：ol/MapEvent~MapEvent](https://openlayers.org/en/latest/apidoc/module-ol_MapEvent-MapEvent.html)。2、地图实例。  |
+| pointermove   | 鼠标悬停事件   | (evt,map)接受2个参数。                                                                                                                   |
+| contextmenu   | 鼠标右键点击事件 | (evt,map)接受2个参数。                                                                                                                   |
+| translateend  | 要素移动结束事件 | `translate`属性为`true`时调用。(evt,map)接受2个参数。                                                                                               |
+| translatestart | 要素移动开始事件 | `translate`属性为`true`时调用。(evt,map)接受2个参数。                                                                                                                   |
+| translating    | 要素移动事件   | `translate`属性为`true`时调用。(evt,map)接受2个参数。                                                                                                                   |
 
 
 

@@ -50,6 +50,7 @@
       <button class="btn" @click="disposeTrack('track1')">清除轨迹</button>
       <button class="btn" @click="initAnimateIcons">动画弹框</button>
       <button class="btn" @click="exportPNG">导出png</button>
+      <button class="btn" @click="translate = !translate">{{ translate?'取消移动':'移动要素' }}</button>
     </div>
     <!-- map -->
     <v-map
@@ -59,6 +60,9 @@
       :width="width"
       :view="option.view"
       :controls="option.controls"
+      :translate="translate"
+      @contextmenu.prevent="contextmenu"
+      @translateend="translateend"
       @load="onLoad"
       @click="onClick"
       @pointermove="pointermove"
@@ -80,7 +84,7 @@
       <!-- 图形图层 渲染海量点 -->
       <v-graphic-layer
         v-if="comGraphic.show"
-        :layer-id="comGraphic.id" :features="comGraphic.features" :feature-style="comGraphic.style"></v-graphic-layer>
+        :layer-id="comGraphic.id" :features="comGraphic.features"></v-graphic-layer>
       <!-- 热力图 -->
       <v-heatmap-layer :layer-id="heatmap.id" :features="heatmap.features"></v-heatmap-layer>
       <!-- 聚合 -->
@@ -249,7 +253,7 @@ export default {
         features: [],
         style: {
           icon: {
-            src: 'http://localhost:8080/img/car.fadde920.png'
+            src: require('@/assets/img/point_1.png')
           }
         }
       },
@@ -530,7 +534,8 @@ export default {
         zoom: 0,
         center: [0, 0]
       },
-      drawCoors: []
+      drawCoors: [],
+      translate: false
     }
   },
   mounted () {
@@ -548,6 +553,12 @@ export default {
       this.getHeatmapData()
       const distance = this.$refs.map.getDistancePoint([118.118033, 24.478697], [118.136562, 24.500419])
       console.log(distance)
+    },
+    translateend (e) {
+      console.log(e)
+    },
+    contextmenu (e) {
+      console.log(e)
     },
     onLoadTrack (track) {
       console.log(track)
@@ -718,8 +729,8 @@ export default {
         this.animateIcons.showText = true
       }
     },
-    pointermove (evt) {
-      // console.log(this.$refs.map.map.getCoordinateFromPixel(evt.pixel_))
+    pointermove (evt, map) {
+      // console.log(hasFeatureAtPixel, features)
     },
     clusterLayer () {
       const features = []
