@@ -1,6 +1,6 @@
 {
   "name": "vue-openlayers-map",
-  "version": "2.4.0",
+  "version": "2.4.1",
   "private": false,
   "main": "lib/vue-openlayers-map.umd.min.js",
   "scripts": {
@@ -10,7 +10,8 @@
     "build:lib": "vue-cli-service build --target lib --name vue-openlayers-map --dest lib packages/index.js",
     "lint": "vue-cli-service lint",
     "docs:dev": "vuepress dev docs",
-    "docs:build": "vuepress build docs"
+    "docs:build": "vuepress build docs",
+    "publish": "npm publish"
   },
   "dependencies": {
     "@turf/turf": "^6.5.0",

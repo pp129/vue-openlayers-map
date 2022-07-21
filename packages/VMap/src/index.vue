@@ -160,7 +160,7 @@ export default {
         this.map.on('pointermove', evt => {
           const pixel = this.map.getEventPixel(evt.originalEvent)
           const hit = this.map.hasFeatureAtPixel(pixel)
-          // this.map.getTargetElement().style.cursor = hit ? 'pointer' : ''
+          this.map.getTargetElement().style.cursor = hit ? 'pointer' : ''
           this.map.getLayers().getArray().forEach(layer => {
             if (layer.get('type') === 'graphic') {
               const data = layer.getData(evt.pixel)
