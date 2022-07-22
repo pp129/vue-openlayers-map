@@ -927,6 +927,11 @@ function exportPNG (map, downLoadId) {
   map.renderSync()
 }
 
+const cityMap = {
+  xiamen: [118.1, 24.46667],
+  厦门: [118.1, 24.46667]
+}
+
 export class VMap {
   static map = VMap
 
@@ -977,10 +982,15 @@ export class VMap {
   constructor (option = {}) {
     // view
     const viewOptDefault = {
+      center: [0, 0],
+      zoom: 12,
       constrainResolution: true,
       projection: 'EPSG:4326'
     }
     const viewOption = { ...viewOptDefault, ...option.view }
+    if (validObjKey(viewOption, 'city') && viewOption.city) {
+      viewOption.center = cityMap[viewOption.city]
+    }
     const view = new View(viewOption)
 
     // controls

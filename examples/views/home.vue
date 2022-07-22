@@ -549,7 +549,7 @@ export default {
     onLoad () {
       console.log('on load')
       console.log(this.$refs.map.map.getLayers().getArray())
-      this.$refs.map.panTo({ center: [118.118033, 24.478697], zoom: 12 })
+      // this.$refs.map.panTo({ center: [118.118033, 24.478697], zoom: 12 })
       this.getHeatmapData()
       const distance = this.$refs.map.getDistancePoint([118.118033, 24.478697], [118.136562, 24.500419])
       console.log(distance)
