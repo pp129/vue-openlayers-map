@@ -48,15 +48,7 @@ export default {
       }
     },
     view: {
-      type: Object,
-      default () {
-        return {
-          center: [0, 0],
-          zoom: 12,
-          constrainResolution: true,
-          projection: 'EPSG:4326'
-        }
-      }
+      type: Object
     },
     defaultTile: {
       type: String,
