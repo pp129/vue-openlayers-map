@@ -111,12 +111,12 @@ export default {
         console.log(value)
         this.init(value)
       },
-      immediate: true,
+      immediate: false,
       deep: true
     }
   },
   mounted () {
-    // this.init()
+    this.init()
   },
   beforeDestroy () {
     this.track.dispose()
@@ -124,10 +124,12 @@ export default {
   },
   methods: {
     init (paths) {
-      const option = { ...this.$props, ...{ map: this.map, paths: paths } }
-      console.log(this.$props)
-      this.track = PathSimplifier(option)
-      this.$emit('onLoad', this.track)
+      if ((paths && paths.length > 0) || (this.paths && this.paths.length > 0)) {
+        const option = { ...this.$props, ...{ map: this.map, paths: paths || this.paths } }
+        // console.log(this.$props)
+        this.track = PathSimplifier(option)
+        this.$emit('onLoad', this.track)
+      }
     },
     start () {
       this.track.start()

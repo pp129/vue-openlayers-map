@@ -705,6 +705,7 @@ LushuTrack.prototype.getTracePoints = function (step) {
 
 // 计算两个像素点之间的方位  Math.PI
 LushuTrack.prototype.getRotationFromPixel = function (curPos, targetPos) {
+  if (!curPos) return false
   curPos = { x: curPos[0], y: curPos[1] }
   targetPos = { x: targetPos[0], y: targetPos[1] }
   const x = Math.abs(targetPos.x - curPos.x)
@@ -1103,7 +1104,9 @@ const calculationPixelDistance = function (map, point1, point2) {
 var formatLengthFromPixels = function (pixels) {
   var length = 0
   for (var i = 0, ii = pixels.length - 1; i < ii; ++i) {
-    length += Math.sqrt(Math.pow((pixels[i + 1][0] - pixels[i][0]), 2) + Math.pow((pixels[i + 1][1] - pixels[i][1]), 2))
+    if (pixels[i + 1]) {
+      length += Math.sqrt(Math.pow((pixels[i + 1][0] - pixels[i][0]), 2) + Math.pow((pixels[i + 1][1] - pixels[i][1]), 2))
+    }
   }
   return length
 }
