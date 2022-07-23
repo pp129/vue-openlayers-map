@@ -1,6 +1,6 @@
 {
   "name": "vue-openlayers-map",
-  "version": "2.4.2",
+  "version": "2.4.3",
   "private": false,
   "main": "lib/vue-openlayers-map.umd.min.js",
   "scripts": {
@@ -19,6 +19,7 @@
     "core-js": "^3.6.5",
     "mockjs": "^1.1.0",
     "ol": "^6.13.0",
+    "pinyin": "^3.0.0-alpha.4",
     "qs": "^6.10.3",
     "vue": "^2.6.11",
     "vue-server-renderer": "2.6.14"

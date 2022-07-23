@@ -18,6 +18,7 @@ import { addCoordinateTransforms, addProjection, Projection } from 'ol/proj'
 import { distance, length, lineString, point } from '@turf/turf'
 import coordtransform from '~/VMap/src/utils/coordtransform'
 import projzh from '~/VMap/src/utils/projConvert'
+import { getCenterByCity } from '~/utils/cityMap'
 
 /**
  * 对Map进行扩展，根据图层id获取当前图层下所有元素
@@ -927,11 +928,6 @@ function exportPNG (map, downLoadId) {
   map.renderSync()
 }
 
-const cityMap = {
-  xiamen: [118.1, 24.46667],
-  厦门: [118.1, 24.46667]
-}
-
 export class VMap {
   static map = VMap
 
@@ -989,7 +985,7 @@ export class VMap {
     }
     const viewOption = { ...viewOptDefault, ...option.view }
     if (validObjKey(viewOption, 'city') && viewOption.city) {
-      viewOption.center = cityMap[viewOption.city]
+      viewOption.center = getCenterByCity(viewOption.city)
     }
     const view = new View(viewOption)
 

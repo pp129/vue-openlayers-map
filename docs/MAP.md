@@ -43,9 +43,9 @@ export default{
 
 ## view
 
-| 说明 | 是否必填 | 类型   | 可选值                                                       | 默认值                                                       |
-| ---- | -------- | ------ | ------------------------------------------------------------ | ------------------------------------------------------------ |
-| 视图 | 否       | Object | 继承[ol/view](https://openlayers.org/en/latest/apidoc/module-ol_View-View.html) | `{view={center: [0, 0],zoom: 12,constrainResolution: true,projection: 'EPSG:4326'}}` |
+| 说明 | 是否必填 | 类型   | 可选值                                                                                                                             | 默认值                                                       |
+| ---- | -------- | ------ |---------------------------------------------------------------------------------------------------------------------------------| ------------------------------------------------------------ |
+| 视图 | 否       | Object | 继承[ol/view](https://openlayers.org/en/latest/apidoc/module-ol_View-View.html) 扩展属性：`city`:城市名称/拼音，优先级高于`center`,无法识别的城市定向到`[0,0]` | `{view={center: [0, 0],zoom: 12,constrainResolution: true,projection: 'EPSG:4326'}}` |
 
 ```vue
 <template>
@@ -59,6 +59,8 @@ export default{
       height:'100%',
       view:{
         center: [118.045456, 24.567489],//中心点，厦门
+        // city: 'xiamen', // 优先级高于center
+        city: '厦门', // 优先级高于center
         zoom: 10,//地图加载完成时显示层级
         maxZoom: 18//最大可缩放层级
       }

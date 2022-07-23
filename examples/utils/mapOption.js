@@ -92,7 +92,7 @@ export default {
    */
   view: {
     center: [0, 0],
-    city: 'xiamen'
+    city: '厦门'
   },
   track: [],
   /**
