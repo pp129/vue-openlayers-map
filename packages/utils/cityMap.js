@@ -2243,6 +2243,6 @@ export const getCenterByCity = (city) => {
   if (index > -1) {
     return [cityMap[index].longitude, cityMap[index].latitude]
   } else {
-    return [0, 0]
+    return false
   }
 }

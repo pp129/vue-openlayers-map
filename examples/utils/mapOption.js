@@ -91,8 +91,9 @@ export default {
    * @param {Object} [view={center: [0, 0],zoom: 12,constrainResolution: true,projection: 'EPSG:4326'}]
    */
   view: {
-    center: [0, 0],
-    city: '厦门'
+    center: [118.1, 24.466],
+    city: 'xxx',
+    zoom: 10
   },
   track: [],
   /**

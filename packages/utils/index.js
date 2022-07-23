@@ -978,14 +978,14 @@ export class VMap {
   constructor (option = {}) {
     // view
     const viewOptDefault = {
-      center: [0, 0],
-      zoom: 12,
+      center: [108.552500, 34.322700],
+      zoom: 5,
       constrainResolution: true,
       projection: 'EPSG:4326'
     }
     const viewOption = { ...viewOptDefault, ...option.view }
     if (validObjKey(viewOption, 'city') && viewOption.city) {
-      viewOption.center = getCenterByCity(viewOption.city)
+      viewOption.center = getCenterByCity(viewOption.city) || viewOption.center || viewOptDefault.center
     }
     const view = new View(viewOption)
 
