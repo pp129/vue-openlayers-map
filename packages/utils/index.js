@@ -279,7 +279,11 @@ export const uuid = () => {
 }
 
 export const validObjKey = (obj, key) => {
-  return obj && Object.prototype.hasOwnProperty.call(obj, key) && Object.keys(obj).length > 0
+  if (obj && Object.prototype.hasOwnProperty.call(obj, key)) {
+    return obj[key] && Object.keys(obj[key]).length > 0
+  } else {
+    return false
+  }
 }
 
 /**

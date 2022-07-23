@@ -313,6 +313,7 @@ export default {
             {
               id: 'point2',
               coordinates: [118.168742, 24.487505],
+              style: {},
               properties: {
                 name: 'feature1'
               }
