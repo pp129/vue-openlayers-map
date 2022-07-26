@@ -1,10 +1,10 @@
-import VTileLayer from './TileLayer.vue'
-import VVectorLayer from './VectorLayer.vue'
-import VGraphicLayer from './GraphicLayer'
-import VHeatmapLayer from './HeatmapLayer'
-import VClusterLayer from './ClusterLayer'
-import VRouteLayer from './RouteLayer'
-import VWebglpointsLayer from './WebGlPointsLayer'
+import VTileLayer from './TileLayer/index'
+import VVectorLayer from './VectorLayer/index'
+import VGraphicLayer from './GraphicLayer/index'
+import VHeatmapLayer from './HeatmapLayer/index'
+import VClusterLayer from './ClusterLayer/index'
+import VRouteLayer from './RouteLayer/index'
+import VWebglpointsLayer from './WebGlPointsLayer/index'
 
 function install (app) {
   if (install.installed) {

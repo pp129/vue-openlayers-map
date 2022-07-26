@@ -1,6 +1,6 @@
 {
   "name": "vue-openlayers-map",
-  "version": "2.4.7",
+  "version": "2.4.8",
   "private": false,
   "main": "lib/vue-openlayers-map.umd.min.js",
   "scripts": {
@@ -43,7 +43,9 @@
     "vue-router": "^3.5.3",
     "vue-template-compiler": "^2.6.11",
     "vuepress": "^1.9.7",
-    "vuepress-theme-reco": "^1.6.13"
+    "vuepress-theme-antdocs": "^1.4.3",
+    "vuepress-theme-reco": "^1.6.13",
+    "vuepress-theme-vdoing": "^1.12.5"
   },
   "repository": {
     "type": "git",

@@ -1,5 +1,5 @@
-import VDraw from '~/VInteraction/VDraw'
-import VMeasure from '~/VInteraction/VMeasure'
+import VDraw from '~/VInteraction/Draw/index'
+import VMeasure from '~/VInteraction/Measure/index'
 
 function install (app) {
   if (install.installed) {

@@ -1,9 +1,9 @@
 import Vue from 'vue'
 import VMap from '~/VMap/src/index.vue'
 import { VTileLayer, VVectorLayer, VGraphicLayer, VHeatmapLayer, VClusterLayer, VRouteLayer, VWebglpointsLayer } from '~/VLayers'
-import { VOverlay } from '~/VOverlay'
-import { VOverview } from '~/VControls'
-import { VTrack } from '~/VTrack'
+import VOverlay from '~/VOverlay'
+import VOverview from '~/VControls'
+import VTrack from '~/VTrack/index.js'
 import { VDraw, VMeasure } from '~/VInteraction'
 
 Vue.component(VMap.name, VMap)

@@ -1,18 +1,7 @@
-import VOverview from './Overview.vue'
+import Overview from '~/VControls/Overview.vue'
 
-function install (app) {
-  if (install.installed) {
-    return
-  }
-
-  install.installed = true
-
-  app.component(VOverview.name, VOverview)
+Overview.install = function (Vue) {
+  Vue.component(Overview.name, Overview)
 }
 
-export default install
-
-export {
-  install,
-  VOverview
-}
+export default Overview

@@ -126,21 +126,6 @@
 </template>
 
 <script>
-import {
-  VWebglpointsLayer,
-  VClusterLayer,
-  VGraphicLayer,
-  VHeatmapLayer,
-  VMap,
-  VOverlay,
-  VOverview,
-  VRouteLayer,
-  VTileLayer,
-  VTrack,
-  VVectorLayer,
-  VDraw,
-  VMeasure
-} from '~/index'
 import mapOption from '@/utils/mapOption.js'
 import MapOverlay from '@/components/overlay'
 import { heatmap } from '@/utils/heatmap'
@@ -150,20 +135,7 @@ import Mock from 'mockjs'
 export default {
   name: 'home',
   components: {
-    VMap,
-    VWebglpointsLayer,
-    VTileLayer,
-    VVectorLayer,
-    VGraphicLayer,
-    VHeatmapLayer,
-    VClusterLayer,
-    VRouteLayer,
-    VOverlay,
-    VOverview,
-    VTrack,
-    MapOverlay,
-    VDraw,
-    VMeasure
+    MapOverlay
   },
   data () {
     const resolutions = []

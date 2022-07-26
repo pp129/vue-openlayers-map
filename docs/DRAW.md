@@ -60,3 +60,89 @@ import { VDraw } from 'vue-openlayers-map'
 ### modifyend
 
 编辑结束事件
+
+## use
+
+> 绘制图层
+
+``` vue
+<template>
+  <div id="app">
+    <select id="draw" class="btn-draw" v-model="drawType" @change="changeInteractions">
+      <option value="none">绘制图形</option>
+      <option value="Point">Point</option>
+      <option value="LineString">LineString</option>
+      <option value="Polygon">Polygon</option>
+      <option value="Circle">Circle</option>
+      <option value="Rectangle">Rectangle</option>
+      <option value="Square">Square</option>
+    </select>
+    <v-map class="map">
+      <v-draw v-if="showInteraction" :type="interaction.type" :clear="interaction.clear" :freehand="interaction.freehand" :end-right="interaction.endRight" :editable="interaction.editable"></v-draw>
+    </v-map>
+  </div>
+</template>
+
+<script>
+import { VMap, VDraw } from 'vue-openlayers-map'
+
+export default {
+  name: 'App',
+  components: {
+    VMap,
+    VDraw
+  },
+  data () {
+    return {
+      showInteraction: false,
+      drawType: 'none',
+      interaction: {
+        type: '',
+        clear: true,
+        freehand: false,
+        endRight: true,
+        editable: true
+      }
+    }
+  },
+  methods: {
+    changeInteractions () {
+      if (this.drawType !== 'none') {
+        this.interaction.type = this.drawType
+        this.showInteraction = true
+      } else {
+        this.interaction.type = ''
+        this.showInteraction = false
+      }
+    }
+  }
+}
+</script>
+
+<style lang="scss">
+html,body{
+  width: 100%;
+  height: 100%;
+}
+#app {
+  width: 100%;
+  height: 100%;
+  font-family: Avenir, Helvetica, Arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-align: center;
+  color: #2c3e50;
+  position: relative;
+}
+.btn-draw{
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  z-index: 2;
+}
+.map{
+  z-index: 1;
+}
+</style>
+
+```
