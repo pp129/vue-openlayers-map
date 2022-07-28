@@ -9,7 +9,7 @@ import {
   setStyle,
   uuid,
   vectorLayer,
-  olCreateBox, olCreateRegularPolygon
+  olCreateBox, olCreateRegularPolygon, olPolygon
 } from '~/utils'
 
 export default {
@@ -213,6 +213,36 @@ export default {
       } else if (this.type === 'Square') {
         const drawOpt = {
           ...option, ...{ type: 'Circle', geometryFunction: olCreateRegularPolygon(4) }
+        }
+        this.draw = olDraw(drawOpt)
+      } else if (this.type.indexOf('Star') > -1) {
+        const points = this.type.split('-')[1] || 5
+        const geometryFunction = function (coordinates, geometry) {
+          const center = coordinates[0]
+          const last = coordinates[coordinates.length - 1]
+          const dx = center[0] - last[0]
+          const dy = center[1] - last[1]
+          const radius = Math.sqrt(dx * dx + dy * dy)
+          const rotation = Math.atan2(dy, dx)
+          const newCoordinates = []
+          const numPoints = Number(points) * 2
+          for (let i = 0; i < numPoints; ++i) {
+            const angle = rotation + (i * 2 * Math.PI) / numPoints
+            const fraction = i % 2 === 0 ? 1 : 0.5
+            const offsetX = radius * fraction * Math.cos(angle)
+            const offsetY = radius * fraction * Math.sin(angle)
+            newCoordinates.push([center[0] + offsetX, center[1] + offsetY])
+          }
+          newCoordinates.push(newCoordinates[0].slice())
+          if (!geometry) {
+            geometry = olPolygon([newCoordinates])
+          } else {
+            geometry.setCoordinates([newCoordinates])
+          }
+          return geometry
+        }
+        const drawOpt = {
+          ...option, ...{ type: 'Circle', geometryFunction: geometryFunction }
         }
         this.draw = olDraw(drawOpt)
       } else {

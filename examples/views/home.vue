@@ -15,15 +15,15 @@
         <option value="Circle">Circle</option>
         <option value="Rectangle">Rectangle</option>
         <option value="Square">Square</option>
+        <option value="Star-6">Star</option>
       </select>
       <select id="measure" class="btn" v-model="measureType" @change="measure">
         <option value="none">测量</option>
         <option value="LineString">Length (LineString)</option>
         <option value="Polygon">Area (Polygon)</option>
       </select>
-      <button class="btn" @click="addTileLayer">新增切片图层</button>
       <button class="btn" @click="toggleLayer">显示、隐藏图层1</button>
-      <button class="btn" @click="moveFeature">随机移动layer1中点位</button>
+      <button class="btn" @click="setFeatureMove">{{featuresMoving?'停止':'随机'}}移动layer1中点位</button>
       <button class="btn" @click="addLayer">新增/更新layer2</button>
       <button class="btn" @click="removeLayer">删除layer2</button>
       <select id="changeLayer" class="btn" v-model="selectedTile" @change="changeTile">
@@ -592,8 +592,9 @@ export default {
         DragRotateAndZoom: true
       },
       controlsExtend: {
-        FullScreen: true
-      }
+        FullScreen: false
+      },
+      featuresMoving: null
     }
   },
   mounted () {
@@ -717,14 +718,6 @@ export default {
       }
       // this.$refs.map.updateFeatures('layer2', features)
     },
-    addTileLayer () {
-      const index = this.tiles.map(item => item.id).indexOf('tile')
-      if (index > -1) {
-        this.tiles.splice(index, 1)
-      } else {
-
-      }
-    },
     webGlPoint () {
       const features = []
       const mockData = this.setMockData(60000)
@@ -820,8 +813,15 @@ export default {
         'a|-10-10': 10
       })
     },
+    setFeatureMove () {
+      if (this.featuresMoving) {
+        this.stopMoving()
+      } else {
+        this.moveFeature()
+      }
+    },
     moveFeature () {
-      setInterval(() => {
+      this.featuresMoving = setInterval(() => {
         this.layers[0].features.forEach((feature, index) => {
           const position = [feature.coordinates[0] + (this.getMockNumber().a / 100), feature.coordinates[1] + (this.getMockNumber().a / 100)]
           // this.$refs.map.updateFeatureById('layer1', feature.id, { position: position })
@@ -829,6 +829,10 @@ export default {
           this.$refs.layer1[0].updateFeatureById(feature.id, { position: position })
         })
       }, 1000)
+    },
+    stopMoving () {
+      clearInterval(this.featuresMoving)
+      this.featuresMoving = null
     },
     changeTile () {
       console.log(this.selectedTile)

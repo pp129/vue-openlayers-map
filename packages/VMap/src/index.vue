@@ -324,8 +324,14 @@ export default {
     },
     clearModify (callback) {
       this.startModify = false
-      if (this.select) this.map.removeInteraction(this.select)
-      if (this.modify) this.map.removeInteraction(this.modify)
+      if (this.select) {
+        this.map.removeInteraction(this.select)
+        this.select = null
+      }
+      if (this.modify) {
+        this.map.removeInteraction(this.modify)
+        this.modify = null
+      }
       if (callback && typeof callback === 'function') {
         callback()
       }

@@ -40,6 +40,8 @@ import { VDraw } from 'vue-openlayers-map'
 - `MultiPolygon`多个面
 - `GeometryCollection`
 - `Circle`圆
+- `Star`星，默认五角星
+  - `Star-${points}`，如`Star-6`为六角星
 
 ## events
 
