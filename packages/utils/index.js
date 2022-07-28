@@ -280,7 +280,7 @@ export const uuid = () => {
 
 export const validObjKey = (obj, key) => {
   if (obj && Object.prototype.hasOwnProperty.call(obj, key)) {
-    return obj[key] && Object.keys(obj[key]).length > 0
+    return obj[key] && (Object.keys(obj[key]).length > 0 || typeof obj[key] === 'function')
   } else {
     return false
   }
@@ -476,7 +476,6 @@ function setPolygon (option) {
 /**
  * 获取样式
  * @param option
- * @returns {Style}
  */
 export function setStyle (option) {
   const style = new Style()
