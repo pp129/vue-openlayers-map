@@ -1,7 +1,7 @@
 # Overview
 
 ```javascript
-import { VOverlay } from 'vue-openlayers-map'
+import { VOverview } from 'vue-openlayers-map'
 ```
 
 创建一个新控件，其中的地图充当另一个已定义地图的概览图。

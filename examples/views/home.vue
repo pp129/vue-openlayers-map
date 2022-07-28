@@ -50,7 +50,7 @@
       <button class="btn" @click="disposeTrack('track1')">清除轨迹</button>
       <button class="btn" @click="initAnimateIcons">动画弹框</button>
       <button class="btn" @click="exportPNG">导出png</button>
-      <button class="btn" @click="translate = !translate">{{ translate?'取消移动':'移动要素' }}</button>
+      <button class="btn" @click="interactionExtend.translate = !interactionExtend.translate">{{ interactionExtend.translate?'取消移动':'移动要素' }}</button>
     </div>
     <!-- map -->
     <v-map
@@ -60,7 +60,9 @@
       :width="width"
       :view="option.view"
       :controls="option.controls"
-      :translate="translate"
+      :interactions="interactions"
+      :interactions-extend="interactionExtend"
+      :controls-extend="controlsExtend"
       @contextmenu.prevent="contextmenu"
       @translateend="translateend"
       @load="onLoad"
@@ -129,7 +131,6 @@
 import mapOption from '@/utils/mapOption.js'
 import MapOverlay from '@/components/overlay'
 import { heatmap } from '@/utils/heatmap'
-
 import Mock from 'mockjs'
 
 export default {
@@ -582,7 +583,17 @@ export default {
         center: [0, 0]
       },
       drawCoors: [],
-      translate: false
+      translate: false,
+      interactions: {
+        doubleClickZoom: false
+      },
+      interactionExtend: {
+        translate: false,
+        DragRotateAndZoom: true
+      },
+      controlsExtend: {
+        FullScreen: true
+      }
     }
   },
   mounted () {

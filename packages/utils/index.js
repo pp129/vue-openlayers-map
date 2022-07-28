@@ -11,7 +11,7 @@ import ImageCanvasSource from 'ol/source/ImageCanvas'
 import { containsExtent, getCenter, containsCoordinate, applyTransform } from 'ol/extent'
 import ImageLayer from 'ol/layer/Image'
 import { toContext } from 'ol/render'
-import { Draw, Modify, Select } from 'ol/interaction'
+import { Draw, Modify, Select, defaults as defaultInteraction } from 'ol/interaction'
 import { createBox, createRegularPolygon } from 'ol/interaction/Draw'
 import Overlay from 'ol/Overlay'
 import { addCoordinateTransforms, addProjection, Projection } from 'ol/proj'
@@ -994,13 +994,20 @@ export class VMap {
     const view = new View(viewOption)
 
     // controls
-    const controls = defaultControls(option.controls).extend([])
+    const controlsDefault = {
+      zoom: false,
+      rotate: false,
+      attribution: false
+    }
+    const controlsOption = { ...controlsDefault, ...option.controls }
+    const controls = defaultControls(controlsOption).extend([])
 
     // 生成地图
     this.map = new Map({
       target: option.target,
       view: view,
-      controls: controls
+      controls: controls,
+      interactions: defaultInteraction(option.interactions)
     })
   }
 

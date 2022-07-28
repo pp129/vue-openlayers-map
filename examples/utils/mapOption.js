@@ -22,7 +22,8 @@ export default {
    * @param {Object} [controls={zoom: false, rotate: false}]
    */
   controls: {
-    zoom: true
+    zoom: false,
+    rotate: true
   },
   /**
    * 基础图层

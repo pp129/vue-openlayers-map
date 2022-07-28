@@ -77,8 +77,9 @@ import { VDraw } from 'vue-openlayers-map'
       <option value="Rectangle">Rectangle</option>
       <option value="Square">Square</option>
     </select>
-    <v-map class="map">
-      <v-draw v-if="showInteraction" :type="interaction.type" :clear="interaction.clear" :freehand="interaction.freehand" :end-right="interaction.endRight" :editable="interaction.editable"></v-draw>
+    <!-- @contextmenu.prevent 阻止鼠标右键默认事件，避免与点击右键结束绘制冲突 -->
+    <v-map class="map" @contextmenu.prevent>
+      <v-draw v-if="showInteraction" :type="interaction.type" :clear="interaction.clear" :freehand="interaction.freehand" :end-right="interaction.endRight" :editable="interaction.editable" @drawend="drawend"></v-draw>
     </v-map>
   </div>
 </template>
@@ -114,6 +115,10 @@ export default {
         this.interaction.type = ''
         this.showInteraction = false
       }
+    },
+    drawend (evt) {
+      // 获取绘制图形的经纬度集合
+      console.log(evt.feature.getGeometry().getCoordinates())
     }
   }
 }

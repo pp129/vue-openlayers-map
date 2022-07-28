@@ -9,7 +9,8 @@
 <script>
 import { VMap, uuid, olSelect, olModify, validObjKey } from '~/utils'
 import { VTileLayer } from '~/VLayers'
-import { Translate } from 'ol/interaction'
+import { DragRotateAndZoom, Translate } from 'ol/interaction'
+import { FullScreen } from 'ol/control'
 
 export default {
   name: 'v-map',
@@ -22,41 +23,49 @@ export default {
     VTileLayer
   },
   props: {
+    // 地图容器宽度
     width: {
       type: [String, Number],
       default () {
         return '100%'
       }
     },
+    // 地图容器高度
     height: {
       type: [String, Number],
       default () {
         return '100%'
       }
     },
+    // 地图容器Id
     target: {
       type: String,
       default: `map-${uuid()}`
     },
-    controls: {
-      type: Object,
-      default () {
-        return {
-          zoom: false,
-          rotate: false
-        }
-      }
-    },
+    // 视窗属性
     view: {
       type: Object
     },
+    // 未引入tile组件时默认加载图层
     defaultTile: {
       type: String,
       default: 'TD'
     },
-    translate: {
-      type: Boolean,
-      default: false
+    // 控制属性
+    controls: {
+      type: Object
+    },
+    // 控制类扩展
+    controlsExtend: {
+      type: Object
+    },
+    // 交互属性
+    interactions: {
+      type: Object
+    },
+    // 交互类扩展
+    interactionsExtend: {
+      type: Object
     }
   },
   computed: {
@@ -64,7 +73,8 @@ export default {
       return {
         target: this.target,
         view: this.view,
-        controls: this.controls
+        controls: this.controls,
+        interactions: this.interactions
       }
     },
     map () {
@@ -78,32 +88,29 @@ export default {
     }
   },
   watch: {
-    translate: {
-      handler (value) {
-        if (value) {
-          if (!this.select) {
-            this.select = olSelect()
-            this.map.addInteraction(this.select)
-          }
-          if (!this.translates) {
-            this.translates = new Translate({
-              features: this.select.getFeatures()
-            })
-            this.map.addInteraction(this.translates)
-            this.translateEvent()
-          }
-        } else {
-          if (this.translates) {
-            this.map.removeInteraction(this.translates)
-            this.translates = null
-            if (!this.startModify && this.select) {
-              this.map.removeInteraction(this.select)
-              this.select = null
-            }
+    interactionsExtend: {
+      handler (val) {
+        for (const key in val) {
+          if (key === 'translate') {
+            this.setTranslates(val[key])
+          } else if (key === 'DragRotateAndZoom') {
+            this.setDragRotateAndZoom(val[key])
           }
         }
       },
-      immediate: false
+      immediate: false,
+      deep: true
+    },
+    controlsExtend: {
+      handler (value) {
+        for (const key in value) {
+          if (key === 'FullScreen') {
+            this.setFullScreen(value[key])
+          }
+        }
+      },
+      immediate: false,
+      deep: true
     }
   },
   data () {
@@ -117,7 +124,9 @@ export default {
       },
       modify: null,
       select: null,
-      translates: null
+      translates: null,
+      dragRotateAndZoom: null,
+      fullScreen: null
     }
   },
   mounted () {
@@ -125,21 +134,25 @@ export default {
       if (res === 'success') {
         // 业务代码中未引入tile组件则添加默认图层)
         this.noBase = this.map.getLayers().getArray().findIndex(x => x.get('base')) < 0
-        // 移动要素
-        if (this.translate) {
-          this.select = olSelect()
-          this.translates = new Translate({
-            features: this.select.getFeatures()
-          })
-          this.map.addInteraction(this.select)
-          this.map.addInteraction(this.translates)
-          this.translateEvent()
+        // 交互属性扩展
+        for (const key in this.interactionsExtend) {
+          if (key === 'translate') {
+            this.setTranslates(this.interactionsExtend[key])
+          } else if (key === 'DragRotateAndZoom') {
+            this.setDragRotateAndZoom(this.interactionsExtend[key])
+          }
+        }
+        // 控制扩展
+        for (const key in this.controlsExtend) {
+          if (key === 'FullScreen') {
+            this.setFullScreen(this.controlsExtend[key])
+          }
         }
         // 点击事件
         this.map.on('singleclick', (r) => {
           this.$emit('click', r, this.map)
           this.map.forEachSmFeatureAtPixel(r.pixel, (i, e) => {
-            this.$emit('onClickFeature', i, e)
+            this.$emit('onClickFeature', i, e, r)
           }, {}, r)
         })
         // 层级变化
@@ -328,6 +341,52 @@ export default {
         this.translates.on('translating', e => {
           this.$emit('translating', e, this.map)
         })
+      }
+    },
+    setTranslates (value) {
+      if (value) {
+        if (!this.select) {
+          this.select = olSelect()
+          this.map.addInteraction(this.select)
+        }
+        if (!this.translates) {
+          this.translates = new Translate({
+            features: this.select.getFeatures()
+          })
+          this.map.addInteraction(this.translates)
+          this.translateEvent()
+        }
+      } else {
+        if (this.translates) {
+          this.map.removeInteraction(this.translates)
+          this.translates = null
+          if (!this.startModify && this.select) {
+            this.map.removeInteraction(this.select)
+            this.select = null
+          }
+        }
+      }
+    },
+    setDragRotateAndZoom (value) {
+      if (value) {
+        if (!this.dragRotateAndZoom) {
+          this.dragRotateAndZoom = new DragRotateAndZoom()
+          this.map.addInteraction(this.dragRotateAndZoom)
+        }
+      } else {
+        this.map.removeInteraction(this.dragRotateAndZoom)
+        this.dragRotateAndZoom = null
+      }
+    },
+    setFullScreen (value) {
+      if (value) {
+        if (!this.fullScreen) {
+          this.fullScreen = new FullScreen()
+          this.map.addControl(this.fullScreen)
+        }
+      } else {
+        this.map.removeControl(this.fullScreen)
+        this.fullScreen = null
       }
     }
   }

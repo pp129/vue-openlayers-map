@@ -6,21 +6,22 @@
 npm install vue-openlayers-map
 ~~~
 
-## use
+## 引入组件
 
-全局引用
+完整引入
 
 ```js
-import VMap from 'vue-openlayers-map'
-Vue.use(VMap)
+import vueOlMap from 'vue-openlayers-map'
+Vue.use(vueOlMap)
 ```
 
-单独引用
+按需引入，以VMap为例
 
 ```js
 import { VMap } from 'vue-openlayers-map'
 ```
 
+## 开始使用
 
 加载地图
 
@@ -34,8 +35,8 @@ import { VMap } from 'vue-openlayers-map'
 export default {
   data () {
     return {
-      height: '100%',
-      width: '100%',
+      height: '1080px',
+      width: '960px',
       view: {
         center: [118.045456, 24.567489],
         zoom: 12
