@@ -837,6 +837,7 @@ export default {
     changeTile () {
       console.log(this.selectedTile)
       this.tileType = this.selectedTile
+      console.log(this.$refs.map.map.getLayers().getArray().filter(x => x.get('base')))
     },
     setMockData (count = 600) {
       const Random = Mock.Random

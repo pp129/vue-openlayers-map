@@ -854,6 +854,7 @@ LushuTrack.prototype._initLinesAndMarkers = function () {
         }
       }
     }
+    console.log(me._pathInfo)
     console.log(me.traceNodes)
     for (let p = 0; p < me._pathInfo.length - 1; p++) {
       const pathS = [me._pathInfo[p].longitude, me._pathInfo[p].latitude]

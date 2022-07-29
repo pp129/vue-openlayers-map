@@ -1,7 +1,7 @@
 <template>
   <div :id="target" :style="{'width':mapWidth,'height':mapHeight}">
     <a :id="downLoadId" :download="downloadName"></a>
-    <v-tile-layer v-if="noBase" :tile-type="defaultTile" :properties="properties"></v-tile-layer>
+    <v-tile-layer v-if="load&&noBase" :tile-type="defaultTile" :properties="properties"></v-tile-layer>
     <slot v-if="load"></slot>
   </div>
 </template>
@@ -118,7 +118,7 @@ export default {
       load: false,
       downLoadId: `download-${uuid()}`,
       downloadName: 'map.png',
-      noBase: false,
+      noBase: true,
       properties: {
         isDefault: true
       },
@@ -129,11 +129,21 @@ export default {
       fullScreen: null
     }
   },
+  created () {
+    // 业务代码中未引入tile组件则添加默认图层)
+    if (this.$slots.default.length > 0) {
+      this.$slots.default.forEach(slot => {
+        const tag = slot.tag
+        if (tag && tag.indexOf('v-tile-layer') > -1) {
+          this.noBase = false
+        }
+      })
+      // this.noBase = this.$slots.default.filter(x => x.tag && x.tag.indexOf('v-tile-layer') > -1).length > 0
+    }
+  },
   mounted () {
     this.init().then(res => {
       if (res === 'success') {
-        // 业务代码中未引入tile组件则添加默认图层)
-        this.noBase = this.map.getLayers().getArray().findIndex(x => x.get('base')) < 0
         // 交互属性扩展
         for (const key in this.interactionsExtend) {
           if (key === 'translate') {

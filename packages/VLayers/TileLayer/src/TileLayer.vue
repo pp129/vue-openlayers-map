@@ -24,6 +24,21 @@ export default {
       default: 'TD',
       validator: value => ['TD', 'TD_IMG', 'XYZ', 'BD', 'GD', 'OSM', 'PGIS_TILE', 'PGIS_HPYX', 'WMS'].includes(value)
     },
+    tdVec: {
+      type: String
+    },
+    tdCva: {
+      type: String
+    },
+    tdImg: {
+      type: String
+    },
+    tdCia: {
+      type: String
+    },
+    gdUrl: {
+      type: String
+    },
     base: {
       type: Boolean,
       default: true
@@ -118,7 +133,7 @@ export default {
       }
     },
     init (name) {
-      this.clear(this.tileType)
+      // this.clear(this.tileType)
       switch (this.tileType) {
         case 'XYZ':
           this.initTileXYZ(name)
@@ -201,8 +216,8 @@ export default {
       // this.map.addLayer(this.layer)
     },
     initTD (name) {
-      const layerVec = this.initXYZbyURL('http://t4.tianditu.com/DataServer?T=vec_w&x={x}&y={y}&l={z}&tk=88e2f1d5ab64a7477a7361edd6b5f68a')
-      const layerCva = this.initXYZbyURL('http://t3.tianditu.com/DataServer?T=cva_w&x={x}&y={y}&l={z}&tk=88e2f1d5ab64a7477a7361edd6b5f68a')
+      const layerVec = this.initXYZbyURL(this.tdVec || 'http://t4.tianditu.com/DataServer?T=vec_w&x={x}&y={y}&l={z}&tk=88e2f1d5ab64a7477a7361edd6b5f68a')
+      const layerCva = this.initXYZbyURL(this.tdCva || 'http://t3.tianditu.com/DataServer?T=cva_w&x={x}&y={y}&l={z}&tk=88e2f1d5ab64a7477a7361edd6b5f68a')
       this.layers = [layerVec, layerCva]
       if (name === 'v-map') {
         this.layers.forEach(layer => {
@@ -214,8 +229,8 @@ export default {
       }
     },
     initTDIMG (name) {
-      const layerImg = this.initXYZbyURL('http://t4.tianditu.com/DataServer?T=img_w&x={x}&y={y}&l={z}&tk=88e2f1d5ab64a7477a7361edd6b5f68a')
-      const layerCia = this.initXYZbyURL('http://t3.tianditu.com/DataServer?T=cia_w&x={x}&y={y}&l={z}&tk=88e2f1d5ab64a7477a7361edd6b5f68a')
+      const layerImg = this.initXYZbyURL(this.tdImg || 'http://t4.tianditu.com/DataServer?T=img_w&x={x}&y={y}&l={z}&tk=88e2f1d5ab64a7477a7361edd6b5f68a')
+      const layerCia = this.initXYZbyURL(this.tdCia || 'http://t3.tianditu.com/DataServer?T=cia_w&x={x}&y={y}&l={z}&tk=88e2f1d5ab64a7477a7361edd6b5f68a')
       this.layers = [layerImg, layerCia]
       if (name === 'v-map') {
         this.layers.forEach(layer => {
@@ -227,7 +242,7 @@ export default {
       }
     },
     initGD (name) {
-      this.layers = getAMap(this.xyz, this.$props)
+      this.layers = getAMap(this.xyz, this.$props, this.gdUrl)
       if (name === 'v-map') {
         this.layers.forEach(layer => {
           this.map.addLayer(layer)
