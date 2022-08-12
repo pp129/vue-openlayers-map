@@ -1,0 +1,49 @@
+{
+  "name": "v-ol-map",
+  "private": false,
+  "version": "1.4.2",
+  "main": "lib/ol-map.umd.js",
+  "module": "lib/ol-map.es.js",
+  "exports": {
+    ".": {
+      "import": "./lib/ol-map.es.js",
+      "require": "./lib/ol-map.umd.js"
+    },
+    "./dist/style.css": {
+      "import": "./lib/style.css",
+      "require": "./lib/style.css"
+    }
+  },
+  "files": [
+    "lib"
+  ],
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "clean:lib": "rimraf lib",
+    "preview": "vite preview",
+    "publish": "npm publish"
+  },
+  "devDependencies": {
+    "@types/node": "^18.6.5",
+    "eslint": "^8.21.0",
+    "eslint-config-standard": "^17.0.0",
+    "eslint-plugin-import": "^2.26.0",
+    "eslint-plugin-n": "^15.2.4",
+    "eslint-plugin-promise": "^6.0.0",
+    "eslint-plugin-vue": "^9.3.0",
+    "terser": "^5.14.2",
+    "vite": "^3.0.0",
+    "vite-plugin-vue2": "^2.0.2"
+  },
+  "dependencies": {
+    "@turf/turf": "^6.5.0",
+    "axios": "^0.27.2",
+    "nanoid": "^4.0.0",
+    "ol": "^6.15.1",
+    "pinyin-pro": "^3.11.0",
+    "qs": "^6.11.0",
+    "vue": "^2.7.8",
+    "vue-template-compiler": "^2.7.8"
+  }
+}
