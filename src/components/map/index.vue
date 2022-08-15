@@ -106,6 +106,15 @@ export default {
       immediate: false,
       deep: true
     },
+    'view.minZoom': {
+      handler (value) {
+        if (value) {
+          this.setMinZoom(value)
+        }
+      },
+      immediate: false,
+      deep: true
+    },
     'controls.zoom': {
       handler (value) {
         const zoom = OlMap.map.mapControlsZoom
@@ -223,6 +232,9 @@ export default {
     },
     setMaxZoom (zoom) {
       OlMap.setMaxZoom(zoom)
+    },
+    setMinZoom (zoom) {
+      OlMap.setMinZoom(zoom)
     },
     setControl (controls, options) {
       OlMap.setControl(controls, options)

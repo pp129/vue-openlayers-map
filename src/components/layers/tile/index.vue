@@ -27,7 +27,7 @@ export default {
     tileType: {
       type: String,
       default: 'TD',
-      validator: value => ['TD', 'TD_IMG', 'XYZ', 'BD', 'GD', 'OSM', 'PGIS_TILE', 'PGIS_HPYX', 'WMS'].includes(value)
+      validator: value => ['TD', 'TD_IMG', 'XYZ', 'BD', 'GD', 'OSM', 'WMS'].includes(value.toUpperCase())
     },
     tdVec: {
       type: String
@@ -132,7 +132,7 @@ export default {
       }
     },
     init () {
-      switch (this.tileType) {
+      switch (this.tileType.toUpperCase()) {
         case 'XYZ':
           this.initTileXYZ()
           break

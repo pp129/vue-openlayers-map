@@ -35,6 +35,10 @@
 export default {
   name: 'App',
   data () {
+    const resolutions = []
+    for (let i = 0; i < 19; i++) {
+      resolutions[i] = Math.pow(2, 18 - i)
+    }
     return {
       view: {
         city: '厦门', // 优先级比center高
@@ -57,7 +61,7 @@ export default {
       baseTile: [
         {
           name: '天地图-街道+注记',
-          value: 'TD'
+          value: 'td'
         },
         {
           name: '天地图-影像+注记',
@@ -65,7 +69,7 @@ export default {
         },
         {
           name: '百度',
-          value: 'BD'
+          value: 'bd'
         },
         {
           name: '高德',
@@ -76,7 +80,25 @@ export default {
           value: 'OSM'
         }
       ],
-      tile: 'BD',
+      tile: 'bd',
+      xyzBD: {
+        projection: 'baidu',
+        tileGrid: {
+          origin: [0, 0], // 设置原点坐标
+          resolutions // 设置分辨率
+        },
+        tileUrlFunction: function (tileCoord, pixelRatio, proj) {
+          if (!tileCoord) {
+            return ''
+          }
+          const z = tileCoord[0]
+          const x = tileCoord[1]
+          const y = -tileCoord[2] - 1
+          return 'https://maponline1.bdimg.com/tile/?qt=vtile&x=' +
+              x + '&y=' + y + '&z=' + z +
+              '&styles=pl&scaler=1&udt=20220113&from=jsapi2_0'
+        }
+      },
       xyz: {
         attributions:
             ['custom attribution &copy; XXX Inc. ' +

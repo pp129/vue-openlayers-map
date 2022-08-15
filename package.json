@@ -1,19 +1,8 @@
 {
   "name": "v-ol-map",
   "private": false,
-  "version": "1.4.2",
+  "version": "1.4.4",
   "main": "lib/ol-map.umd.js",
-  "module": "lib/ol-map.es.js",
-  "exports": {
-    ".": {
-      "import": "./lib/ol-map.es.js",
-      "require": "./lib/ol-map.umd.js"
-    },
-    "./dist/style.css": {
-      "import": "./lib/style.css",
-      "require": "./lib/style.css"
-    }
-  },
   "files": [
     "lib"
   ],

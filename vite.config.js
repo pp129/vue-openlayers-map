@@ -16,8 +16,10 @@ export default {
   build: {
     outDir: 'lib',
     lib: {
+      target: 'esnext',
       entry: resolve(__dirname, 'src/components/index.js'),
       name: 'ol-map',
+      formats: ['umd'],
       fileName: (format) => `ol-map.${format}.js`
     },
     rollupOptions: {

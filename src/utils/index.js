@@ -597,6 +597,10 @@ export const setMaxZoom = (map, zoom) => {
   map.getView().setMaxZoom(zoom)
 }
 
+export const setMinZoom = (map, zoom) => {
+  map.getView().setMinZoom(zoom)
+}
+
 export const exportPNG = (map, downLoadId) => {
   map.once('rendercomplete', function () {
     const mapCanvas = document.createElement('canvas')
@@ -898,6 +902,10 @@ export class OlMap {
 
   static setMaxZoom (zoom) {
     return setMaxZoom(OlMap.map.map, zoom)
+  }
+
+  static setMinZoom (zoom) {
+    return setMinZoom(OlMap.map.map, zoom)
   }
 
   static exportPNG (downLoadId) {
