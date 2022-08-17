@@ -12,7 +12,12 @@ export default {
       '@': resolve(__dirname, 'src')
     }
   },
-  plugins: [createVuePlugin()],
+  plugins: [
+    createVuePlugin()
+  ],
+  esbuild: {
+    drop: ['console', 'debugger']
+  },
   build: {
     outDir: 'lib',
     lib: {
@@ -30,12 +35,6 @@ export default {
         }
       }
     },
-    minify: 'terser',
-    terserOptions: {
-      compress: {
-        drop_console: true,
-        drop_debugger: true
-      }
-    }
+    target: ['es2015']
   }
 }
