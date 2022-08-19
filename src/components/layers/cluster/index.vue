@@ -2,7 +2,9 @@
 import BaseLayer from '@/components/layers/BaseLayer.vue'
 import { nanoid } from 'nanoid'
 import { addClusterLayer, addVectorSource, setFeatures } from '@/utils'
-import { Cluster } from 'ol/source'
+// import { Cluster } from 'ol/source'
+import OlSuperCluster from '@/utils/ol-supercluster'
+// import VectorSource from 'ol/source/Vector'
 
 export default {
   name: 'v-cluster',
@@ -112,7 +114,7 @@ export default {
   mounted () {
     this.init()
   },
-  beforeUnmount () {
+  beforeDestroy () {
     this.dispose()
   },
   methods: {
@@ -124,10 +126,10 @@ export default {
       }
       const option = {
         source,
-        distance: this.distance,
-        minDistance: this.minDistance
+        view: this.map.getView(),
+        radius: this.distance
       }
-      this.cluster = new Cluster(option)
+      this.cluster = new OlSuperCluster(option)
       const layerOpt = { ...this.$props, ...{ source: this.cluster, style: this.FeatureStyle } }
       this.layer = addClusterLayer(layerOpt, this.map)
       this.layer.set('id', this.layerId)

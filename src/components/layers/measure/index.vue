@@ -85,7 +85,7 @@ export default {
   mounted () {
     this.init()
   },
-  beforeUnmount () {
+  beforeDestroy () {
     this.map.removeLayer(this.layer)
     this.dispose()
   },

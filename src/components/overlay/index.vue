@@ -89,7 +89,7 @@ export default {
     this.map.addOverlay(this.overlay)
     this.$emit('load', this.overlay, this.map)
   },
-  beforeUnmount () {
+  beforeDestroy () {
     this.map.removeOverlay(this.overlay)
   }
 }

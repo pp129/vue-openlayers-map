@@ -574,11 +574,10 @@ export const setImage = (option) => {
 /**
  * 地图移动中心点
  * @param map
- * @param center
- * @param zoom
+ * @param param
  */
-export const panTo = (map, center, zoom) => {
-  map.getView().animate({ center }, { zoom })
+export const panTo = (map, param) => {
+  map.getView().animate(param)
 }
 
 export const setCenter = (map, center) => {
@@ -884,8 +883,8 @@ export class OlMap {
     }
   }
 
-  static panTo (center, zoom) {
-    return panTo(OlMap.map.map, center, zoom)
+  static panTo (param) {
+    return panTo(OlMap.map.map, param)
   }
 
   static setCenter (center) {

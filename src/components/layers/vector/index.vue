@@ -229,7 +229,7 @@ export default {
       this.setModify()
     }
   },
-  beforeUnmount () {
+  beforeDestroy () {
     this.layer.getSource().clear()
     this.map.removeLayer(this.layer)
     this.map.removeInteraction(this.selectObj)

@@ -321,7 +321,7 @@ export default {
   mounted () {
     this.init()
   },
-  beforeUnmount () {
+  beforeDestroy () {
     this.layers.forEach(layer => {
       layer.getSource().clear()
       this.map.removeLayer(layer)

@@ -239,8 +239,8 @@ export default {
     setControl (controls, options) {
       OlMap.setControl(controls, options)
     },
-    panTo (center, zoom) {
-      OlMap.panTo(center, zoom)
+    panTo (param) {
+      OlMap.panTo(param)
     },
     getCenterByExtent (extent) {
       return getCenter(extent)
@@ -308,7 +308,7 @@ export default {
       }
     })
   },
-  beforeUnmount () {
+  beforeDestroy () {
     this.dispose()
   }
 }

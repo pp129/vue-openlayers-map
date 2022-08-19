@@ -117,7 +117,7 @@ export default {
   mounted () {
     this.init()
   },
-  beforeUnmount () {
+  beforeDestroy () {
     this.track.dispose()
     this.track = null
   },

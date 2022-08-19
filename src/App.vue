@@ -8,6 +8,11 @@
       <button @click="pauseTrack">轨迹动画暂停</button>
       <button @click="stopTrack">轨迹动画结束</button>
       <button @click="disposeTrack">轨迹动画清除</button>
+      <label>
+        cluster
+      </label>
+      <input type="checkbox" name="cluster" v-model="showCluster" />
+      <button @click="setModify"> add modify feature</button>
     </div>
     <v-map
         ref="map"
@@ -23,7 +28,7 @@
           :modify="modify"
           select
           @select="onselect" @modifystart="modifystart" @modifyend="modifyend" @modifychange="modifychange"></v-vector>
-      <v-cluster :layer-id="cluster.id" :features="cluster.features" :distance="cluster.distance"></v-cluster>
+      <v-cluster v-if="showCluster" :layer-id="cluster.id" :features="cluster.features" :distance="cluster.distance"></v-cluster>
       <v-overlay :position="position">overlay</v-overlay>
       <v-track ref="track" :id="track.id" :paths="track.paths" :options="track.options" @onLoad="onLoadTrack"></v-track>
     </v-map>
@@ -40,6 +45,8 @@ export default {
       resolutions[i] = Math.pow(2, 18 - i)
     }
     return {
+      showCluster: false,
+      addModify: false,
       view: {
         city: '厦门', // 优先级比center高
         center: [118, 24], // 预留此参数，组件监听view.center变化，触发panTo方法
@@ -248,26 +255,7 @@ export default {
         visible: true,
         minZoom: 10,
         maxZoom: 16,
-        features: [
-          {
-            coordinates: [117.96768937292673, 24.51616895381355],
-            style: {
-              icon: {
-                // src: require('@/assets/img/point_red.png')
-                src: new URL('./assets/img/point_red.png', import.meta.url).href
-              }
-            }
-          },
-          {
-            coordinates: [117.97481324839465, 24.502306340499445],
-            style: {
-              icon: {
-                // src: require('@/assets/img/point_blue.png')
-                src: new URL('./assets/img/point_blue.png', import.meta.url).href
-              }
-            }
-          }
-        ],
+        features: [],
         distance: 120, // 要素将聚集在一起的像素距离。
         minDistance: 1// 聚合之间的最小距离（以像素为单位）。将被限制在配置的距离。默认情况下，不设置最小距离。此配置可用于避免重叠图标。作为权衡，聚合要素的位置将不再是其所有要素的中心。
       },
@@ -356,8 +344,27 @@ export default {
     }
   },
   methods: {
+    setModify () {
+      this.addModify = !this.addModify
+      if (this.addModify) {
+        this.features2.push({
+          id: 'add',
+          type: 'circle',
+          center: [],
+          radius: 100
+        })
+      }
+    },
     onClick (evt, map) {
       console.log(evt.coordinate)
+      if (this.addModify) {
+        this.features2[3].center = evt.coordinate
+        this.addModify = false
+        this.$refs.map.panTo({
+          center: evt.coordinate,
+          zoom: 15
+        })
+      }
     },
     onContextmenu (evt, map) {
     },
@@ -433,6 +440,19 @@ export default {
       this.features.forEach(feature => {
         if (feature.id === 'point3') {
           feature.coordinates = center.center
+        }
+      })
+    }
+  },
+  created () {
+    const count = 100000
+    for (let i = 0; i < count; i++) {
+      this.cluster.features.push({
+        coordinates: [118 + 1 * Math.random(), 24.1 + 1 * Math.random()],
+        style: {
+          icon: {
+            src: new URL('./assets/img/car-16.png', import.meta.url).href
+          }
         }
       })
     }

@@ -134,7 +134,7 @@ export default {
     this.layer.setZIndex(1)
     this.map.addLayer(this.layer)
   },
-  beforeUnmount () {
+  beforeDestroy () {
     this.layer.getSource().clear()
     this.map.removeLayer(this.layer)
   }

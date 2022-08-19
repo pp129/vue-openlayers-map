@@ -16,5 +16,6 @@ module.exports = {
     'vue'
   ],
   rules: {
+    'vue/no-deprecated-destroyed-lifecycle': 0
   }
 }

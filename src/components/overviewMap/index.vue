@@ -117,7 +117,7 @@ export default {
     this.initLayers()
     this.initOverview()
   },
-  beforeUnmount () {
+  beforeDestroy () {
     this.addForOverview = false
     this.map.removeControl(this.overview)
   }

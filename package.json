@@ -1,7 +1,7 @@
 {
   "name": "v-ol-map",
   "private": false,
-  "version": "1.4.6",
+  "version": "1.4.9",
   "main": "lib/ol-map.umd.js",
   "files": [
     "lib"
@@ -30,6 +30,7 @@
   "dependencies": {
     "@turf/turf": "^6.5.0",
     "axios": "^0.27.2",
+    "kdbush": "^3.0.0",
     "nanoid": "^4.0.0",
     "ol": "^6.15.1",
     "pinyin-pro": "^3.11.0",

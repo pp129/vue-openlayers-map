@@ -340,7 +340,7 @@ export default {
   mounted () {
     this.init()
   },
-  beforeUnmount () {
+  beforeDestroy () {
     this.layer.getSource().clear()
     this.map.removeLayer(this.layer)
   },
