@@ -1,35 +1,66 @@
 <template>
   <div id="app">
     <div class="tool">
-      <select id="changeLayer" class="btn" v-model="tile" @change="changeTile">
-        <option v-for="(item,index) in baseTile" :key="index" :value="item.value">{{item.name}}</option>
-      </select>
-      <button @click="startTrack">轨迹动画开始</button>
-      <button @click="pauseTrack">轨迹动画暂停</button>
-      <button @click="stopTrack">轨迹动画结束</button>
-      <button @click="disposeTrack">轨迹动画清除</button>
-      <label>
-        cluster
-      </label>
-      <input type="checkbox" name="cluster" v-model="showCluster" />
-      <button @click="setModify"> add modify feature</button>
+      <div class="item">
+        <select id="changeLayer" class="btn" v-model="tile" @change="changeTile">
+          <option v-for="(item,index) in baseTile" :key="index" :value="item.value">{{item.name}}</option>
+        </select>
+      </div>
+      <div class="item">
+        <button @click="startTrack">轨迹动画开始</button>
+        <button @click="pauseTrack">轨迹动画暂停</button>
+        <button @click="stopTrack">轨迹动画结束</button>
+        <button @click="disposeTrack">轨迹动画清除</button>
+      </div>
+      <div class="item">
+        <label>
+          是否可编辑
+        </label>
+        <input type="checkbox" name="modify" v-model="modify" />
+        <button v-if="modify" @click="setModify">添加编辑图案（圆）</button>
+      </div>
+      <div class="item">
+        <button @click.prevent="addClusterFeatures()">添加点</button>
+      </div>
+      <div class="item">
+        <label>
+          切换是否聚合
+        </label>
+        <input type="checkbox" name="toggleCluster" v-model="toggleCluster" />
+        <label>聚合距离：{{cluster.distance}}</label>
+        <input type="range" step=10 min=0 max=300 v-model="cluster.distance" :disabled="!toggleCluster"/>
+      </div>
+     <div class="item">
+       <label>透视角度：{{perspectiveMap.angle}}</label>
+       <input type="range" step=1 min=0 max=30 v-model="perspectiveMap.angle" />
+       <p><span class="tag" title="在 Chrome 和 Edge 上测试。不适用于火狐。">实验性功能</span></p>
+     </div>
     </div>
     <v-map
         ref="map"
+        height="95%"
         :view="view"
         :controls="controls"
         :interactions="interactions"
-        @click="onClick" @contextmenu.prevent="onContextmenu" @clickfeature="onClickFeature" @dblclick="onDblClick">
+        :perspectiveMap="perspectiveMap"
+        @click="onClick" @contextmenu.prevent="onContextmenu" @clickfeature="onClickFeature" @dblclick="onDblClick" @pointermove="pointermove">
       <v-tile :tile-type="tile" :xyz="xyz"></v-tile>
-      <v-overview :tile-type="tile" :rotateWithView="rotateWithView" collapsible></v-overview>
-      <v-vector ref="layer1" layer-id="layer1" :features="features" :modify="false"></v-vector>
+<!--      <v-tile tile-type="GDF"></v-tile>-->
+<!--      <v-overview :tile-type="tile" :rotateWithView="rotateWithView" collapsible></v-overview>-->
+      <v-vector
+          ref="layer1"
+          layer-id="layer1"
+          :features="features"
+          :cluster="toggleCluster?cluster:false"
+          :z-index="3"></v-vector>
       <v-vector
           :features="features2"
           :modify="modify"
           select
+          :z-index="4"
           @select="onselect" @modifystart="modifystart" @modifyend="modifyend" @modifychange="modifychange"></v-vector>
-      <v-cluster v-if="showCluster" :layer-id="cluster.id" :features="cluster.features" :distance="cluster.distance"></v-cluster>
       <v-overlay :position="position">overlay</v-overlay>
+      <v-overlay :position="positionLevel">预警等级： {{ level }} 级</v-overlay>
       <v-track ref="track" :id="track.id" :paths="track.paths" :options="track.options" @onLoad="onLoadTrack"></v-track>
     </v-map>
   </div>
@@ -45,7 +76,6 @@ export default {
       resolutions[i] = Math.pow(2, 18 - i)
     }
     return {
-      showCluster: false,
       addModify: false,
       view: {
         city: '厦门', // 优先级比center高
@@ -65,10 +95,13 @@ export default {
         DragRotateAndZoom: true,
         doubleClickZoom: false
       },
+      perspectiveMap: {
+        angle: 0
+      },
       baseTile: [
         {
           name: '天地图-街道+注记',
-          value: 'td'
+          value: 'TD'
         },
         {
           name: '天地图-影像+注记',
@@ -79,6 +112,30 @@ export default {
           value: 'bd'
         },
         {
+          name: '百度-暗夜',
+          value: 'bd_blue'
+        },
+        {
+          name: '百度-深色',
+          value: 'bd_dark'
+        },
+        {
+          name: 'arcgis-暗夜',
+          value: 'arcgis_blue'
+        },
+        {
+          name: 'arcgis-灰色',
+          value: 'arcgis_gray'
+        },
+        {
+          name: 'arcgis-暖色',
+          value: 'arcgis_warm'
+        },
+        {
+          name: 'arcgis-正常',
+          value: 'arcgis_normal'
+        },
+        {
           name: '高德',
           value: 'GD'
         },
@@ -87,7 +144,7 @@ export default {
           value: 'OSM'
         }
       ],
-      tile: 'bd',
+      tile: 'TD',
       xyzBD: {
         projection: 'baidu',
         tileGrid: {
@@ -115,7 +172,7 @@ export default {
             '<a href="https://pp129.github.io/vue-openlayers-map/"' +
             'target="_blank">See Docs</a></span>']
       },
-      modify: {},
+      modify: false,
       select: {
         style: {
           stroke: {
@@ -179,6 +236,10 @@ export default {
           }
         }
       ],
+      toggleCluster: false,
+      clusterOption: {
+        distance: 120
+      },
       features: [
         {
           id: 'point1',
@@ -226,7 +287,12 @@ export default {
             }
           },
           properties: {
-            name: 'feature1'
+            name: 'feature1',
+            level: 1
+          },
+          flash: {
+            rate: 1,
+            color: 'green'
           }
         },
         {
@@ -234,7 +300,12 @@ export default {
           coordinates: [118.168742, 24.487505],
           style: {},
           properties: {
-            name: 'feature1'
+            name: 'feature1',
+            level: 2
+          },
+          flash: {
+            rate: 2,
+            color: 'orange'
           }
         },
         {
@@ -246,16 +317,19 @@ export default {
               // src: require('@/assets/img/point_5.png')
               src: new URL('./assets/img/point_5.png', import.meta.url).href
             }
+          },
+          properties: {
+            level: 3
+          },
+          flash: {
+            color: 'red'
           }
         }
       ],
       position: undefined,
+      positionLevel: undefined,
+      level: undefined,
       cluster: {
-        id: 'cluster',
-        visible: true,
-        minZoom: 10,
-        maxZoom: 16,
-        features: [],
         distance: 120, // 要素将聚集在一起的像素距离。
         minDistance: 1// 聚合之间的最小距离（以像素为单位）。将被限制在配置的距离。默认情况下，不设置最小距离。此配置可用于避免重叠图标。作为权衡，聚合要素的位置将不再是其所有要素的中心。
       },
@@ -344,6 +418,20 @@ export default {
     }
   },
   methods: {
+    addClusterFeatures (count = 100) {
+      console.log(count)
+      for (let i = 0; i < count; i++) {
+        this.features.push({
+          coordinates: [118 + 1 * Math.random(), 24.1 + 1 * Math.random()],
+          style: {
+            icon: {
+              src: new URL('./assets/img/car-16.png', import.meta.url).href
+            }
+          }
+        })
+      }
+      console.log(this.features)
+    },
     setModify () {
       this.addModify = !this.addModify
       if (this.addModify) {
@@ -356,7 +444,7 @@ export default {
       }
     },
     onClick (evt, map) {
-      console.log(evt.coordinate)
+      console.log(evt)
       if (this.addModify) {
         this.features2[3].center = evt.coordinate
         this.addModify = false
@@ -365,6 +453,10 @@ export default {
           zoom: 15
         })
       }
+    },
+    map3dclick (evt, map) {
+      console.log('map3dclick', evt)
+      this.positionLevel = evt.coordinate
     },
     onContextmenu (evt, map) {
     },
@@ -381,6 +473,38 @@ export default {
     },
     onDblClick (evt, map) {
       this.position = undefined
+      this.positionLevel = undefined
+    },
+    pointermove (evt, map) {
+      const pixel = map.getEventPixel(evt.originalEvent)
+      const hit = map.hasFeatureAtPixel(pixel)
+      if (hit) {
+        const features = map.getFeaturesAtPixel(pixel)
+        if (features.length > 0) {
+          features.forEach(feature => {
+            if (this.toggleCluster) {
+              features.forEach(item => {
+                const clusterFeatures = item.get('features')
+                if (clusterFeatures && clusterFeatures.length > 0) {
+                  clusterFeatures.forEach(el => {
+                    const properties = el.get('properties')
+                    if (properties && Object.prototype.hasOwnProperty.call(properties, 'level')) {
+                      this.level = properties.level
+                      this.positionLevel = el.get('coordinates')
+                    }
+                  })
+                }
+              })
+            } else {
+              const properties = feature.get('properties')
+              if (properties && Object.prototype.hasOwnProperty.call(properties, 'level')) {
+                this.level = properties.level
+                this.positionLevel = feature.get('coordinates')
+              }
+            }
+          })
+        }
+      }
     },
     changeTile () {
       setTimeout(() => {
@@ -444,19 +568,6 @@ export default {
       })
     }
   },
-  created () {
-    const count = 100000
-    for (let i = 0; i < count; i++) {
-      this.cluster.features.push({
-        coordinates: [118 + 1 * Math.random(), 24.1 + 1 * Math.random()],
-        style: {
-          icon: {
-            src: new URL('./assets/img/car-16.png', import.meta.url).href
-          }
-        }
-      })
-    }
-  },
   mounted () {
   }
 }
@@ -472,12 +583,31 @@ html,body {
 #app {
   width: 100%;
   height: 100%;
-  position: relative;
+  overflow: hidden;
 }
 .tool{
-  position: absolute;
-  top: 10px;
-  left: 100px;
+  width: 100%;
+  height: 5%;
   z-index: 2;
+  display: flex;
+  align-items: center;
+  padding-left: 10px;
+}
+.item{
+  margin-right: 10px;
+  display: flex;
+  border-right: 1px solid #ccc;
+  padding-right: 10px;
+  align-items: center;
+}
+.tag{
+  color: #fff;
+  background: #f91;
+  padding: 0.2em 0.5em;
+  display: inline-block;
+  -webkit-transform: rotate(-5deg);
+  transform: rotate(-5deg);
+  margin: -1em 0;
+  cursor: pointer;
 }
 </style>

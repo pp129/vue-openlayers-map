@@ -1,10 +1,17 @@
 <script>
 import BaseLayer from '@/components/layers/BaseLayer.vue'
 import { nanoid } from 'nanoid'
-import { addVectorSource, setFeatures, setStyle, validObjKey } from '@/utils'
+import { addClusterLayer, addVectorSource, setFeatures, setStyle, validObjKey } from '@/utils'
 import VectorLayer from 'ol/layer/Vector'
 import { Modify, Select } from 'ol/interaction'
 import { Collection } from 'ol'
+import { unByKey } from 'ol/Observable'
+import { getVectorContext } from 'ol/render'
+import { easeOut } from 'ol/easing'
+import { Stroke, Style } from 'ol/style'
+import CircleStyle from 'ol/style/Circle'
+import { asArray } from 'ol/color'
+import { Cluster } from 'ol/source'
 
 export default {
   name: 'v-vector',
@@ -45,13 +52,24 @@ export default {
     select: {
       type: [Object, Boolean],
       default: false
+    },
+    cluster: {
+      type: [Object, Boolean],
+      default: false
     }
   },
   data () {
     return {
       layer: null,
+      layerOpt: {},
       selectObj: null,
-      modifyObj: null
+      modifyObj: null,
+      clusterObj: null,
+      clusterDefault: {
+        distance: 20,
+        minDistance: 0
+      },
+      flashInterval: null
     }
   },
   computed: {
@@ -60,14 +78,20 @@ export default {
     }
   },
   watch: {
+    cluster: {
+      handler (value) {
+        console.log('watch cluster', value)
+        this.dispose()
+        this.init()
+      },
+      immediate: false,
+      deep: true
+    },
     features: {
       handler (value) {
-        console.log('layer features change', value)
-        this.layer.getSource().clear()
-        if (value && value.length > 0) {
-          const features = setFeatures(value, this.map, this.FeatureStyle && Object.keys(this.FeatureStyle).length > 0)
-          this.layer.getSource().addFeatures(features)
-        }
+        // console.log('layer features change', value)
+        this.dispose()
+        this.init()
       },
       immediate: false,
       deep: true
@@ -123,6 +147,105 @@ export default {
     }
   },
   methods: {
+    init () {
+      const source = addVectorSource(this.source, this.map)
+      if (this.source.features.length <= 0 && this.features.length > 0) {
+        const features = setFeatures(this.features, this.map, this.FeatureStyle && Object.keys(this.FeatureStyle).length > 0)
+        source.addFeatures(features)
+      }
+      if (this.cluster) {
+        let defaultOptions = {}
+        if (typeof (this.cluster) === 'boolean' && this.cluster) {
+          defaultOptions = { ...defaultOptions, ...this.clusterDefault }
+        } else {
+          defaultOptions = this.cluster
+        }
+        const clusterOption = { source, ...defaultOptions }
+        this.clusterObj = new Cluster(clusterOption)
+        this.layerOpt = { ...this.$props, ...{ source: this.clusterObj, style: this.FeatureStyle } }
+        this.layer = addClusterLayer(this.layerOpt, this.map)
+        this.layer.set('cluster', true)
+      } else {
+        this.layerOpt = { ...this.$props, ...{ source } }
+        this.layer = new VectorLayer(this.layerOpt)
+        this.layer.setStyle((feature) => {
+          if (feature.get('style')) {
+            return setStyle(feature.get('style'))
+          } else {
+            if (this.FeatureStyle && Object.keys(this.FeatureStyle).length > 0) {
+              return setStyle(this.FeatureStyle)
+            } else {
+              return setStyle({
+                fill: {
+                  color: 'rgba(67,126,255,0.15)'
+                },
+                stroke: {
+                  color: 'rgba(67,126,255,1)',
+                  width: 1
+                  // lineDash: [20, 10, 20, 10]
+                }
+              })
+            }
+          }
+        })
+      }
+      this.layer.set('id', this.layerId)
+      this.layer.set('type', 'vector')
+      this.layer.set('users', true)
+      this.layer.setZIndex(1)
+      this.map.addLayer(this.layer)
+      this.setFlashAnimate()
+      this.flashInterval = setInterval(() => {
+        this.setFlashAnimate()
+      }, 1000)
+      // this.map.on('moveend', () => this.setFlashAnimate())
+      this.$emit('load', this.layer, this.map)
+      if (this.modify) {
+        this.setModify()
+      }
+    },
+    setFlashAnimate () {
+      if (this.cluster) {
+        console.log(this.cluster)
+        const features = this.clusterObj.getFeatures()
+        if (features.length > 0) {
+          features.forEach(cluster => {
+            const clusters = cluster.get('features')
+            if (clusters.length === 1) {
+              clusters.forEach(feature => {
+                if (feature.get('flash')) {
+                  this.flash(feature)
+                }
+              })
+            }
+          })
+        }
+      } else {
+        this.layer.getSource().getFeatures().forEach(feature => {
+          if (feature.get('flash')) {
+            this.flash(feature)
+          }
+        })
+      }
+    },
+    clearTimer (feature) {
+      let timer = feature.get('timer')
+      if (timer) {
+        clearInterval(timer)
+        timer = null
+      }
+    },
+    dispose () {
+      clearInterval(this.flashInterval)
+      if (this.cluster && this.clusterObj) {
+        this.clusterObj.clear()
+      } else {
+        this.layer.getSource().clear()
+      }
+      this.map.removeLayer(this.layer)
+      this.map.removeInteraction(this.selectObj)
+      this.map.removeInteraction(this.modifyObj)
+    },
     getFeatureById (id) {
       const features = this.layer.getSource().getFeatures()
       let target
@@ -189,51 +312,52 @@ export default {
         const params = { ...evt, ...{ select: this.selectObj } }
         this.$emit('modifyend', params, this.map)
       })
+    },
+    flash (feature) {
+      const flash = feature.get('flash')
+      const duration = Number(flash.rate) * 1000 || 3000
+      const start = Date.now()
+      const flashGeom = feature.getGeometry().clone()
+      const listenerKey = this.layer.on('postrender', animate)
+      const map = this.map
+      function animate (event) {
+        const frameState = event.frameState
+        const elapsed = frameState.time - start
+        if (elapsed >= duration) {
+          unByKey(listenerKey)
+          return
+        }
+        const vectorContext = getVectorContext(event)
+        const elapsedRatio = elapsed / duration
+        // radius will be 5 at start and 30 at end.
+        const radius = easeOut(elapsedRatio) * 25 + 5
+        const color = asArray(flash.color || 'rgba(255, 0, 0, 1)')
+        color.slice()
+        const opacity = easeOut(1 - elapsedRatio)
+
+        const style = new Style({
+          image: new CircleStyle({
+            radius,
+            stroke: new Stroke({
+              // color: 'rgba(255, 0, 0, ' + opacity + ')',
+              color: `rgba(${color[0]},${color[1]},${color[2]},${opacity})`,
+              width: 0.25 + opacity
+            })
+          })
+        })
+
+        vectorContext.setStyle(style)
+        vectorContext.drawGeometry(flashGeom)
+        // tell OpenLayers to continue postrender animation
+        map.render()
+      }
     }
   },
   mounted () {
-    const source = addVectorSource(this.source, this.map)
-    if (this.source.features.length <= 0 && this.features.length > 0) {
-      const features = setFeatures(this.features, this.map, this.FeatureStyle && Object.keys(this.FeatureStyle).length > 0)
-      source.addFeatures(features)
-    }
-    const layerOpt = { ...this.$props, ...{ source } }
-    this.layer = new VectorLayer(layerOpt)
-    this.layer.setStyle((feature) => {
-      if (feature.get('style')) {
-        return setStyle(feature.get('style'))
-      } else {
-        if (this.FeatureStyle && Object.keys(this.FeatureStyle).length > 0) {
-          return setStyle(this.FeatureStyle)
-        } else {
-          return setStyle({
-            fill: {
-              color: 'rgba(67,126,255,0.15)'
-            },
-            stroke: {
-              color: 'rgba(67,126,255,1)',
-              width: 1
-              // lineDash: [20, 10, 20, 10]
-            }
-          })
-        }
-      }
-    })
-    this.layer.set('id', this.layerId)
-    this.layer.set('type', 'vector')
-    this.layer.set('users', true)
-    this.layer.setZIndex(1)
-    this.map.addLayer(this.layer)
-    this.$emit('load', this.layer, this.map)
-    if (this.modify) {
-      this.setModify()
-    }
+    this.init()
   },
   beforeDestroy () {
-    this.layer.getSource().clear()
-    this.map.removeLayer(this.layer)
-    this.map.removeInteraction(this.selectObj)
-    this.map.removeInteraction(this.modifyObj)
+    this.dispose()
   }
 }
 </script>

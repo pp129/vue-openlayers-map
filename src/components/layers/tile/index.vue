@@ -27,7 +27,7 @@ export default {
     tileType: {
       type: String,
       default: 'TD',
-      validator: value => ['TD', 'TD_IMG', 'XYZ', 'BD', 'GD', 'OSM', 'WMS'].includes(value.toUpperCase())
+      validator: value => ['TD', 'TD_IMG', 'XYZ', 'BD', 'BD_DARK', 'BD_BLUE', 'GD', 'OSM', 'WMS', 'ARCGIS_BLUE', 'ARCGIS_WARM', 'ARCGIS_NORMAL', 'ARCGIS_GRAY'].includes(value.toUpperCase())
     },
     tdVec: {
       type: String
@@ -148,6 +148,24 @@ export default {
         case 'BD':
           this.initBD()
           break
+        case 'BD_BLUE':
+          this.initBD('midnight')
+          break
+        case 'BD_DARK':
+          this.initBD('dark')
+          break
+        case 'ARCGIS_BLUE':
+          this.initArcgisTile('blue')
+          break
+        case 'ARCGIS_WARM':
+          this.initArcgisTile('warm')
+          break
+        case 'ARCGIS_NORMAL':
+          this.initArcgisTile('normal')
+          break
+        case 'ARCGIS_GRAY':
+          this.initArcgisTile('gray')
+          break
         case 'GD':
           this.initGD()
           break
@@ -224,8 +242,36 @@ export default {
         })
       }
     },
-    initBD () {
-      this.layers = this.getBDMap(this.xyz, this.$props)
+    initArcgisTile (type) {
+      // http://cache1.arcgisonline.cn/arcgis/rest/services/ChinaOnlineStreetPurplishBlue/MapServer/tile/1/2/1
+      let url = ''
+      switch (type) {
+        case 'blue':
+          url = 'http://cache1.arcgisonline.cn/arcgis/rest/services/ChinaOnlineStreetPurplishBlue/MapServer/tile'
+          break
+        case 'warm':
+          url = 'http://cache1.arcgisonline.cn/arcgis/rest/services/ChinaOnlineStreetWarm/MapServer/tile'
+          break
+        case 'normal':
+          url = 'http://cache1.arcgisonline.cn/arcgis/rest/services/ChinaOnlineCommunity/MapServer/tile'
+          break
+        case 'gray':
+          url = 'http://cache1.arcgisonline.cn/arcgis/rest/services/ChinaOnlineStreetGray/MapServer/tile'
+          break
+        default:
+          url = 'http://cache1.arcgisonline.cn/arcgis/rest/services/ChinaOnlineCommunity/MapServer/tile'
+          break
+      }
+      this.layer = this.initXYZbyURL(`${url}/{z}/{y}/{x}`)
+      this.layers = [this.layer]
+      if (!this.addForOverview) {
+        this.layers.forEach(layer => {
+          this.map.addLayer(layer)
+        })
+      }
+    },
+    initBD (customid) {
+      this.layers = this.getBDMap(this.xyz, this.$props, customid)
       if (this.layers.length > 0) {
         if (!this.addForOverview) {
           this.layers.forEach(layer => {
@@ -235,7 +281,7 @@ export default {
         }
       }
     },
-    getBDMap (xyz, tileLayer) {
+    getBDMap (xyz, tileLayer, customid = '') {
       // const extent = [72.004, 0.8293, 137.8347, 55.8271]//中国范围
       // 计算百度使用的分辨率
       const resolutions = []
@@ -260,9 +306,18 @@ export default {
             const z = tileCoord[0]
             const x = tileCoord[1]
             const y = -tileCoord[2] - 1
-            return 'https://maponline1.bdimg.com/tile/?qt=vtile&x=' +
-                x + '&y=' + y + '&z=' + z +
-                '&styles=pl&scaler=1&udt=20220113&from=jsapi2_0'
+            // https://api.map.baidu.com/customimage/tile?qt=customimage&x=787&y=290&z=12&udt=20220819&scale=2&ak=E4805d16520de693a3fe707cdc962045&customid=midnight&v=2.1&seckey=9LZaB7DLvQ7m%2FRRaNMpgH4S9Zhcxe6d7n%2FqWfPnSoEY%3D%2CDGZ_XDIb0iZ2S_XjrNUTXaf57stJrPVtt77DgTiPElcmmxLfFQRplqMLY-DcBrNQ73d-IDnPJdvDOt8ywP9tRUdmE__T2m_3re7uE7Bh4ZEawAqJa4FkUTq2CDzXupYGQdr0DnfvZsq1eBICikh7cQcvdN1JVdk7P4J_MoGEaDzTI0nkFHNlmD-ntA8DuGMa&timeStamp=1661247410473&sign=98ca621224b9
+
+            if (customid) {
+              // https://api.map.baidu.com/customimage/tile?qt=customimage&x=787&y=290&z=12&udt=20220819&scale=2&ak=E4805d16520de693a3fe707cdc962045&customid=midnight&v=2.1&seckey=9LZaB7DLvQ7m%2FRRaNMpgH4S9Zhcxe6d7n%2FqWfPnSoEY%3D%2CDGZ_XDIb0iZ2S_XjrNUTXaf57stJrPVtt77DgTiPElcmmxLfFQRplqMLY-DcBrNQ73d-IDnPJdvDOt8ywP9tRUdmE__T2m_3re7uE7Bh4ZEawAqJa4FkUTq2CDzXupYGQdr0DnfvZsq1eBICikh7cQcvdN1JVdk7P4J_MoGEaDzTI0nkFHNlmD-ntA8DuGMa&timeStamp=1661247410473&sign=98ca621224b9
+              return 'https://api.map.baidu.com/customimage/tile?qt=customimage&x=' +
+                  x + '&y=' + y + '&z=' + z +
+                  'udt=20220819&scale=2&ak=E4805d16520de693a3fe707cdc962045&v=2.1&seckey=9LZaB7DLvQ7m%2FRRaNMpgH4S9Zhcxe6d7n%2FqWfPnSoEY%3D%2CDGZ_XDIb0iZ2S_XjrNUTXaf57stJrPVtt77DgTiPElcmmxLfFQRplqMLY-DcBrNQ73d-IDnPJdvDOt8ywP9tRUdmE__T2m_3re7uE7Bh4ZEawAqJa4FkUTq2CDzXupYGQdr0DnfvZsq1eBICikh7cQcvdN1JVdk7P4J_MoGEaDzTI0nkFHNlmD-ntA8DuGMa&timeStamp=1661247410473&sign=98ca621224b9&customid=' + customid
+            } else {
+              return 'https://maponline1.bdimg.com/tile/?qt=vtile&x=' +
+                  x + '&y=' + y + '&z=' + z +
+                  '&styles=pl&scaler=1&udt=20220113&from=jsapi2_0'
+            }
           },
           crossOrigin: 'anonymous'
         }

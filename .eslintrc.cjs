@@ -16,6 +16,7 @@ module.exports = {
     'vue'
   ],
   rules: {
-    'vue/no-deprecated-destroyed-lifecycle': 0
+    'vue/no-deprecated-destroyed-lifecycle': 0,
+    'import/first': 0
   }
 }

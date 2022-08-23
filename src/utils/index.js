@@ -1,4 +1,6 @@
 import 'ol/ol.css'
+import 'ol-ext/dist/ol-ext.css'
+// import OLCesium from 'olcs/OLCesium.js'
 import { Feature, Map, View } from 'ol'
 import { defaults as defaultInteraction, DragRotateAndZoom } from 'ol/interaction'
 import { Attribution, FullScreen, Rotate, ScaleLine, Zoom, ZoomSlider } from 'ol/control'
@@ -15,6 +17,8 @@ import { nanoid } from 'nanoid'
 import VectorSource from 'ol/source/Vector'
 import VectorLayer from 'ol/layer/Vector'
 import ImageCanvasSource from 'ol/source/ImageCanvas'
+import 'ol-ext/map/PerspectiveMap.css'
+import PerspectiveMap from 'ol-ext/map/PerspectiveMap'
 
 /**
  * Map扩展
@@ -357,6 +361,9 @@ export const setPointFeature = (option, map, hasStyle = false) => {
       }
     }
   }
+  if (validObjKey(option, 'coordinates') && validObjKey(option, 'convert')) {
+    feature.set('coordinates', coordinates)
+  }
   return feature
 }
 
@@ -548,7 +555,20 @@ export const addClusterLayer = (option, map) => {
           styleCache[size] = style
         }
       } else {
-        style = setStyle(feature.get('features')[0].get('style'))
+        // style = setStyle(feature.get('features')[0].get('style'))
+        const styleOption = feature.get('features')[0].get('style')
+        if (styleOption && Object.keys(styleOption).length > 0) {
+          style = setStyle(styleOption)
+        } else {
+          style = new Style({
+            image: new CircleStyle({
+              radius: 4,
+              fill: new Fill({
+                color: 'blue'
+              })
+            })
+          })
+        }
       }
       return style
     }
@@ -773,6 +793,8 @@ export const setControl = (map, control, options) => {
 
 export class OlMap {
   map = OlMap
+  // map3d = null
+  // map3dScene = null
 
   controls = {
     zoom: undefined,
@@ -817,12 +839,39 @@ export class OlMap {
     // const controls = defaultControls(controlsOption).extend([])
 
     // 生成地图
-    this.map = new Map({
-      target: option.target,
-      view,
-      controls: [],
-      interactions: defaultInteraction(option.interactions)
-    })
+    console.log('perspectiveMap', option.perspectiveMap)
+    console.log('perspectiveMap', Object.prototype.hasOwnProperty.call(option, 'perspectiveMap'))
+    if (Object.prototype.hasOwnProperty.call(option, 'perspectiveMap')) {
+      this.map = new PerspectiveMap({
+        target: option.target,
+        view,
+        controls: [],
+        interactions: defaultInteraction(option.interactions)
+      })
+
+      if (Object.keys(option.perspectiveMap).length > 0) {
+        this.map.setPerspective(option.perspectiveMap.angle, option.perspectiveMap.options)
+      }
+    } else {
+      this.map = new Map({
+        target: option.target,
+        view,
+        controls: [],
+        interactions: defaultInteraction(option.interactions)
+      })
+    }
+
+    // this.map3d = new OLCesium({
+    //   map: this.map
+    // })
+    // this.map3d.setEnabled(true)
+    // this.map3dScene = this.map3d.getCesiumScene()
+    // this.map3dScene.terrainProvider = window.Cesium.createWorldTerrain() // 地形
+    // this.map3dScene.camera.setView({
+    //   orientation: {
+    //     pitch: window.Cesium.Math.toRadians(-60)
+    //   }
+    // })
 
     // 动态controls
     for (const control in controlsOption) {

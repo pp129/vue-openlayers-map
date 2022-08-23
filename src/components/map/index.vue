@@ -48,6 +48,11 @@ export default {
     // 交互属性
     interactions: {
       type: Object
+    },
+    // 透视图
+    perspectiveMap: {
+      type: [Object, Boolean],
+      default: false
     }
   },
   computed: {
@@ -56,7 +61,8 @@ export default {
         target: this.target,
         view: this.view,
         controls: this.controls,
-        interactions: this.interactions
+        interactions: this.interactions,
+        perspectiveMap: this.perspectiveMap
       }
     },
     map () {
@@ -174,6 +180,13 @@ export default {
       },
       immediate: false,
       deep: true
+    },
+    'perspectiveMap.angle': {
+      handler (value) {
+        this.map.setPerspective(value)
+      },
+      immediate: false,
+      deep: true
     }
   },
   data () {
@@ -260,6 +273,14 @@ export default {
       }
       OlMap.exportPNG(this.downLoadId)
     },
+    // onClickHandlerCS (event) {
+    //   if (event.position.x === 0 && event.position.y === 0) {
+    //     return
+    //   }
+    //   console.log(this.map3d.getCesiumScene().pick(event.position))
+    //   const pick = this.map3d.getCesiumScene().pick(event.position)
+    //   this.$emit('click', event, this.map, pick)
+    // },
     getDistancePoint (from, to, units) {
       return OlMap.getDistancePoint(from, to, units)
     }
@@ -268,6 +289,8 @@ export default {
     this.init().then(res => {
       if (res === 'success') {
         console.log('map load')
+        // const eventHandler = new window.Cesium.ScreenSpaceEventHandler(this.map3d.getCesiumScene().canvas)
+        // eventHandler.setInputAction(this.onClickHandlerCS.bind(this), window.Cesium.ScreenSpaceEventType.LEFT_CLICK)
         // 点击事件
         this.map.on('singleclick', (r) => {
           this.$emit('click', r, this.map)

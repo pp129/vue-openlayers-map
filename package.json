@@ -1,7 +1,7 @@
 {
   "name": "v-ol-map",
   "private": false,
-  "version": "1.4.9",
+  "version": "1.5.2",
   "main": "lib/ol-map.umd.js",
   "files": [
     "lib"
@@ -33,6 +33,7 @@
     "kdbush": "^3.0.0",
     "nanoid": "^4.0.0",
     "ol": "^6.15.1",
+    "ol-ext": "^3.2.30",
     "pinyin-pro": "^3.11.0",
     "qs": "^6.11.0",
     "vue": "^2.7.8",
