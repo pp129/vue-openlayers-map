@@ -8,7 +8,9 @@
   ],
   "scripts": {
     "dev": "vite",
-    "build": "npm run clean:lib && vite build",
+    "build": "npm run clean:lib && vite build --mode production",
+    "clean:dist": "rimraf dist",
+    "build:lib": "npm run clean:lib && vite build --mode lib",
     "clean:lib": "rimraf lib",
     "preview": "vite preview",
     "publish": "npm publish"
