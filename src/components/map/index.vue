@@ -125,7 +125,7 @@ export default {
       handler (value) {
         const zoom = OlMap.map.mapControlsZoom
         if (zoom) {
-          OlMap.setControl('zoom', value)
+          OlMap.setControl('zoom', value, this.controls.zoomOptions)
         }
       },
       immediate: false,
@@ -135,7 +135,7 @@ export default {
       handler (value) {
         const rotate = OlMap.map.mapControlsRotate
         if (rotate) {
-          OlMap.setControl('rotate', value)
+          OlMap.setControl('rotate', value, this.controls.rotateOptions)
         }
       },
       immediate: false,
@@ -145,7 +145,7 @@ export default {
       handler (value) {
         const rotate = OlMap.map.mapControlsAttribution
         if (rotate) {
-          OlMap.setControl('attribution', value)
+          OlMap.setControl('attribution', value, this.controls.attributionOptions)
         }
       },
       immediate: false,
@@ -202,6 +202,52 @@ export default {
     }
   },
   methods: {
+    initMap () {
+      this.init().then(res => {
+        if (res === 'success') {
+          console.log('map load')
+          // const eventHandler = new window.Cesium.ScreenSpaceEventHandler(this.map3d.getCesiumScene().canvas)
+          // eventHandler.setInputAction(this.onClickHandlerCS.bind(this), window.Cesium.ScreenSpaceEventType.LEFT_CLICK)
+          // 点击事件
+          this.map.on('singleclick', (r) => {
+            this.$emit('click', r, this.map)
+            this.map.forEachSmFeatureAtPixel(r.pixel, (i, e) => {
+              this.$emit('clickfeature', i, e, r)
+            }, {}, r)
+          })
+          // 双击时间
+          this.map.on('dblclick', (evt) => {
+            this.$emit('dblclick', evt, this.map)
+          })
+          // 层级变化
+          this.map.getView().once('change:resolution', () => {
+            this.map.once('moveend', (evt) => {
+              this.zoomEnd(evt)
+            })
+          })
+          // 鼠标悬浮
+          this.map.on('pointermove', evt => {
+            const pixel = this.map.getEventPixel(evt.originalEvent)
+            const hit = this.map.hasFeatureAtPixel(pixel)
+            this.map.getTargetElement().style.cursor = hit ? 'pointer' : ''
+            this.map.getLayers().getArray().forEach(layer => {
+              if (layer.get('type') === 'graphic') {
+                const data = layer.getData(evt.pixel)
+                const hitImage = data && data[3] > 0 // transparent pixels have zero for data[3]
+                this.map.getTargetElement().style.cursor = hitImage || hit ? 'pointer' : ''
+              }
+            })
+            this.$emit('pointermove', evt, this.map)
+          })
+          // 鼠标右键
+          this.map.on('contextmenu', evt => {
+            this.$emit('contextmenu', evt, this.map)
+          })
+          this.$emit('load')
+          this.load = true
+        }
+      })
+    },
     init () {
       return new Promise((resolve, reject) => {
         OlMap.map = new OlMap(this.mapOption)
@@ -283,53 +329,15 @@ export default {
     // },
     getDistancePoint (from, to, units) {
       return OlMap.getDistancePoint(from, to, units)
+    },
+    closeOverlays () {
+      this.map.getOverlays().forEach(overlay => {
+        overlay.setPosition(undefined)
+      })
     }
   },
   mounted () {
-    this.init().then(res => {
-      if (res === 'success') {
-        console.log('map load')
-        // const eventHandler = new window.Cesium.ScreenSpaceEventHandler(this.map3d.getCesiumScene().canvas)
-        // eventHandler.setInputAction(this.onClickHandlerCS.bind(this), window.Cesium.ScreenSpaceEventType.LEFT_CLICK)
-        // 点击事件
-        this.map.on('singleclick', (r) => {
-          this.$emit('click', r, this.map)
-          this.map.forEachSmFeatureAtPixel(r.pixel, (i, e) => {
-            this.$emit('clickfeature', i, e, r)
-          }, {}, r)
-        })
-        // 双击时间
-        this.map.on('dblclick', (evt) => {
-          this.$emit('dblclick', evt, this.map)
-        })
-        // 层级变化
-        this.map.getView().once('change:resolution', () => {
-          this.map.once('moveend', (evt) => {
-            this.zoomEnd(evt)
-          })
-        })
-        // 鼠标悬浮
-        this.map.on('pointermove', evt => {
-          const pixel = this.map.getEventPixel(evt.originalEvent)
-          const hit = this.map.hasFeatureAtPixel(pixel)
-          this.map.getTargetElement().style.cursor = hit ? 'pointer' : ''
-          this.map.getLayers().getArray().forEach(layer => {
-            if (layer.get('type') === 'graphic') {
-              const data = layer.getData(evt.pixel)
-              const hitImage = data && data[3] > 0 // transparent pixels have zero for data[3]
-              this.map.getTargetElement().style.cursor = hitImage || hit ? 'pointer' : ''
-            }
-          })
-          this.$emit('pointermove', evt, this.map)
-        })
-        // 鼠标右键
-        this.map.on('contextmenu', evt => {
-          this.$emit('contextmenu', evt, this.map)
-        })
-        this.$emit('load')
-        this.load = true
-      }
-    })
+    this.initMap()
   },
   beforeDestroy () {
     this.dispose()

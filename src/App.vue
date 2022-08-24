@@ -7,10 +7,11 @@
         </select>
       </div>
       <div class="item">
-        <button @click="startTrack">轨迹动画开始</button>
-        <button @click="pauseTrack">轨迹动画暂停</button>
-        <button @click="stopTrack">轨迹动画结束</button>
-        <button @click="disposeTrack">轨迹动画清除</button>
+        <span>轨迹动画</span>
+        <button @click="startTrack">开始</button>
+        <button @click="pauseTrack">暂停</button>
+        <button @click="stopTrack">结束</button>
+        <button @click="disposeTrack">清除</button>
       </div>
       <div class="item">
         <label>
@@ -35,6 +36,9 @@
        <input type="range" step=1 min=0 max=30 v-model="perspectiveMap.angle" />
        <p><span class="tag" title="在 Chrome 和 Edge 上测试。不适用于火狐。">实验性功能</span></p>
      </div>
+      <div class="item">
+        <p v-if="mapLoaded">当前层级：{{mapZoom}} 级</p>
+      </div>
     </div>
     <v-map
         ref="map"
@@ -43,7 +47,12 @@
         :controls="controls"
         :interactions="interactions"
         :perspectiveMap="perspectiveMap"
-        @click="onClick" @contextmenu.prevent="onContextmenu" @clickfeature="onClickFeature" @dblclick="onDblClick" @pointermove="pointermove">
+        @load="mapLoaded = true"
+        @changeZoom="changeZoom"
+        @click="onClick"
+        @clickfeature="onClickFeature"
+        @dblclick="onDblClick"
+        @contextmenu.prevent="onContextmenu"  @pointermove="pointermove">
       <v-tile :tile-type="tile" :xyz="xyz"></v-tile>
 <!--      <v-tile tile-type="GDF"></v-tile>-->
 <!--      <v-overview :tile-type="tile" :rotateWithView="rotateWithView" collapsible></v-overview>-->
@@ -59,8 +68,32 @@
           select
           :z-index="4"
           @select="onselect" @modifystart="modifystart" @modifyend="modifyend" @modifychange="modifychange"></v-vector>
-      <v-overlay :position="position">overlay</v-overlay>
-      <v-overlay :position="positionLevel">预警等级： {{ level }} 级</v-overlay>
+      <v-draw ref="drawLayer" :type="drawType" end-right></v-draw>
+      <v-measure ref="measureLayer" :type="measureType" end-right></v-measure>
+      <v-overlay class="overlay" :position="position">双击地图关闭弹框</v-overlay>
+      <v-overlay class="overlay" :position="positionLevel">预警等级： {{ level }} 级</v-overlay>
+      <v-overlay class="overlay-menu" :position="positionMenu">
+        <ul>
+          <li @click="closeOverlays">关闭所有弹框</li>
+          <li class="group">controls-控制</li>
+          <li @click="controls.attribution = !controls.attribution">{{ controls.attribution?'关闭':'显示' }}归属说明</li>
+          <li @click="controls.zoom = !controls.zoom">{{ controls.zoom?'关闭':'显示' }}层级控制按钮</li>
+          <li @click="controls.rotate = !controls.rotate">{{ controls.rotate?'关闭':'显示' }}旋转控制按钮</li>
+          <li @click="controls.ZoomSlider = !controls.ZoomSlider">{{ controls.ZoomSlider?'关闭':'显示' }}层级滑块</li>
+          <li @click="controls.ScaleLine = !controls.ScaleLine">{{ controls.ScaleLine?'关闭':'显示' }}比例尺</li>
+          <li @click="controls.FullScreen = !controls.FullScreen">{{ controls.FullScreen?'关闭':'显示' }}全屏按钮</li>
+          <li class="group">draw-绘制</li>
+          <li v-if="drawType" @click="drawType = ''">清除</li>
+          <li @click="drawHandler('Polygon')">🔷</li>
+          <li @click="drawHandler('Circle')">⭕️</li>
+          <li @click="drawHandler('Star')">⭐️</li>
+          <li @click="drawHandler('Star-6')">✡️</li>
+          <li class="group">measure-测量</li>
+          <li v-if="measureType" @click="measureType = ''">清除</li>
+          <li @click="measureHandler('Polygon')">面积</li>
+          <li @click="measureHandler('LineString')">线段</li>
+        </ul>
+      </v-overlay>
       <v-track ref="track" :id="track.id" :paths="track.paths" :options="track.options" @onLoad="onLoadTrack"></v-track>
     </v-map>
   </div>
@@ -76,16 +109,22 @@ export default {
       resolutions[i] = Math.pow(2, 18 - i)
     }
     return {
+      mapLoaded: false,
+      mapZoom: 12,
       addModify: false,
       view: {
         city: '厦门', // 优先级比center高
         center: [118, 24], // 预留此参数，组件监听view.center变化，触发panTo方法
-        zoom: 12
+        zoom: 12,
+        maxZoom: 20
       },
       controls: {
         attribution: true,
         zoom: true,
         rotate: true,
+        rotateOptions: {
+          className: 'ol-rotate-custom'
+        },
         FullScreen: true,
         ScaleLine: true,
         ZoomSlider: true
@@ -249,7 +288,7 @@ export default {
             icon: {
               scale: 0.6,
               // src: require('@/assets/img/point_6.png')
-              src: new URL('./assets/img/point_6.png', import.meta.url).href
+              src: new URL('./assets/img/point_3.png', import.meta.url).href
             },
             text: {
               text: '百度转84',
@@ -298,7 +337,13 @@ export default {
         {
           id: 'point2',
           coordinates: [118.168742, 24.487505],
-          style: {},
+          style: {
+            icon: {
+              scale: 0.6,
+              // src: require('@/assets/img/point_5.png')
+              src: new URL('./assets/img/point_4.png', import.meta.url).href
+            }
+          },
           properties: {
             name: 'feature1',
             level: 2
@@ -315,7 +360,7 @@ export default {
             icon: {
               scale: 0.6,
               // src: require('@/assets/img/point_5.png')
-              src: new URL('./assets/img/point_5.png', import.meta.url).href
+              src: new URL('./assets/img/point_2.png', import.meta.url).href
             }
           },
           properties: {
@@ -324,10 +369,16 @@ export default {
           flash: {
             color: 'red'
           }
+        },
+        {
+          id: 'point4',
+          coordinates: [118.102941, 24.454704],
+          style: {}
         }
       ],
       position: undefined,
       positionLevel: undefined,
+      positionMenu: undefined,
       level: undefined,
       cluster: {
         distance: 120, // 要素将聚集在一起的像素距离。
@@ -414,18 +465,20 @@ export default {
           lineColor: 'red', // 轨迹线颜色
           passlineColor: 'lightgreen' // 通过动画轨迹线颜色
         }
-      }
+      },
+      drawType: '',
+      measureType: ''
     }
   },
   methods: {
-    addClusterFeatures (count = 100) {
-      console.log(count)
+    addClusterFeatures (count = 1000) {
       for (let i = 0; i < count; i++) {
         this.features.push({
-          coordinates: [118 + 1 * Math.random(), 24.1 + 1 * Math.random()],
+          coordinates: [117.5 + 1 * Math.random(), 24.1 + 1 * Math.random()],
           style: {
             icon: {
-              src: new URL('./assets/img/car-16.png', import.meta.url).href
+              src: new URL('./assets/img/point_1.png', import.meta.url).href,
+              scale: 0.6
             }
           }
         })
@@ -445,7 +498,8 @@ export default {
     },
     onClick (evt, map) {
       console.log(evt)
-      if (this.addModify) {
+      this.positionMenu = undefined
+      if (this.addModify && !this.drawType && !this.measureType) {
         this.features2[3].center = evt.coordinate
         this.addModify = false
         this.$refs.map.panTo({
@@ -454,26 +508,23 @@ export default {
         })
       }
     },
-    map3dclick (evt, map) {
-      console.log('map3dclick', evt)
-      this.positionLevel = evt.coordinate
+    changeZoom (evt, map) {
+      this.mapZoom = map.getView().getZoom()
     },
     onContextmenu (evt, map) {
+      this.positionMenu = evt.coordinate
     },
     onClickFeature (feature, layer, evt) {
       console.log(feature)
       console.log(layer)
       console.log(evt)
-      // this.controls.ZoomSlider = false
-      if (layer.get('id') === 'layer1') {
+      if (this.drawType || this.measureType) return
+      if (layer.get('id') === 'layer1' && feature.getId() === 'point4') {
         this.position = evt.coordinate
-      } else {
-        this.position = undefined
       }
     },
     onDblClick (evt, map) {
       this.position = undefined
-      this.positionLevel = undefined
     },
     pointermove (evt, map) {
       const pixel = map.getEventPixel(evt.originalEvent)
@@ -566,6 +617,23 @@ export default {
           feature.coordinates = center.center
         }
       })
+    },
+    closeOverlays () {
+      this.$refs.map.closeOverlays()
+    },
+    drawHandler (type) {
+      this.positionMenu = undefined
+      if (this.drawType && this.drawType === type) {
+        this.$refs.drawLayer.setActive(true)
+      }
+      this.drawType = type
+    },
+    measureHandler (type) {
+      this.positionMenu = undefined
+      if (this.measureType && this.measureType === type) {
+        this.$refs.measureLayer.setActive(true)
+      }
+      this.measureType = type
     }
   },
   mounted () {
@@ -585,6 +653,31 @@ html,body {
   height: 100%;
   overflow: hidden;
 }
+ul,li{
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+li{
+  border-bottom: 1px solid #ccc;
+  cursor: pointer;
+}
+.ol-rotate-custom{
+  right: 5em;
+  top: 0.5em;
+}
+.overlay{
+  padding: 5px 10px;
+  border-radius: 5px;
+  background: rgba(0,0,0,0.5);
+  color: #fff;
+}
+.overlay-menu{
+  padding: 5px 10px;
+  border-radius: 5px;
+  background: white;
+  color: #1a1a1a;
+}
 .tool{
   width: 100%;
   height: 5%;
@@ -599,6 +692,11 @@ html,body {
   border-right: 1px solid #ccc;
   padding-right: 10px;
   align-items: center;
+}
+.group{
+  background:#888888;
+  color: #ffffff;
+  cursor: default;
 }
 .tag{
   color: #fff;

@@ -733,60 +733,60 @@ export const calculateCenter = (geometry) => {
   }
 }
 
-export const setControl = (map, control, options) => {
+export const setControl = (map, control, options, controlOptions) => {
   if (control === 'zoom') {
-    let zoom = OlMap.map.mapControlsZoom
+    const zoom = OlMap.map.mapControlsZoom
     if (zoom) {
-      map.removeControl(zoom)
+      map.removeControl(OlMap.map.mapControlsZoom)
     }
     if (options) {
-      zoom = new Zoom(OlMap.map.mapControlsZoomOptions)
-      map.addControl(zoom)
+      OlMap.map.mapControlsZoom = new Zoom(controlOptions || OlMap.map.mapControlsZoomOptions)
+      map.addControl(OlMap.map.mapControlsZoom)
     }
   } else if (control === 'rotate') {
-    let rotate = OlMap.map.mapControlsRotate
+    const rotate = OlMap.map.mapControlsRotate
     if (rotate) {
-      map.removeControl(rotate)
+      map.removeControl(OlMap.map.mapControlsRotate)
     }
     if (options) {
-      rotate = new Rotate(OlMap.map.mapControlsRotateOptions)
-      map.addControl(rotate)
+      OlMap.map.mapControlsRotate = new Rotate(controlOptions || OlMap.map.mapControlsRotateOptions)
+      map.addControl(OlMap.map.mapControlsRotate)
     }
   } else if (control === 'attribution') {
-    let attribution = OlMap.map.mapControlsAttribution
+    const attribution = OlMap.map.mapControlsAttribution
     if (attribution) {
-      map.removeControl(attribution)
+      map.removeControl(OlMap.map.mapControlsAttribution)
     }
     if (options) {
-      attribution = new Attribution(OlMap.map.mapControlsAttributionOptions)
-      map.addControl(attribution)
+      OlMap.map.mapControlsAttribution = new Attribution(controlOptions || OlMap.map.mapControlsAttributionOptions)
+      map.addControl(OlMap.map.mapControlsAttribution)
     }
   } else if (control === 'FullScreen') {
-    let fullScreen = OlMap.map.mapControlsFullScreen
+    const fullScreen = OlMap.map.mapControlsFullScreen
     if (fullScreen) {
-      map.removeControl(fullScreen)
+      map.removeControl(OlMap.map.mapControlsFullScreen)
     }
     if (options) {
-      fullScreen = new FullScreen(OlMap.map.mapControlsFullScreen)
-      map.addControl(fullScreen)
+      OlMap.map.mapControlsFullScreen = new FullScreen(OlMap.map.mapControlsFullScreen)
+      map.addControl(OlMap.map.mapControlsFullScreen)
     }
   } else if (control === 'ScaleLine') {
-    let scaleLine = OlMap.map.mapControlsScaleLine
+    const scaleLine = OlMap.map.mapControlsScaleLine
     if (scaleLine) {
-      map.removeControl(scaleLine)
+      map.removeControl(OlMap.map.mapControlsScaleLine)
     }
     if (options) {
-      scaleLine = new ScaleLine(OlMap.map.mapControlsScaleLine)
-      map.addControl(scaleLine)
+      OlMap.map.mapControlsScaleLine = new ScaleLine(OlMap.map.mapControlsScaleLine)
+      map.addControl(OlMap.map.mapControlsScaleLine)
     }
   } else if (control === 'ZoomSlider') {
-    let zoomSlider = OlMap.map.mapControlsZoomSlider
+    const zoomSlider = OlMap.map.mapControlsZoomSlider
     if (zoomSlider) {
-      map.removeControl(zoomSlider)
+      map.removeControl(OlMap.map.mapControlsZoomSlider)
     }
     if (options) {
-      zoomSlider = new ZoomSlider(OlMap.map.mapControlsZoomSlider)
-      map.addControl(zoomSlider)
+      OlMap.map.mapControlsZoomSlider = new ZoomSlider(OlMap.map.mapControlsZoomSlider)
+      map.addControl(OlMap.map.mapControlsZoomSlider)
     }
   }
 }
@@ -841,7 +841,7 @@ export class OlMap {
     // 生成地图
     console.log('perspectiveMap', option.perspectiveMap)
     console.log('perspectiveMap', Object.prototype.hasOwnProperty.call(option, 'perspectiveMap'))
-    if (Object.prototype.hasOwnProperty.call(option, 'perspectiveMap')) {
+    if (Object.prototype.hasOwnProperty.call(option, 'perspectiveMap') && typeof option.perspectiveMap === 'object') {
       this.map = new PerspectiveMap({
         target: option.target,
         view,
@@ -972,8 +972,8 @@ export class OlMap {
     return OlMap.map.controls[control]
   }
 
-  static setControl (control, options) {
-    return setControl(OlMap.map.map, control, options)
+  static setControl (control, options, controlOptions) {
+    return setControl(OlMap.map.map, control, options, controlOptions)
   }
 
   get mapControlsZoom () {

@@ -1,14 +1,14 @@
 {
   "name": "v-ol-map",
   "private": false,
-  "version": "1.5.2",
+  "version": "1.5.3",
   "main": "lib/ol-map.umd.js",
   "files": [
     "lib"
   ],
   "scripts": {
     "dev": "vite",
-    "build": "npm run clean:lib && vite build --mode production",
+    "build": "npm run clean:dist && vite build --mode production",
     "clean:dist": "rimraf dist",
     "build:lib": "npm run clean:lib && vite build --mode lib",
     "clean:lib": "rimraf lib",

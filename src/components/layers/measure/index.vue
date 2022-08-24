@@ -74,16 +74,19 @@ export default {
   watch: {
     type: {
       handler (value) {
-        this.dispose()
         if (value) {
           this.init()
+        } else {
+          this.dispose()
         }
       },
       immediate: false
     }
   },
   mounted () {
-    this.init()
+    if (this.type) {
+      this.init()
+    }
   },
   beforeDestroy () {
     this.map.removeLayer(this.layer)
@@ -292,7 +295,7 @@ export default {
       const idleTip = '点击开始测量'
       let tip = idleTip
       this.draw = new Draw({
-        source,
+        source: this.layer.getSource(),
         type: drawType,
         style: (feature) => {
           return styleFunction(feature, this.segments, drawType, tip)
@@ -329,6 +332,15 @@ export default {
       this.map.removeInteraction(this.select)
       this.map.removeInteraction(this.modify)
       this.map.removeLayer(this.layer)
+    },
+    finish () {
+      this.draw.finishDrawing()
+    },
+    remove () {
+      this.map.removeInteraction(this.draw)
+    },
+    setActive (value) {
+      this.draw.setActive(value)
     }
   }
 }

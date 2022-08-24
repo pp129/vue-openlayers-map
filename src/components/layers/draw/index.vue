@@ -131,9 +131,11 @@ export default {
   watch: {
     type: {
       handler (value) {
-        this.dispose()
+        // this.dispose()
         if (value) {
           this.initDraw()
+        } else {
+          this.dispose()
         }
       },
       immediate: false
@@ -185,6 +187,48 @@ export default {
       }
     },
     initDraw () {
+      this.resetDraw()
+      this.draw.set('type', 'draw')
+      this.map.addInteraction(this.draw)
+      if (this.endRight) {
+        this.map.on('contextmenu', evt => {
+          console.log(this.draw)
+          this.draw.setActive(false)
+        })
+      }
+      if (this.clear) {
+        this.draw.on('drawstart', evt => {
+          this.layer.getSource().clear()
+        })
+      }
+      this.draw.on('drawstart', evt => {
+        this.$emit('drawstart', evt, this.map)
+      })
+      this.draw.on('drawend', evt => {
+        this.$emit('drawend', evt, this.map)
+      })
+      if (this.editable) {
+        this.select = new Select()
+        this.select.set('type', 'select')
+        this.map.addInteraction(this.select)
+        this.modify = new Modify({
+          features: this.select.getFeatures()
+        })
+        this.modify.set('type', 'modify')
+        this.map.addInteraction(this.modify)
+        this.modify.on('modifystart', evt => {
+          this.$emit('modifystart', evt, this.map)
+        })
+        this.modify.on('modifyend', evt => {
+          this.$emit('modifyend', evt, this.map)
+        })
+      }
+    },
+    resetDraw () {
+      if (this.draw) {
+        this.map.removeInteraction(this.draw)
+        this.draw = null
+      }
       const option = {
         source: this.layer.getSource(),
         type: this.type,
@@ -243,41 +287,6 @@ export default {
       } else {
         this.draw = new Draw(option)
       }
-      this.draw.set('type', 'draw')
-      this.map.addInteraction(this.draw)
-      if (this.endRight) {
-        this.map.on('contextmenu', evt => {
-          console.log(this.draw)
-          this.draw.setActive(false)
-        })
-      }
-      if (this.clear) {
-        this.draw.on('drawstart', evt => {
-          this.layer.getSource().clear()
-        })
-      }
-      this.draw.on('drawstart', evt => {
-        this.$emit('drawstart', evt, this.map)
-      })
-      this.draw.on('drawend', evt => {
-        this.$emit('drawend', evt, this.map)
-      })
-      if (this.editable) {
-        this.select = new Select()
-        this.select.set('type', 'select')
-        this.map.addInteraction(this.select)
-        this.modify = new Modify({
-          features: this.select.getFeatures()
-        })
-        this.modify.set('type', 'modify')
-        this.map.addInteraction(this.modify)
-        this.modify.on('modifystart', evt => {
-          this.$emit('modifystart', evt, this.map)
-        })
-        this.modify.on('modifyend', evt => {
-          this.$emit('modifyend', evt, this.map)
-        })
-      }
     },
     dispose () {
       // this.map.removeLayer(this.layer)
@@ -285,6 +294,15 @@ export default {
       this.map.removeInteraction(this.draw)
       this.map.removeInteraction(this.select)
       this.map.removeInteraction(this.modify)
+    },
+    finish () {
+      this.draw.finishDrawing()
+    },
+    remove () {
+      this.map.removeInteraction(this.draw)
+    },
+    setActive (value) {
+      this.draw.setActive(value)
     }
   }
 }
