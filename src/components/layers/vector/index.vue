@@ -162,7 +162,7 @@ export default {
         }
         const clusterOption = { source, ...defaultOptions }
         this.clusterObj = new Cluster(clusterOption)
-        this.layerOpt = { ...this.$props, ...{ source: this.clusterObj, style: this.FeatureStyle } }
+        this.layerOpt = { ...this.$props, ...{ source: this.clusterObj, style: clusterOption.style } }
         this.layer = addClusterLayer(this.layerOpt, this.map)
         this.layer.set('cluster', true)
       } else {
@@ -206,7 +206,6 @@ export default {
     },
     setFlashAnimate () {
       if (this.cluster) {
-        console.log(this.cluster)
         const features = this.clusterObj.getFeatures()
         if (features.length > 0) {
           features.forEach(cluster => {

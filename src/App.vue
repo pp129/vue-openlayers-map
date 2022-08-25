@@ -70,6 +70,14 @@
           @select="onselect" @modifystart="modifystart" @modifyend="modifyend" @modifychange="modifychange"></v-vector>
       <v-draw ref="drawLayer" :type="drawType" end-right></v-draw>
       <v-measure ref="measureLayer" :type="measureType" end-right></v-measure>
+      <v-overlay class="overlay-cluster" :position="positionCluster" :offset="[15,15]">
+        <ul>
+          <li v-for="(item,index) in clusterFeatures" :key="item.name">
+            <span>#{{ index + 1 }}</span>
+            <span>{{item.name}}</span>
+          </li>
+        </ul>
+      </v-overlay>
       <v-overlay class="overlay" :position="position">双击地图关闭弹框</v-overlay>
       <v-overlay class="overlay" :position="positionLevel">预警等级： {{ level }} 级</v-overlay>
       <v-overlay class="overlay-menu" :position="positionMenu">
@@ -279,6 +287,8 @@ export default {
       clusterOption: {
         distance: 120
       },
+      positionCluster: undefined,
+      clusterFeatures: [],
       features: [
         {
           id: 'point1',
@@ -381,6 +391,61 @@ export default {
       positionMenu: undefined,
       level: undefined,
       cluster: {
+        style: [
+          {
+            min: 0,
+            max: 20,
+            circle: {
+              radius: 16,
+              fill: {
+                color: 'blue'
+              },
+              stroke: {
+                width: 2
+              }
+            },
+            text: {
+              fill: {
+                color: 'yellow'
+              }
+            }
+          },
+          {
+            min: 20,
+            max: 50,
+            circle: {
+              radius: 16,
+              fill: {
+                color: 'orange'
+              },
+              stroke: {
+                width: 2
+              }
+            },
+            text: {
+              fill: {
+                color: 'white'
+              }
+            }
+          },
+          {
+            min: 50,
+            circle: {
+              radius: 16,
+              fill: {
+                color: 'red'
+              },
+              stroke: {
+                width: 2
+              }
+            },
+            text: {
+              fill: {
+                color: 'white'
+              }
+            }
+          }
+        ],
         distance: 120, // 要素将聚集在一起的像素距离。
         minDistance: 1// 聚合之间的最小距离（以像素为单位）。将被限制在配置的距离。默认情况下，不设置最小距离。此配置可用于避免重叠图标。作为权衡，聚合要素的位置将不再是其所有要素的中心。
       },
@@ -480,7 +545,8 @@ export default {
               src: new URL('./assets/img/point_1.png', import.meta.url).href,
               scale: 0.6
             }
-          }
+          },
+          name: `聚合要素-${i + 1}`
         })
       }
       console.log(this.features)
@@ -521,6 +587,18 @@ export default {
       if (this.drawType || this.measureType) return
       if (layer.get('id') === 'layer1' && feature.getId() === 'point4') {
         this.position = evt.coordinate
+      }
+      if (layer.get('cluster')) {
+        const coordinates = feature.getGeometry().getCoordinates()
+        console.log(coordinates)
+        this.clusterFeatures = []
+        feature.get('features').forEach(feature => {
+          console.log(feature)
+          this.clusterFeatures.push({
+            name: feature.get('name')
+          })
+        })
+        this.positionCluster = coordinates
       }
     },
     onDblClick (evt, map) {
@@ -677,6 +755,14 @@ li{
   border-radius: 5px;
   background: white;
   color: #1a1a1a;
+}
+.overlay-cluster{
+  padding: 5px 10px;
+  border-radius: 5px;
+  background: white;
+  color: #1a1a1a;
+  height: 200px;
+  overflow-x: scroll;
 }
 .tool{
   width: 100%;

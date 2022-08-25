@@ -151,7 +151,12 @@ addCoordinateTransforms('EPSG:3857', AMapMercatorProj, projzh.mc2gcj02mc, projzh
  */
 export const validObjKey = (obj, key) => {
   if (obj && Object.prototype.hasOwnProperty.call(obj, key)) {
-    return obj[key] && (Object.keys(obj[key]).length > 0 || typeof obj[key] === 'function')
+    // return !((typeof obj[key] === 'undefined') || (!obj[key] && obj[key] !== 0))
+    if (typeof obj[key] === 'object') {
+      return Object.keys(obj[key]).length > 0
+    } else {
+      return true
+    }
   } else {
     return false
   }
@@ -195,7 +200,7 @@ export const setCircleStyle = (option) => {
   const optionCircle = {
     radius: option.radius || 2,
     fill: new Fill(option.fill || { color: 'blue' }),
-    stroke: new Stroke(option.stroke || { color: 'green' })
+    stroke: new Stroke(option.stroke || { color: 'white' })
   }
   return new CircleStyle(optionCircle)
 }
@@ -468,25 +473,12 @@ export const addVectorSource = (option, map) => {
 
 /**
  * 设置聚合样式
- * @param icon
+ * @param style
  * @param text
- * @param color
- * @returns {{image: Icon, text: Text}}
  */
-export const clusterFeatureStyle = (icon, text, color) => {
-  const styleImage = new Icon({
-    src: icon
-  })
-  const styleText = new Text({
-    text,
-    fill: new Fill({
-      color
-    })
-  })
-  return {
-    image: styleImage,
-    text: styleText
-  }
+export const clusterFeatureStyle = (style, text) => {
+  const textStyle = { ...style.text, ...{ text } }
+  return { ...style, ...{ text: textStyle } }
 }
 
 /**
@@ -497,6 +489,7 @@ export const clusterFeatureStyle = (icon, text, color) => {
  */
 export const addClusterLayer = (option, map) => {
   const clusterSource = option.source
+  const total = option.source.getSource().getFeatures().length
   const styleCache = {}
   const clusterOptions = {
     source: clusterSource,
@@ -507,6 +500,7 @@ export const addClusterLayer = (option, map) => {
         if (!style) {
           let styleOptions = {}
           if (!validObjKey(option, 'style') || !option.style) {
+            // 无style属性设置默认样式
             styleOptions = {
               image: new CircleStyle({
                 radius: 20,
@@ -525,33 +519,34 @@ export const addClusterLayer = (option, map) => {
                 })
               })
             }
+            style = new Style(styleOptions)
           } else {
-            option.style.forEach(e => {
-              let min = 0
-              let max = 0
-              let textColor = 'white'
-              if (validObjKey(e, 'textColor')) {
-                textColor = e.textColor
-              }
-              if (validObjKey(e, 'min') && validObjKey(e, 'max')) {
-                min = e.min
-                max = e.max
-              } else {
-                const total = option.source.getFeatures()
-                if (total > 0) {
-                  const average = total / option.style.length
-                  for (let i = 0; i < option.style.length; i++) {
-                    min = i
-                    max = average * (i + 1)
+            if (option.style instanceof Array) {
+              option.style.forEach(e => {
+                let min = 0
+                let max = 0
+                if (validObjKey(e, 'min') || validObjKey(e, 'max')) {
+                  min = e.min || 0
+                  max = e.max || total
+                  if (min < size && size <= max) {
+                    styleOptions = clusterFeatureStyle(e, size.toString())
+                  }
+                } else {
+                  if (total > 0) {
+                    const average = total / option.style.length
+                    for (let i = 0; i < option.style.length; i++) {
+                      min = i * average
+                      max = average * (i + 1)
+                      if (min < size && size <= max) {
+                        styleOptions = clusterFeatureStyle(option.style[i], size.toString())
+                      }
+                    }
                   }
                 }
-              }
-              if (min < size && size <= max) {
-                styleOptions = clusterFeatureStyle(e.icon, size.toString(), textColor)
-              }
-            })
+              })
+              style = setStyle(styleOptions)
+            }
           }
-          style = new Style(styleOptions)
           styleCache[size] = style
         }
       } else {
