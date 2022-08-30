@@ -7,7 +7,7 @@
 
 <script>
 import { nanoid } from 'nanoid'
-import { OlMap } from '@/utils/index.js'
+import { OlMap, setStyle } from '@/utils/index.js'
 import { getCenter } from 'ol/extent'
 
 export default {
@@ -352,6 +352,11 @@ export default {
       this.map.getOverlays().forEach(overlay => {
         overlay.setPosition(undefined)
       })
+    },
+    updateFeature (feature, type, param) {
+      if (type === 'style') {
+        feature.setStyle(setStyle(param))
+      }
     }
   },
   mounted () {

@@ -43,6 +43,9 @@
       <div class="item">
         <p v-if="mapLoaded">当前层级：{{mapZoom}} 级</p>
       </div>
+      <div class="item">
+        <button @click="panTo">聚焦</button>
+      </div>
     </div>
     <v-map
         ref="map"
@@ -73,7 +76,7 @@
           select
           :z-index="4"
           @select="onselect" @modifystart="modifystart" @modifyend="modifyend" @modifychange="modifychange"></v-vector>
-      <v-draw ref="drawLayer" :type="drawType" end-right></v-draw>
+      <v-draw ref="drawLayer" :type="drawType" end-right @drawend="drawend"></v-draw>
       <v-measure ref="measureLayer" :type="measureType" end-right></v-measure>
       <v-overlay class="overlay" :position="positionRadius">半径：{{radius}} 米</v-overlay>
       <v-overlay class="overlay-cluster" :position="positionCluster" :offset="[15,15]">
@@ -149,7 +152,7 @@ export default {
         DragRotateAndZoom: true,
         doubleClickZoom: false
       },
-      map3d: true,
+      map3d: false,
       perspectiveMap: {
         pitch: 0,
         roll: 0,
@@ -352,7 +355,8 @@ export default {
           flash: {
             rate: 1,
             color: 'green'
-          }
+          },
+          noCluster: true
         },
         {
           id: 'point2',
@@ -371,7 +375,8 @@ export default {
           flash: {
             rate: 2,
             color: 'orange'
-          }
+          },
+          noCluster: true
         },
         {
           id: 'point3',
@@ -388,12 +393,14 @@ export default {
           },
           flash: {
             color: 'red'
-          }
+          },
+          noCluster: true
         },
         {
           id: 'point4',
           coordinates: [118.102941, 24.454704],
-          style: {}
+          style: {},
+          noCluster: true
         },
         {
           id: 'circleCenter',
@@ -583,7 +590,7 @@ export default {
     }
   },
   methods: {
-    addClusterFeatures (count = 1000) {
+    addClusterFeatures (count = 15000) {
       for (let i = 0; i < count; i++) {
         this.features.push({
           coordinates: [117.5 + 1 * Math.random(), 24.1 + 1 * Math.random()],
@@ -596,7 +603,6 @@ export default {
           name: `聚合要素-${i + 1}`
         })
       }
-      console.log(this.features)
     },
     setModify () {
       this.addModify = !this.addModify
@@ -605,7 +611,7 @@ export default {
           id: 'add',
           type: 'circle',
           center: [0, 0],
-          radius: 100
+          radius: 400
         })
       }
     },
@@ -646,6 +652,11 @@ export default {
     },
     changeZoom (evt, map) {
       this.mapZoom = map.getView().getZoom()
+      if (this.mapZoom >= 16) {
+        this.toggleCluster = true
+      } else {
+        this.toggleCluster = false
+      }
     },
     onContextmenu (evt, map) {
       this.positionMenu = evt.coordinate
@@ -741,6 +752,27 @@ export default {
       } else {
         alert('track unload')
       }
+    },
+    drawend (evt, map) {
+      console.log('on drawend: ', evt, map)
+      const feature = evt.feature
+      const geometry = feature.getGeometry()
+      const extent = geometry.getExtent()
+      const inExtent = []
+      this.$refs.layer1.layer.getSource().forEachFeatureInExtent(extent, feature => {
+        if (feature.get('flash')) {
+          inExtent.push(feature)
+        }
+      })
+      this.$refs.map.updateFeature(feature, 'style', {
+        text: {
+          text: `范围内包含${inExtent.length}个预警点`,
+          fill: {
+            color: 'white'
+          },
+          offsetY: 20
+        }
+      })
     },
     onselect (evt, map) {
       console.log('on select: ', evt, map)
@@ -1050,6 +1082,12 @@ export default {
         },
         series
       }
+    },
+    panTo () {
+      this.$refs.map.panTo({
+        zoom: 12,
+        center: [118.1689, 24.6478]
+      })
     }
   },
   mounted () {
@@ -1133,5 +1171,11 @@ li{
   transform: rotate(-5deg);
   margin: -1em 0;
   cursor: pointer;
+}
+.cesium-credit-logoContainer{
+  display: none !important;
+}
+.cesium-credit-textContainer{
+  display: none !important;
 }
 </style>
