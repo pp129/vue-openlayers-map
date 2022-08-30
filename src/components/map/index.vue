@@ -319,6 +319,9 @@ export default {
     panTo (param) {
       OlMap.panTo(param)
     },
+    flyTo (param) {
+      OlMap.flyTo(param)
+    },
     getCenterByExtent (extent) {
       return getCenter(extent)
     },

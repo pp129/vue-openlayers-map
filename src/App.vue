@@ -15,7 +15,7 @@
       </div>
       <div class="item">
         <label>
-          是否可编辑
+          可编辑
         </label>
         <input type="checkbox" name="modify" v-model="modify" />
         <button v-if="modify" @click="setModify">添加编辑图案（圆）</button>
@@ -25,7 +25,7 @@
       </div>
       <div class="item">
         <label>
-          切换是否聚合
+          聚合
         </label>
         <input type="checkbox" name="toggleCluster" v-model="toggleCluster" />
         <label>聚合距离：{{cluster.distance}}</label>
@@ -44,7 +44,11 @@
         <p v-if="mapLoaded">当前层级：{{mapZoom}} 级</p>
       </div>
       <div class="item">
-        <button @click="panTo">聚焦</button>
+        <p>点击位置：{{currentCoordinateText}}</p>
+      </div>
+      <div class="item">
+        <button @click="panTo">厦门</button>
+        <button @click="flyTo">杭州</button>
       </div>
     </div>
     <v-map
@@ -69,10 +73,12 @@
           layer-id="layer1"
           :features="features"
           :cluster="toggleCluster?cluster:false"
+          :visible="visible1"
           :z-index="3"></v-vector>
       <v-vector
           :features="features2"
           :modify="modify"
+          :visible="visible2"
           select
           :z-index="4"
           @select="onselect" @modifystart="modifystart" @modifyend="modifyend" @modifychange="modifychange"></v-vector>
@@ -92,6 +98,11 @@
       <v-overlay class="overlay-menu" :position="positionMenu">
         <ul>
           <li @click="closeOverlays">关闭所有弹框</li>
+          <li class="group">layers-图层</li>
+          <li @click="visible1 = !visible1">{{visible1?'隐藏':'显示'}}图层1（点位）</li>
+          <li @click="visible2 = !visible2">{{visible2?'隐藏':'显示'}}图层2（图形）</li>
+          <li @click="heatmap.visible = !heatmap.visible">{{heatmap.visible?'隐藏':'显示'}}热力图（杭州）</li>
+          <li @click="echarts.visible = !echarts.visible">{{echarts.visible?'隐藏':'显示'}}飞行图</li>
           <li class="group">controls-控制</li>
           <li @click="controls.attribution = !controls.attribution">{{ controls.attribution?'关闭':'显示' }}归属说明</li>
           <li @click="controls.zoom = !controls.zoom">{{ controls.zoom?'关闭':'显示' }}层级控制按钮</li>
@@ -112,13 +123,14 @@
         </ul>
       </v-overlay>
       <v-track ref="track" :id="track.id" :paths="track.paths" :options="track.options" @onLoad="onLoadTrack"></v-track>
-      <v-echarts :options="echarts.options"></v-echarts>
+      <v-echarts :options="echarts.options" :visible="echarts.visible"></v-echarts>
+      <v-heatmap :features="heatmap.features" :visible="heatmap.visible" :radius="3" :blur="6"></v-heatmap>
     </v-map>
   </div>
 </template>
 
 <script>
-
+import axios from 'axios'
 export default {
   name: 'App',
   data () {
@@ -128,7 +140,7 @@ export default {
     }
     return {
       mapLoaded: false,
-      mapZoom: 12,
+      mapZoom: 5,
       addModify: false,
       view: {
         city: '厦门', // 优先级比center高
@@ -302,6 +314,8 @@ export default {
       },
       positionCluster: undefined,
       clusterFeatures: [],
+      visible1: true,
+      visible2: true,
       features: [
         {
           id: 'point1',
@@ -583,20 +597,29 @@ export default {
         }
       },
       echarts: {
-        options: null
+        options: null,
+        visible: true
       },
       drawType: '',
-      measureType: ''
+      measureType: '',
+      currentCoordinateText: '',
+      heatmap: {
+        features: [],
+        visible: true
+      }
     }
   },
   methods: {
-    addClusterFeatures (count = 15000) {
+    getRandomIntegerInRange (min, max) {
+      return Math.floor((max + 1 - min) * Math.random() + min)
+    },
+    addClusterFeatures (count = 1000) {
       for (let i = 0; i < count; i++) {
         this.features.push({
-          coordinates: [117.5 + 1 * Math.random(), 24.1 + 1 * Math.random()],
+          coordinates: [117.6 + 1 * Math.random(), 24.1 + 1 * Math.random()],
           style: {
             icon: {
-              src: new URL('./assets/img/point_1.png', import.meta.url).href,
+              src: new URL(`./assets/img/point_${this.getRandomIntegerInRange(1, 6)}.png`, import.meta.url).href,
               scale: 0.6
             }
           },
@@ -617,6 +640,7 @@ export default {
     },
     onClick (evt, map, pick) {
       console.log(evt)
+      this.currentCoordinateText = [evt.coordinate[0].toFixed(6), evt.coordinate[1].toFixed(6)].join(',')
       this.positionMenu = undefined
       if (this.addModify && !this.drawType && !this.measureType) {
         console.log(evt)
@@ -652,11 +676,11 @@ export default {
     },
     changeZoom (evt, map) {
       this.mapZoom = map.getView().getZoom()
-      if (this.mapZoom >= 16) {
-        this.toggleCluster = true
-      } else {
-        this.toggleCluster = false
-      }
+      // if (this.mapZoom >= 16) {
+      //   this.toggleCluster = true
+      // } else {
+      //   this.toggleCluster = false
+      // }
     },
     onContextmenu (evt, map) {
       this.positionMenu = evt.coordinate
@@ -1085,14 +1109,35 @@ export default {
     },
     panTo () {
       this.$refs.map.panTo({
-        zoom: 12,
-        center: [118.1689, 24.6478]
+        zoom: 13,
+        center: [118.137676, 24.494068]
+      })
+    },
+    flyTo () {
+      this.$refs.map.flyTo({
+        zoom: 13,
+        flyZoom: 8,
+        center: [120.126360, 30.230779]
+      })
+    },
+    getHeatmapdata () {
+      axios.get('/heatmap.json').then(res => {
+        console.log(res)
+        const points = [].concat.apply([], res.data.map(function (track) {
+          return track.map(function (seg) {
+            return {
+              coordinates: seg.coord
+            }
+          })
+        }))
+        console.log(points)
+        this.heatmap.features = points
       })
     }
   },
   mounted () {
     this.echarts.options = this.setEchartsOptions()
-    // this.setEcharts()
+    this.getHeatmapdata()
   }
 }
 </script>

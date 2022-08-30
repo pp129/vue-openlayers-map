@@ -597,6 +597,41 @@ export const panTo = (map, param) => {
   map.getView().animate(param)
 }
 
+export const flyTo = (map, param) => {
+  const duration = param.duration || 2000
+  const view = map.getView()
+  const zoom = param.zoom || view.getZoom()
+  let parts = 2
+  let called = false
+  function callback () {
+    --parts
+    if (called) {
+      return
+    }
+    if (parts === 0) {
+      called = true
+    }
+  }
+  view.animate(
+    {
+      center: param.center,
+      duration
+    },
+    callback
+  )
+  view.animate(
+    {
+      zoom: param.flyZoom || zoom - 1,
+      duration: duration / 2
+    },
+    {
+      zoom,
+      duration: duration / 2
+    },
+    callback
+  )
+}
+
 export const setCenter = (map, center) => {
   map.getView().setCenter(center)
 }
@@ -930,6 +965,10 @@ export class OlMap {
 
   static panTo (param) {
     return panTo(OlMap.map.map, param)
+  }
+
+  static flyTo (param) {
+    return flyTo(OlMap.map.map, param)
   }
 
   static setCenter (center) {
