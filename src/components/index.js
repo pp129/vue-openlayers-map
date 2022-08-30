@@ -8,9 +8,10 @@ import VHeatmap from '@/components/layers/heatmap/index'
 import VGraphic from '@/components/layers/graphic/index'
 import VDraw from '@/components/layers/draw/index'
 import VMeasure from '@/components/layers/measure/index'
+import VEcharts from '@/components/layers/echarts/index'
 import VTrack from '@/components/track/index'
 
-const components = [VMap, VOverview, VOverlay, VTile, VVector, VRoute, VHeatmap, VGraphic, VDraw, VMeasure, VTrack]
+const components = [VMap, VOverview, VOverlay, VTile, VVector, VRoute, VHeatmap, VGraphic, VDraw, VMeasure, VTrack, VEcharts]
 
 const install = function (Vue) {
   if (install.installed) return
@@ -40,5 +41,6 @@ export {
   VGraphic,
   VDraw,
   VMeasure,
-  VTrack
+  VTrack,
+  VEcharts
 }

@@ -1,6 +1,6 @@
 import 'ol/ol.css'
 import 'ol-ext/dist/ol-ext.css'
-// import OLCesium from 'olcs/OLCesium.js'
+import OLCesium from 'olcs/OLCesium.js'
 import { Feature, Map, View } from 'ol'
 import { defaults as defaultInteraction, DragRotateAndZoom } from 'ol/interaction'
 import { Attribution, FullScreen, Rotate, ScaleLine, Zoom, ZoomSlider } from 'ol/control'
@@ -18,7 +18,7 @@ import VectorSource from 'ol/source/Vector'
 import VectorLayer from 'ol/layer/Vector'
 import ImageCanvasSource from 'ol/source/ImageCanvas'
 import 'ol-ext/map/PerspectiveMap.css'
-import PerspectiveMap from 'ol-ext/map/PerspectiveMap'
+// import PerspectiveMap from 'ol-ext/map/PerspectiveMap'
 
 /**
  * Map扩展
@@ -154,6 +154,8 @@ export const validObjKey = (obj, key) => {
     // return !((typeof obj[key] === 'undefined') || (!obj[key] && obj[key] !== 0))
     if (typeof obj[key] === 'object') {
       return Object.keys(obj[key]).length > 0
+    } else if (typeof obj[key] === 'boolean') {
+      return obj[key]
     } else {
       return true
     }
@@ -788,8 +790,8 @@ export const setControl = (map, control, options, controlOptions) => {
 
 export class OlMap {
   map = OlMap
-  // map3d = null
-  // map3dScene = null
+  map3d = null
+  map3dScene = null
 
   controls = {
     zoom: undefined,
@@ -834,39 +836,38 @@ export class OlMap {
     // const controls = defaultControls(controlsOption).extend([])
 
     // 生成地图
-    console.log('perspectiveMap', option.perspectiveMap)
-    console.log('perspectiveMap', Object.prototype.hasOwnProperty.call(option, 'perspectiveMap'))
-    if (Object.prototype.hasOwnProperty.call(option, 'perspectiveMap') && typeof option.perspectiveMap === 'object') {
-      this.map = new PerspectiveMap({
-        target: option.target,
-        view,
-        controls: [],
-        interactions: defaultInteraction(option.interactions)
-      })
-
-      if (Object.keys(option.perspectiveMap).length > 0) {
-        this.map.setPerspective(option.perspectiveMap.angle, option.perspectiveMap.options)
-      }
-    } else {
-      this.map = new Map({
-        target: option.target,
-        view,
-        controls: [],
-        interactions: defaultInteraction(option.interactions)
-      })
-    }
-
-    // this.map3d = new OLCesium({
-    //   map: this.map
-    // })
-    // this.map3d.setEnabled(true)
-    // this.map3dScene = this.map3d.getCesiumScene()
-    // this.map3dScene.terrainProvider = window.Cesium.createWorldTerrain() // 地形
-    // this.map3dScene.camera.setView({
-    //   orientation: {
-    //     pitch: window.Cesium.Math.toRadians(-60)
+    // if (Object.prototype.hasOwnProperty.call(option, 'perspectiveMap') && typeof option.perspectiveMap === 'object') {
+    //   this.map = new PerspectiveMap({
+    //     target: option.target,
+    //     view,
+    //     controls: [],
+    //     interactions: defaultInteraction(option.interactions)
+    //   })
+    //
+    //   if (Object.keys(option.perspectiveMap).length > 0) {
+    //     this.map.setPerspective(option.perspectiveMap.angle, option.perspectiveMap.options)
     //   }
-    // })
+    // } else {
+    //   this.map = new Map({
+    //     target: option.target,
+    //     view,
+    //     controls: [],
+    //     interactions: defaultInteraction(option.interactions)
+    //   })
+    // }
+    this.map = new Map({
+      target: option.target,
+      view,
+      controls: [],
+      interactions: defaultInteraction(option.interactions)
+    })
+    if (validObjKey(option, 'cesium')) {
+      this.map3d = new OLCesium({
+        map: this.map
+      })
+      this.map3d.setEnabled(true)
+      this.map3dScene = this.map3d.getCesiumScene()
+    }
 
     // 动态controls
     for (const control in controlsOption) {
@@ -969,6 +970,21 @@ export class OlMap {
 
   static setControl (control, options, controlOptions) {
     return setControl(OlMap.map.map, control, options, controlOptions)
+  }
+
+  static setMap3d () {
+    OlMap.map.map3d = new OLCesium({
+      map: OlMap.map.map
+    })
+    OlMap.map.map3d.setEnabled(true)
+    OlMap.map.map3dScene = OlMap.map.map3d.getCesiumScene()
+    OlMap.map.map3dScene.terrainProvider = window.Cesium.createWorldTerrain() // 地形
+    OlMap.map.map3dScene.camera.setView({
+      orientation: {
+        pitch: window.Cesium.Math.toRadians(-45)
+      }
+    })
+    return OlMap.map.map3d
   }
 
   get mapControlsZoom () {

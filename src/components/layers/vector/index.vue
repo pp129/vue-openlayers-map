@@ -220,6 +220,7 @@ export default {
           })
         }
       } else {
+        // console.log(this.layer.getSource().getFeatures())
         this.layer.getSource().getFeatures().forEach(feature => {
           if (feature.get('flash')) {
             this.flash(feature)
@@ -317,9 +318,7 @@ export default {
       const duration = Number(flash.rate) * 1000 || 3000
       const start = Date.now()
       const flashGeom = feature.getGeometry().clone()
-      const listenerKey = this.layer.on('postrender', animate)
-      const map = this.map
-      function animate (event) {
+      const listenerKey = this.layer.on('postrender', (event) => {
         const frameState = event.frameState
         const elapsed = frameState.time - start
         if (elapsed >= duration) {
@@ -348,8 +347,8 @@ export default {
         vectorContext.setStyle(style)
         vectorContext.drawGeometry(flashGeom)
         // tell OpenLayers to continue postrender animation
-        map.render()
-      }
+        this.map.render()
+      })
     }
   },
   mounted () {

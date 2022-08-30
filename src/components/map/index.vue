@@ -49,10 +49,12 @@ export default {
     interactions: {
       type: Object
     },
-    // 透视图
-    perspectiveMap: {
-      type: [Object, Boolean],
+    cesium: {
+      type: Boolean,
       default: false
+    },
+    cesiumOptions: {
+      type: Object
     }
   },
   computed: {
@@ -62,11 +64,15 @@ export default {
         view: this.view,
         controls: this.controls,
         interactions: this.interactions,
-        perspectiveMap: this.perspectiveMap
+        cesium: this.cesium,
+        cesiumOptions: this.cesiumOptions
       }
     },
     map () {
       return OlMap.map.map
+    },
+    map3d () {
+      return OlMap.map.map3d
     },
     mapWidth () {
       return typeof this.width === 'string' ? this.width : this.width.toString() + 'px'
@@ -171,19 +177,22 @@ export default {
       immediate: false,
       deep: true
     },
-    'controls.ZoomSlider': {
+    cesium: {
       handler (value) {
-        const ZoomSlider = OlMap.map.mapControlsZoomSlider
-        if (ZoomSlider) {
-          OlMap.setControl('ZoomSlider', value)
+        if (OlMap.map.map3d) {
+          OlMap.map.map3d.setEnabled(value)
+        } else {
+          OlMap.setMap3d()
+          const eventHandler = new window.Cesium.ScreenSpaceEventHandler(OlMap.map.map3d.getCesiumScene().canvas)
+          eventHandler.setInputAction(this.onClickHandlerCS.bind(this), window.Cesium.ScreenSpaceEventType.LEFT_CLICK)
+          OlMap.map.map3d.getCesiumScene().camera.moveEnd.addEventListener(() => {
+            console.log(OlMap.map.map3d.getCesiumScene().camera)
+            // console.log(window.Cesium.Math.toDegrees(OlMap.map.map3d.getCesiumScene().camera.pitch))
+            // 获取当前相机高度
+            // height = Math.ceil(earth.camera.positionCartographic.height);
+            this.$emit('moveEnd', OlMap.map.map3d.getCesiumScene().camera, this.map3d)
+          })
         }
-      },
-      immediate: false,
-      deep: true
-    },
-    'perspectiveMap.angle': {
-      handler (value) {
-        this.map.setPerspective(value)
       },
       immediate: false,
       deep: true
@@ -206,8 +215,17 @@ export default {
       this.init().then(res => {
         if (res === 'success') {
           console.log('map load')
-          // const eventHandler = new window.Cesium.ScreenSpaceEventHandler(this.map3d.getCesiumScene().canvas)
-          // eventHandler.setInputAction(this.onClickHandlerCS.bind(this), window.Cesium.ScreenSpaceEventType.LEFT_CLICK)
+          if (this.map3d) {
+            const eventHandler = new window.Cesium.ScreenSpaceEventHandler(OlMap.map.map3d.getCesiumScene().canvas)
+            eventHandler.setInputAction(this.onClickHandlerCS.bind(this), window.Cesium.ScreenSpaceEventType.LEFT_CLICK)
+            OlMap.map.map3d.getCesiumScene().camera.moveEnd.addEventListener(() => {
+              console.log(OlMap.map.map3d.getCesiumScene().camera)
+              // console.log(window.Cesium.Math.toDegrees(OlMap.map.map3d.getCesiumScene().camera.pitch))
+              // 获取当前相机高度
+              // height = Math.ceil(earth.camera.positionCartographic.height);
+              this.$emit('moveEnd', OlMap.map.map3d.getCesiumScene().camera, this.map3d)
+            })
+          }
           // 点击事件
           this.map.on('singleclick', (r) => {
             this.$emit('click', r, this.map)
@@ -319,14 +337,14 @@ export default {
       }
       OlMap.exportPNG(this.downLoadId)
     },
-    // onClickHandlerCS (event) {
-    //   if (event.position.x === 0 && event.position.y === 0) {
-    //     return
-    //   }
-    //   console.log(this.map3d.getCesiumScene().pick(event.position))
-    //   const pick = this.map3d.getCesiumScene().pick(event.position)
-    //   this.$emit('click', event, this.map, pick)
-    // },
+    onClickHandlerCS (event) {
+      if (event.position.x === 0 && event.position.y === 0) {
+        return
+      }
+      console.log(OlMap.map.map3d.getCesiumScene().pick(event.position))
+      const pick = OlMap.map.map3d.getCesiumScene().pick(event.position)
+      this.$emit('map3dClick', event, OlMap.map.map3d, pick)
+    },
     getDistancePoint (from, to, units) {
       return OlMap.getDistancePoint(from, to, units)
     },
