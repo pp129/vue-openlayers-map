@@ -1,5 +1,4 @@
 import 'ol/ol.css'
-import 'ol-ext/dist/ol-ext.css'
 import OLCesium from 'olcs/OLCesium.js'
 import { Feature, Map, View } from 'ol'
 import { defaults as defaultInteraction, DragRotateAndZoom } from 'ol/interaction'
@@ -17,8 +16,6 @@ import { nanoid } from 'nanoid'
 import VectorSource from 'ol/source/Vector'
 import VectorLayer from 'ol/layer/Vector'
 import ImageCanvasSource from 'ol/source/ImageCanvas'
-import 'ol-ext/map/PerspectiveMap.css'
-// import PerspectiveMap from 'ol-ext/map/PerspectiveMap'
 
 /**
  * Map扩展
@@ -896,12 +893,14 @@ export class OlMap {
       controls: [],
       interactions: defaultInteraction(option.interactions)
     })
+
     if (validObjKey(option, 'cesium')) {
       this.map3d = new OLCesium({
         map: this.map
       })
       this.map3d.setEnabled(true)
       this.map3dScene = this.map3d.getCesiumScene()
+      // this.map3dScene.terrainProvider = false
     }
 
     // 动态controls
@@ -1012,18 +1011,12 @@ export class OlMap {
   }
 
   static setMap3d () {
-    OlMap.map.map3d = new OLCesium({
+    OlMap.map3d = new OLCesium({
       map: OlMap.map.map
     })
-    OlMap.map.map3d.setEnabled(true)
-    OlMap.map.map3dScene = OlMap.map.map3d.getCesiumScene()
-    OlMap.map.map3dScene.terrainProvider = window.Cesium.createWorldTerrain() // 地形
-    OlMap.map.map3dScene.camera.setView({
-      orientation: {
-        pitch: window.Cesium.Math.toRadians(-45)
-      }
-    })
-    return OlMap.map.map3d
+    OlMap.map3d.setEnabled(true)
+    OlMap.map3dScene = OlMap.map3d.getCesiumScene()
+    return OlMap.map3d
   }
 
   get mapControlsZoom () {

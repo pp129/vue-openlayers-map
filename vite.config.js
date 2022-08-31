@@ -1,6 +1,7 @@
 import { resolve } from 'path'
 import { createVuePlugin } from 'vite-plugin-vue2'
 import { defineConfig } from 'vite'
+import { createHtmlPlugin } from 'vite-plugin-html'
 
 const build = (env) => {
   if (env === 'production') {
@@ -40,13 +41,21 @@ export default defineConfig(({ command, mode }) => {
       port: 8080,
       open: true
     },
+    publicDir: mode === 'lib' ? false : 'public',
     resolve: {
       alias: {
         '@': resolve(__dirname, 'src')
       }
     },
     plugins: [
-      createVuePlugin()
+      createVuePlugin(),
+      createHtmlPlugin({
+        inject: {
+          data: {
+            injectScript: mode === 'development' ? '<link rel="icon" type="image/svg+xml" href="/logo.svg">' : '<link rel="icon" type="image/png" href="/favicon-32x32.png" sizes="32x32">'
+          }
+        }
+      })
     ],
     esbuild: {
       drop: ['console', 'debugger']

@@ -33,7 +33,7 @@
       </div>
      <div class="item">
        <label>是否3D：</label>
-       <input type="checkbox" name="map3d" v-model="map3d" />
+       <input type="checkbox" name="map3d" v-model="map3d"/>
        <label>Y轴旋转角：{{perspectiveMap.pitch}}°</label>
        <label>X轴旋转角：{{perspectiveMap.roll}}°</label>
        <label>Z轴旋转角：{{perspectiveMap.heading}}°</label>
@@ -59,6 +59,7 @@
         :interactions="interactions"
         :cesium="map3d"
         @load="mapLoaded = true"
+        @load3d="load3d"
         @changeZoom="changeZoom"
         @click="onClick"
         @map3dClick="map3dClick"
@@ -134,10 +135,6 @@ import axios from 'axios'
 export default {
   name: 'App',
   data () {
-    const resolutions = []
-    for (let i = 0; i < 19; i++) {
-      resolutions[i] = Math.pow(2, 18 - i)
-    }
     return {
       mapLoaded: false,
       mapZoom: 5,
@@ -145,8 +142,8 @@ export default {
       view: {
         city: '厦门', // 优先级比center高
         // center: [118.1689, 24.6478], // 预留此参数，组件监听view.center变化，触发panTo方法
-        zoom: 5,
-        maxZoom: 20
+        zoom: 8
+        // maxZoom: 12
       },
       controls: {
         attribution: true,
@@ -214,27 +211,13 @@ export default {
         {
           name: 'OSM',
           value: 'OSM'
+        },
+        {
+          name: '宁德视频网',
+          value: 'XYZ'
         }
       ],
       tile: 'arcgis_blue',
-      xyzBD: {
-        projection: 'baidu',
-        tileGrid: {
-          origin: [0, 0], // 设置原点坐标
-          resolutions // 设置分辨率
-        },
-        tileUrlFunction: function (tileCoord, pixelRatio, proj) {
-          if (!tileCoord) {
-            return ''
-          }
-          const z = tileCoord[0]
-          const x = tileCoord[1]
-          const y = -tileCoord[2] - 1
-          return 'https://maponline1.bdimg.com/tile/?qt=vtile&x=' +
-              x + '&y=' + y + '&z=' + z +
-              '&styles=pl&scaler=1&udt=20220113&from=jsapi2_0'
-        }
-      },
       xyz: {
         attributions:
             ['custom attribution &copy; XXX Inc. ' +
@@ -830,6 +813,7 @@ export default {
     },
     moveEnd (camera, map) {
       console.log(camera)
+      console.log(map)
       console.log(window.Cesium.Math.toDegrees(camera.pitch))
       this.perspectiveMap.pitch = Math.ceil(window.Cesium.Math.toDegrees(camera.pitch))
       this.perspectiveMap.roll = Math.ceil(window.Cesium.Math.toDegrees(camera.roll))
@@ -1133,6 +1117,19 @@ export default {
         console.log(points)
         this.heatmap.features = points
       })
+    },
+    load3d (map) {
+      const scene = map.getCesiumScene()
+      const camera = scene.camera
+      const center = [118.148123, 24.218770]
+      setTimeout(() => {
+        camera.flyTo({
+          destination: window.Cesium.Cartesian3.fromDegrees(center[0], center[1], 30000),
+          orientation: {
+            pitch: window.Cesium.Math.toRadians(-45)
+          }
+        })
+      }, 2000)
     }
   },
   mounted () {

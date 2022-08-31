@@ -71,8 +71,14 @@ export default {
     map () {
       return OlMap.map.map
     },
-    map3d () {
-      return OlMap.map.map3d
+    map3d: {
+      get () {
+        return OlMap.map3d
+      },
+      set (val) {
+        console.log(val)
+        this.cesiumMap = val
+      }
     },
     mapWidth () {
       return typeof this.width === 'string' ? this.width : this.width.toString() + 'px'
@@ -179,18 +185,19 @@ export default {
     },
     cesium: {
       handler (value) {
-        if (OlMap.map.map3d) {
-          OlMap.map.map3d.setEnabled(value)
+        if (OlMap.map3d) {
+          OlMap.map3d.setEnabled(value)
         } else {
-          OlMap.setMap3d()
-          const eventHandler = new window.Cesium.ScreenSpaceEventHandler(OlMap.map.map3d.getCesiumScene().canvas)
+          this.map3d = OlMap.setMap3d()
+          this.$emit('load3d', OlMap.map3d)
+          const eventHandler = new window.Cesium.ScreenSpaceEventHandler(OlMap.map3d.getCesiumScene().canvas)
           eventHandler.setInputAction(this.onClickHandlerCS.bind(this), window.Cesium.ScreenSpaceEventType.LEFT_CLICK)
-          OlMap.map.map3d.getCesiumScene().camera.moveEnd.addEventListener(() => {
-            console.log(OlMap.map.map3d.getCesiumScene().camera)
+          OlMap.map3d.getCesiumScene().camera.moveEnd.addEventListener(() => {
+            console.log(OlMap.map3d.getCesiumScene().camera)
             // console.log(window.Cesium.Math.toDegrees(OlMap.map.map3d.getCesiumScene().camera.pitch))
             // 获取当前相机高度
             // height = Math.ceil(earth.camera.positionCartographic.height);
-            this.$emit('moveEnd', OlMap.map.map3d.getCesiumScene().camera, this.map3d)
+            this.$emit('moveEnd', OlMap.map3d.getCesiumScene().camera, OlMap.map3d)
           })
         }
       },
@@ -207,7 +214,8 @@ export default {
       noBase: true,
       properties: {
         isDefault: true
-      }
+      },
+      cesiumMap: null
     }
   },
   methods: {
@@ -216,14 +224,14 @@ export default {
         if (res === 'success') {
           console.log('map load')
           if (this.map3d) {
-            const eventHandler = new window.Cesium.ScreenSpaceEventHandler(OlMap.map.map3d.getCesiumScene().canvas)
+            const eventHandler = new window.Cesium.ScreenSpaceEventHandler(OlMap.map3d.getCesiumScene().canvas)
             eventHandler.setInputAction(this.onClickHandlerCS.bind(this), window.Cesium.ScreenSpaceEventType.LEFT_CLICK)
-            OlMap.map.map3d.getCesiumScene().camera.moveEnd.addEventListener(() => {
-              console.log(OlMap.map.map3d.getCesiumScene().camera)
+            OlMap.map3d.getCesiumScene().camera.moveEnd.addEventListener(() => {
+              console.log(OlMap.map3d.getCesiumScene().camera)
               // console.log(window.Cesium.Math.toDegrees(OlMap.map.map3d.getCesiumScene().camera.pitch))
               // 获取当前相机高度
               // height = Math.ceil(earth.camera.positionCartographic.height);
-              this.$emit('moveEnd', OlMap.map.map3d.getCesiumScene().camera, this.map3d)
+              this.$emit('moveEnd', OlMap.map3d.getCesiumScene().camera, this.map3d)
             })
           }
           // 点击事件
