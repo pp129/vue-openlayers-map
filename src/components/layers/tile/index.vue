@@ -214,8 +214,8 @@ export default {
       }
     },
     initTD () {
-      const layerVec = this.initXYZbyURL(this.tdVec || 'http://t4.tianditu.com/DataServer?T=vec_w&x={x}&y={y}&l={z}&tk=88e2f1d5ab64a7477a7361edd6b5f68a')
-      const layerCva = this.initXYZbyURL(this.tdCva || 'http://t3.tianditu.com/DataServer?T=cva_w&x={x}&y={y}&l={z}&tk=88e2f1d5ab64a7477a7361edd6b5f68a')
+      const layerVec = this.initXYZbyURL(this.tdVec || 'https://t4.tianditu.gov.cn/DataServer?T=vec_w&x={x}&y={y}&l={z}&tk=88e2f1d5ab64a7477a7361edd6b5f68a')
+      const layerCva = this.initXYZbyURL(this.tdCva || 'https://t3.tianditu.gov.cn/DataServer?T=cva_w&x={x}&y={y}&l={z}&tk=88e2f1d5ab64a7477a7361edd6b5f68a')
       this.layers = [layerVec, layerCva]
       if (!this.addForOverview) {
         this.layers.forEach(layer => {
@@ -233,8 +233,8 @@ export default {
       return layer
     },
     initTDIMG () {
-      const layerImg = this.initXYZbyURL(this.tdImg || 'http://t4.tianditu.com/DataServer?T=img_w&x={x}&y={y}&l={z}&tk=88e2f1d5ab64a7477a7361edd6b5f68a')
-      const layerCia = this.initXYZbyURL(this.tdCia || 'http://t3.tianditu.com/DataServer?T=cia_w&x={x}&y={y}&l={z}&tk=88e2f1d5ab64a7477a7361edd6b5f68a')
+      const layerImg = this.initXYZbyURL(this.tdImg || 'https://t4.tianditu.gov.cn/DataServer?T=img_w&x={x}&y={y}&l={z}&tk=88e2f1d5ab64a7477a7361edd6b5f68a')
+      const layerCia = this.initXYZbyURL(this.tdCia || 'https://t3.tianditu.gov.cn/DataServer?T=cia_w&x={x}&y={y}&l={z}&tk=88e2f1d5ab64a7477a7361edd6b5f68a')
       this.layers = [layerImg, layerCia]
       if (!this.addForOverview) {
         this.layers.forEach(layer => {
@@ -247,19 +247,19 @@ export default {
       let url = ''
       switch (type) {
         case 'blue':
-          url = 'http://cache1.arcgisonline.cn/arcgis/rest/services/ChinaOnlineStreetPurplishBlue/MapServer/tile'
+          url = 'https://cache1.arcgisonline.cn/arcgis/rest/services/ChinaOnlineStreetPurplishBlue/MapServer/tile'
           break
         case 'warm':
-          url = 'http://cache1.arcgisonline.cn/arcgis/rest/services/ChinaOnlineStreetWarm/MapServer/tile'
+          url = 'https://cache1.arcgisonline.cn/arcgis/rest/services/ChinaOnlineStreetWarm/MapServer/tile'
           break
         case 'normal':
-          url = 'http://cache1.arcgisonline.cn/arcgis/rest/services/ChinaOnlineCommunity/MapServer/tile'
+          url = 'https://cache1.arcgisonline.cn/arcgis/rest/services/ChinaOnlineCommunity/MapServer/tile'
           break
         case 'gray':
-          url = 'http://cache1.arcgisonline.cn/arcgis/rest/services/ChinaOnlineStreetGray/MapServer/tile'
+          url = 'https://cache1.arcgisonline.cn/arcgis/rest/services/ChinaOnlineStreetGray/MapServer/tile'
           break
         default:
-          url = 'http://cache1.arcgisonline.cn/arcgis/rest/services/ChinaOnlineCommunity/MapServer/tile'
+          url = 'https://cache1.arcgisonline.cn/arcgis/rest/services/ChinaOnlineCommunity/MapServer/tile'
           break
       }
       this.layer = this.initXYZbyURL(`${url}/{z}/{y}/{x}`)
@@ -343,7 +343,7 @@ export default {
       const xyzOpt = {
         ...xyz,
         ...{
-          url: url || 'http://wprd0{1-4}.is.autonavi.com/appmaptile?x={x}&y={y}&z={z}&lang=zh_cn&size=1&scl=1&style=7',
+          url: url || 'https://wprd0{1-4}.is.autonavi.com/appmaptile?x={x}&y={y}&z={z}&lang=zh_cn&size=1&scl=1&style=7',
           projection: 'GCJ02',
           crossOrigin: 'anonymous'
         }
