@@ -1,0 +1,15 @@
+{
+  "name": "vue-openlayers-map-docs",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "docs:dev": "vuepress dev docs",
+    "docs:build": "vuepress build docs"
+  },
+  "license": "MIT",
+  "devDependencies": {
+    "vuepress": "^1.9.7",
+    "vuepress-theme-antdocs": "^1.4.3",
+    "vuepress-theme-reco": "^1.6.14"
+  }
+}
