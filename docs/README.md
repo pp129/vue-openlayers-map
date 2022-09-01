@@ -8,7 +8,7 @@
    - 视图 [view](MAP.md#view)
    - 地图控件 [controls](MAP.md#controls)
    - 地图交互 [interactions](MAP.md#interactions)
-   - 透视图 [perspectiveMap](MAP.md#perspectiveMap) （实验性）
+   - Cesium地图 [cesium](MAP.md#cesiumMap) （实验性）
    - 事件 [events](MAP.md#events)
    - 可调用方法 [methods](MAP.md#methods)
 - 鹰眼 [v-overview](OVERVIEW.md)
@@ -21,6 +21,7 @@
   - 聚合图层 [v-cluster](CLUSTERLAYER.md) （建议使用v-vector的cluster属性实现）
   - 图形图层 [v-graphic](GRAPHICLAYER.md)
   - 路径规划图层 [v-route](ROUTELAYER.md)
+  - echarts图层 [v-echarts](ECHARTSLAYER.md)
 -  弹框 [v-overlay](OVERLAY.md)
 -  轨迹动画 [v-track](TRACK.md)
 -  绘制 [v-draw](DRAW.md)

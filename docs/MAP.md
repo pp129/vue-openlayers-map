@@ -58,8 +58,12 @@ export default {
 
 | 说明 | 是否必填 | 类型   | 可选值                                                                                                                                                                                                | 默认值                                                                                                  |
 | ---- | -------- | ------ |----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|------------------------------------------------------------------------------------------------------|
-| 视图 | 否       | Object | 继承[ol/view](https://openlayers.org/en/latest/apidoc/module-ol_View-View.html)  。 扩展属性：`city`:城市名称/拼音，优先级高于`center`,无法识别的城市定向到`view.center`,若`view.center`未设置则定位到`[108.552500, 34.322700]（中国范围中心点）` | `{view={center: [108.552500, 34.322700],zoom: 5,constrainResolution: true,projection: 'EPSG:4326'}}` |
+| 视图 | 否       | Object | 继承[ol/view](https://openlayers.org/en/latest/apidoc/module-ol_View-View.html)   | `{view={center: [108.552500, 34.322700],zoom: 5,constrainResolution: true,projection: 'EPSG:4326'}}` |
 
+
+### 扩展属性
+
+`view.city` 城市名称/拼音，优先级高于`center`,无法识别的城市定向到`view.center`,若`view.center`未设置则定位到`[108.552500, 34.322700]`（中国范围中心点）
 
 ### 监听view属性
 
@@ -98,23 +102,14 @@ export default {
 |-------|------|---------|------------|-----|
 | 地图交互功能    | 否    | Object | 继承 [ol/interactions](https://openlayers.org/en/latest/apidoc/module-ol_interaction.html) | -   |
 
-<span id="perspectiveMap"></span>
-## 透视图 perspectiveMap
+<span id="cesiumMap"></span>
+## cesium cesium地图
 
-实验性功能。在 Chrome 和 Edge 上测试。不适用于火狐。
+实验性功能
 
-
-| 说明     | 是否必填 | 类型             | 可选值 | 默认值     |
-|--------|------|----------------|-----|---------|
-| 地图透视功能 | 否    | Object/Boolean | -   | `false` |
-
-perspectiveMap.angle 透视角度
-
-### 监听perspectiveMap属性
-
-已实现的监听属性：
-
-- [x] angle 动态改变地图透视角度
+| 说明    | 是否必填 | 类型      |  默认值 |
+|-------|------|---------|------------|-----|
+| 结合[Cesiumjs](https://cesium.com/platform/cesiumjs/)生成的三维地图，依赖组件[ol-cesium](https://github.com/openlayers/ol-cesium)    | 否    | Boolean |  `false`  |
 
 <span id="events"></span>
 ## 事件 events
