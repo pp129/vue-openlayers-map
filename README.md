@@ -18,7 +18,7 @@
     - 聚合 [cluster](https://pp129.github.io/vue-openlayers-map/VECTORLAYER.md#cluster)
   - 瓦片图层 [v-tile](https://pp129.github.io/vue-openlayers-map/TILELAYER.html)
   - 热力图 [v-heatmap](https://pp129.github.io/vue-openlayers-map/HEATMAPLAYER.html)
-  - 聚合图层 [v-cluster](https://pp129.github.io/vue-openlayers-map/CLUSTERLAYER.html)
+  - 聚合图层 [v-cluster](https://pp129.github.io/vue-openlayers-map/CLUSTERLAYER.html) （使用 [SuperCluster](https://github.com/mapbox/supercluster) 实现）
   - 图形图层 [v-graphic](https://pp129.github.io/vue-openlayers-map/GRAPHICLAYER.html)
   - 路径规划图层 [v-route](https://pp129.github.io/vue-openlayers-map/ROUTELAYER.html)
   - echarts图层 [v-echarts](https://pp129.github.io/vue-openlayers-map/ECHARTSLAYER.html)
