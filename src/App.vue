@@ -31,9 +31,9 @@
         <label>聚合距离：{{cluster.distance}}</label>
         <input type="range" step=10 min=0 max=300 v-model="cluster.distance" :disabled="!toggleCluster"/>
       </div>
-     <div class="item">
+      <div class="item">
        <label>是否3D：</label>
-       <input type="checkbox" name="map3d" v-model="map3d"/>
+       <input type="checkbox" name="map3d" v-model="map3d" @change="setMap3dTile"/>
        <label>Y轴旋转角：{{perspectiveMap.pitch}}°</label>
        <label>X轴旋转角：{{perspectiveMap.roll}}°</label>
        <label>Z轴旋转角：{{perspectiveMap.heading}}°</label>
@@ -211,13 +211,9 @@ export default {
         {
           name: 'OSM',
           value: 'OSM'
-        },
-        {
-          name: '宁德视频网',
-          value: 'XYZ'
         }
       ],
-      tile: 'arcgis_blue',
+      tile: 'BD_BLUE',
       xyz: {
         attributions:
             ['custom attribution &copy; XXX Inc. ' +
@@ -1130,6 +1126,13 @@ export default {
           }
         })
       }, 2000)
+    },
+    setMap3dTile () {
+      if (this.map3d) {
+        if (this.tile !== 'TD_IMG') {
+          this.tile = 'TD_IMG'
+        }
+      }
     }
   },
   mounted () {
