@@ -8,7 +8,7 @@
   - 视图 [view](https://pp129.github.io/vue-openlayers-map/MAP.html#view)
   - 地图控件 [controls](https://pp129.github.io/vue-openlayers-map/MAP.html#controls)
   - 地图交互 [interactions](https://pp129.github.io/vue-openlayers-map/MAP.html#interactions)
-  - 透视图 [perspectiveMap](https://pp129.github.io/vue-openlayers-map/MAP.md#perspectiveMap) （实验性）
+  - Cesium地图 [cesium](https://pp129.github.io/vue-openlayers-map/MAP.md#cesiumMap) （实验性）
   - 事件 [events](https://pp129.github.io/vue-openlayers-map/MAP.html#events)
   - 可调用方法 [methods](https://pp129.github.io/vue-openlayers-map/MAP.html#methods)
 - 鹰眼 [v-overview](https://pp129.github.io/vue-openlayers-map/OVERVIEW.html)
@@ -21,6 +21,7 @@
   - 聚合图层 [v-cluster](https://pp129.github.io/vue-openlayers-map/CLUSTERLAYER.html)
   - 图形图层 [v-graphic](https://pp129.github.io/vue-openlayers-map/GRAPHICLAYER.html)
   - 路径规划图层 [v-route](https://pp129.github.io/vue-openlayers-map/ROUTELAYER.html)
+  - echarts图层 [v-echarts](https://pp129.github.io/vue-openlayers-map/ECHARTSLAYER.html)
 -  弹框 [v-overlay](https://pp129.github.io/vue-openlayers-map/OVERLAY.html)
 -  轨迹动画 [v-track](https://pp129.github.io/vue-openlayers-map/TRACK.html)
 -  绘制 [v-draw](https://pp129.github.io/vue-openlayers-map/DRAW.html)
