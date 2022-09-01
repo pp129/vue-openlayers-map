@@ -67,8 +67,7 @@
         @dblclick="onDblClick"
         @contextmenu.prevent="onContextmenu"  @pointermove="pointermove" @moveEnd="moveEnd">
       <v-tile :tile-type="tile" :xyz="xyz"></v-tile>
-<!--      <v-tile tile-type="GDF"></v-tile>-->
-<!--      <v-overview :tile-type="tile" :rotateWithView="rotateWithView" collapsible></v-overview>-->
+      <v-overview :tile-type="tile" :rotateWithView="rotateWithView" collapsible></v-overview>
       <v-vector
           ref="layer1"
           layer-id="layer1"
@@ -182,7 +181,7 @@ export default {
         },
         {
           name: '百度-暗夜',
-          value: 'bd_blue'
+          value: 'BD_BLUE'
         },
         {
           name: '百度-深色',
@@ -595,7 +594,7 @@ export default {
     addClusterFeatures (count = 1000) {
       for (let i = 0; i < count; i++) {
         this.features.push({
-          coordinates: [117.6 + 1 * Math.random(), 24.1 + 1 * Math.random()],
+          coordinates: [117.6 + Math.random(), 24.1 + Math.random()],
           style: {
             icon: {
               src: new URL(`./assets/img/point_${this.getRandomIntegerInRange(1, 6)}.png`, import.meta.url).href,
@@ -617,7 +616,7 @@ export default {
         })
       }
     },
-    onClick (evt, map, pick) {
+    onClick (evt, map) {
       console.log(evt)
       this.currentCoordinateText = [evt.coordinate[0].toFixed(6), evt.coordinate[1].toFixed(6)].join(',')
       this.positionMenu = undefined
@@ -1100,7 +1099,7 @@ export default {
         center: [120.126360, 30.230779]
       })
     },
-    getHeatmapdata () {
+    getHeatmapData () {
       axios.get('/heatmap.json').then(res => {
         console.log(res)
         const points = [].concat.apply([], res.data.map(function (track) {
@@ -1137,7 +1136,7 @@ export default {
   },
   mounted () {
     this.echarts.options = this.setEchartsOptions()
-    this.getHeatmapdata()
+    this.getHeatmapData()
   }
 }
 </script>
