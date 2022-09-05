@@ -109,20 +109,20 @@ export default {
 
 | 说明    | 是否必填 | 类型      |  默认值 |
 |-------|------|---------|------------|-----|
-| 结合[Cesiumjs](https://cesium.com/platform/cesiumjs/)生成的三维地图，依赖组件[ol-cesium](https://github.com/openlayers/ol-cesium)    | 否    | Boolean |  `false`  |
+| 结合[CesiumJs](https://cesium.com/platform/cesiumjs/) 生成的三维地图，依赖组件[ol-cesium](https://github.com/openlayers/ol-cesium)    | 否    | Boolean |  `false`  |
 
 <span id="events"></span>
 ## 事件 events
 
-| 事件名         | 说明         | 参数                                                                                                                                 |
-| ------------- |------------|------------------------------------------------------------------------------------------------------------------------------------|
-| load          | 地图对象生成完成事件 | -                                                                                                                                  |
-| click         | 点击事件       | (evt, map)接受2个参数。1、事件实例[模块：ol/MapEvent~MapEvent](https://openlayers.org/en/latest/apidoc/module-ol_MapEvent-MapEvent.html)。2、地图实例。 |
-| clickfeature | 点击要素       | (feature, layer)接受2个参数。1、要素实例。2、要素归属的图层实例。                                                                                         |
-| dblclick | 双击事件       | (feature, layer)接受2个参数。1、要素实例。2、要素归属的图层实例。                                                                                         |
-| changeZoom    | 层级变化事件     | (evt,map)接受2个参数。1、事件实例[模块：ol/MapEvent~MapEvent](https://openlayers.org/en/latest/apidoc/module-ol_MapEvent-MapEvent.html)。2、地图实例。  |
-| pointermove   | 鼠标悬停事件     | (evt,map)接受2个参数。                                                                                                                   |
-| contextmenu   | 鼠标右键点击事件   | (evt,map)接受2个参数。                                                                                                                   |
+| 事件名         | 说明         | 参数                                                                                                                                   |
+| ------------- |------------|--------------------------------------------------------------------------------------------------------------------------------------|
+| load          | 地图对象生成完成事件 | -                                                                                                                                    |
+| click         | 点击事件       | (evt, map)接受2个参数。1、事件实例 [模块：ol/MapEvent~MapEvent](https://openlayers.org/en/latest/apidoc/module-ol_MapEvent-MapEvent.html) 。2、地图实例。 |
+| clickfeature | 点击要素       | (feature, layer)接受2个参数。1、要素实例。2、要素归属的图层实例。                                                                                           |
+| dblclick | 双击事件       | (feature, layer)接受2个参数。1、要素实例。2、要素归属的图层实例。                                                                                           |
+| changeZoom    | 层级变化事件     | (evt,map)接受2个参数。1、事件实例 [模块：ol/MapEvent~MapEvent](https://openlayers.org/en/latest/apidoc/module-ol_MapEvent-MapEvent.html) 。2、地图实例。  |
+| pointermove   | 鼠标悬停事件     | (evt,map)接受2个参数。                                                                                                                     |
+| contextmenu   | 鼠标右键点击事件   | (evt,map)接受2个参数。                                                                                                                     |
 
 
 <span id="methods"></span>
