@@ -126,6 +126,7 @@ export default {
 
 
 <span id="methods"></span>
+
 ## 方法 methods
 
 | 方法名                                     | 说明                                                      | 参数                                                         |
