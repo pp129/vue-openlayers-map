@@ -187,7 +187,7 @@ export default {
       const layerOpt = { ...this.$props, ...{ source } }
       this.layer = new TileLayer(layerOpt)
       this.layer.set('base', this.base)
-      this.layer.setZIndex(0)
+      // this.layer.setZIndex(0)
       this.layers = [this.layer]
       if (!this.addForOverview) {
         this.layers.forEach(layer => {
@@ -205,7 +205,8 @@ export default {
       const layerOpt = { ...this.$props, ...{ source } }
       this.layer = new TileLayer(layerOpt)
       this.layer.set('base', this.base)
-      this.layer.setZIndex(0)
+      this.layer.set('type', 'wms')
+      // this.layer.setZIndex(0)
       this.layers = [this.layer]
       if (!this.addForOverview) {
         this.layers.forEach(layer => {
@@ -247,19 +248,24 @@ export default {
       let url = ''
       switch (type) {
         case 'blue':
-          url = 'https://cache1.arcgisonline.cn/arcgis/rest/services/ChinaOnlineStreetPurplishBlue/MapServer/tile'
+          url = import.meta.env.DEV ? 'http:' : 'https:'
+          url = url + '//cache1.arcgisonline.cn/arcgis/rest/services/ChinaOnlineStreetPurplishBlue/MapServer/tile'
           break
         case 'warm':
-          url = 'https://cache1.arcgisonline.cn/arcgis/rest/services/ChinaOnlineStreetWarm/MapServer/tile'
+          url = import.meta.env.DEV ? 'http:' : 'https:'
+          url = url + '//cache1.arcgisonline.cn/arcgis/rest/services/ChinaOnlineStreetWarm/MapServer/tile'
           break
         case 'normal':
-          url = 'https://cache1.arcgisonline.cn/arcgis/rest/services/ChinaOnlineCommunity/MapServer/tile'
+          url = import.meta.env.DEV ? 'http:' : 'https:'
+          url = url + '//cache1.arcgisonline.cn/arcgis/rest/services/ChinaOnlineCommunity/MapServer/tile'
           break
         case 'gray':
-          url = 'https://cache1.arcgisonline.cn/arcgis/rest/services/ChinaOnlineStreetGray/MapServer/tile'
+          url = import.meta.env.DEV ? 'http:' : 'https:'
+          url = url + '//cache1.arcgisonline.cn/arcgis/rest/services/ChinaOnlineStreetGray/MapServer/tile'
           break
         default:
-          url = 'https://cache1.arcgisonline.cn/arcgis/rest/services/ChinaOnlineCommunity/MapServer/tile'
+          url = import.meta.env.DEV ? 'http:' : 'https:'
+          url = url + '//cache1.arcgisonline.cn/arcgarcgis/rest/services/ChinaOnlineCommunity/MapServer/tile'
           break
       }
       this.layer = this.initXYZbyURL(`${url}/{z}/{y}/{x}`)
@@ -361,7 +367,7 @@ export default {
       const layerOpt = { ...this.$props, ...{ source } }
       this.layer = new TileLayer(layerOpt)
       this.layer.set('base', this.base)
-      this.layer.setZIndex(0)
+      // this.layer.setZIndex(0)
       this.layers = [this.layer]
       if (!this.addForOverview) {
         this.layers.forEach(layer => {

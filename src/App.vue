@@ -62,11 +62,15 @@
         @load3d="load3d"
         @changeZoom="changeZoom"
         @click="onClick"
-        @map3dClick="map3dClick"
         @clickfeature="onClickFeature"
         @dblclick="onDblClick"
-        @contextmenu.prevent="onContextmenu"  @pointermove="pointermove" @moveEnd="moveEnd">
-      <v-tile :tile-type="tile" :xyz="xyz"></v-tile>
+        @contextmenu.prevent="onContextmenu"
+        @pointermove="pointermove"
+        @map3dClick="map3dClick"
+        @map3dMoveEnd="moveEnd"
+    >
+      <v-tile :tile-type="tile" :xyz="xyz" :z-index="1"></v-tile>
+      <v-tile ref="wms" tile-type="WMS" :wms="wms" :z-index="2"></v-tile>
       <v-overview :tile-type="tile" :rotateWithView="rotateWithView" collapsible></v-overview>
       <v-vector
           ref="layer1"
@@ -131,6 +135,8 @@
 
 <script>
 import axios from 'axios'
+import { polylineMaterial, radarScanMaterial, rippleMaterial } from '@/utils/cesiumMatrial'
+
 export default {
   name: 'App',
   data () {
@@ -221,6 +227,17 @@ export default {
             '&nbsp;&nbsp;<span style="white-space: nowrap;">' +
             '<a href="https://pp129.github.io/vue-openlayers-map/"' +
             'target="_blank">See Docs</a></span>']
+      },
+      wms: {
+        url: 'http://218.5.80.6:6600/geoserver/nd/wms',
+        params: {
+          VERSION: '1.1.1',
+          FORMAT: 'image/png',
+          STYLES: '',
+          LAYERS: 'nd:nd_layer',
+          TILED: true
+        },
+        serverType: 'geoserver'
       },
       modify: false,
       select: {
@@ -634,6 +651,20 @@ export default {
         //   zoom: 15
         // })
       }
+      const wmsSource = this.$refs.wms.layer.getSource()
+      const viewResolution = map.getView().getResolution()
+      const projection = map.getView().getProjection()
+      const url = wmsSource.getFeatureInfoUrl(
+        evt.coordinate,
+        viewResolution,
+        projection,
+        { INFO_FORMAT: 'application/json', FEATURE_COUNT: 50 }
+      )
+      if (url) {
+        axios.get(url).then(res => {
+          console.log(res.data.features)
+        })
+      }
     },
     map3dClick (event, map3d, pick) {
       if (pick) {
@@ -690,6 +721,13 @@ export default {
     pointermove (evt, map) {
       const pixel = map.getEventPixel(evt.originalEvent)
       const hit = map.hasFeatureAtPixel(pixel)
+      // const wmsLayer = this.$refs.wms.layer
+      // console.log(evt.pixel)
+      // const data = wmsLayer.getData(evt.pixel)
+      // console.log(wmsLayer)
+      // console.log(data)
+      // const wmsHit = data && data[3] > 0 // transparent pixels have zero for data[3]
+      // map.getTargetElement().style.cursor = wmsHit ? 'pointer' : ''
       if (hit) {
         const features = map.getFeaturesAtPixel(pixel)
         if (features.length > 0) {
@@ -1115,8 +1153,11 @@ export default {
     },
     load3d (map) {
       const scene = map.getCesiumScene()
-      const camera = scene.camera
       const center = [118.148123, 24.218770]
+      const camera = scene.camera
+      camera.setView({
+        destination: window.Cesium.Cartesian3.fromDegrees(0, 0, 10000000)
+      })
       setTimeout(() => {
         camera.flyTo({
           destination: window.Cesium.Cartesian3.fromDegrees(center[0], center[1], 30000),
@@ -1124,7 +1165,89 @@ export default {
             pitch: window.Cesium.Math.toRadians(-45)
           }
         })
-      }, 2000)
+        console.log(map)
+        const pathCoordinate = [
+          118.111678, 24.506567,
+          118.117875, 24.508892,
+          118.132519, 24.510476,
+          118.133362, 24.502047,
+          118.153924, 24.501707,
+          118.170375, 24.508657,
+          118.179094, 24.513277,
+          118.184858, 24.505822,
+          118.183178, 24.488141
+        ]
+        // 自定义纹理
+        const entities = [{
+          name: 'entity box',
+          position: window.Cesium.Cartesian3.fromDegrees(118.147887, 24.500228, 0),
+          box: {
+            dimensions: new window.Cesium.Cartesian3(600.0, 600.0, 5000.0),
+            material: window.Cesium.Color.RED.withAlpha(0.5),
+            outline: true,
+            outlineColor: window.Cesium.Color.BLACK,
+            heightReference: window.Cesium.HeightReference.CLAMP_TO_GROUND // 设置HeightReference高度参考类型为CLAMP_TO_GROUND贴地类型
+          }
+        }, {
+          name: 'entity label',
+          position: window.Cesium.Cartesian3.fromDegrees(118.147887, 24.500228, 5500),
+          label: {
+            scale: 1,
+            font: 'bolder 16px sans-serif',
+            style: window.Cesium.LabelStyle.FILL_AND_OUTLINE,
+            text: 'Cesium entity test', // 图标名称
+            fillColor: window.Cesium.Color.fromCssColorString('#ffffff'),
+            pixelOffset: new window.Cesium.Cartesian2(0, 0),
+            // eyeOffset: new window.Cesium.Cartesian3(0, 0, 1000),
+            showBackground: true,
+            heightReference: window.Cesium.HeightReference.NONE
+          }
+        }]
+        entities.forEach(entity => {
+          map.getDataSourceDisplay().defaultDataSource.entities.add(entity)
+        })
+        const primitives = [
+          new window.Cesium.Primitive({
+            geometryInstances: new window.Cesium.GeometryInstance({
+              geometry: new window.Cesium.PolylineGeometry({
+                positions: window.Cesium.Cartesian3.fromDegreesArray(pathCoordinate),
+                width: 20.0,
+                vertexFormat: window.Cesium.VertexFormat.ALL
+              })
+            }),
+            appearance: polylineMaterial({
+              color: 'rgba(227, 12, 77, 1)'
+            })
+          }),
+          new window.Cesium.Primitive({
+            geometryInstances: new window.Cesium.GeometryInstance({
+              geometry: new window.Cesium.EllipseGeometry({
+                center: window.Cesium.Cartesian3.fromDegrees(118.170491, 24.469508),
+                semiMajorAxis: 2000.0,
+                semiMinorAxis: 2000.0,
+                rotation: window.Cesium.Math.toRadians(60.0)
+              })
+            }),
+            appearance: rippleMaterial()
+          }),
+          new window.Cesium.Primitive({
+            geometryInstances: new window.Cesium.GeometryInstance({
+              geometry: new window.Cesium.EllipseGeometry({
+                center: window.Cesium.Cartesian3.fromDegrees(118.084657, 24.496752),
+                semiMajorAxis: 2000.0,
+                semiMinorAxis: 2000.0,
+                rotation: window.Cesium.Math.toRadians(60.0)
+              })
+            }),
+            appearance: radarScanMaterial()
+          })
+        ]
+
+        // Add instances to primitives
+        primitives.forEach(primitive => {
+          scene.primitives.add(primitive)
+        })
+      }, 3000)
     },
     setMap3dTile () {
       if (this.map3d) {

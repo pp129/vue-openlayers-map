@@ -1,7 +1,7 @@
 {
   "name": "v-ol-map",
   "private": false,
-  "version": "1.5.9",
+  "version": "1.5.10",
   "main": "lib/ol-map.umd.js",
   "files": [
     "lib"
@@ -19,6 +19,7 @@
     "@rollup/plugin-babel": "^5.3.1",
     "@types/node": "^18.6.5",
     "@vitejs/plugin-legacy": "^2.0.1",
+    "cesium": "^1.97.0",
     "eslint": "^8.21.0",
     "eslint-config-standard": "^17.0.0",
     "eslint-plugin-import": "^2.26.0",
@@ -26,14 +27,13 @@
     "eslint-plugin-promise": "^6.0.0",
     "eslint-plugin-vue": "^9.3.0",
     "terser": "^5.14.2",
-    "vite": "^3.0.0",
+    "vite": "^3.0.9",
     "vite-plugin-html": "^3.2.0",
     "vite-plugin-vue2": "^2.0.2"
   },
   "dependencies": {
     "@turf/turf": "^6.5.0",
     "axios": "^0.27.2",
-    "cesium": "^1.96.0",
     "echarts": "^4.9.0",
     "kdbush": "^3.0.0",
     "nanoid": "^4.0.0",
