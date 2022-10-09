@@ -1,3 +1,4 @@
+import '@/polyfills'
 import VMap from '@/components/map/index'
 import VOverview from '@/components/overviewMap/index'
 import VOverlay from '@/components/overlay/index'

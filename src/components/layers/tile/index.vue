@@ -3,7 +3,7 @@ import BaseLayer from '@/components/layers/BaseLayer.vue'
 import { nanoid } from 'nanoid'
 import { validObjKey } from '@/utils/index.js'
 import TileGrid from 'ol/tilegrid/TileGrid'
-import { OSM, TileWMS, XYZ } from 'ol/source.js'
+import { OSM, TileArcGISRest, TileWMS, XYZ } from 'ol/source.js'
 import TileLayer from 'ol/layer/Tile.js'
 
 export default {
@@ -49,6 +49,12 @@ export default {
       default: true
     },
     xyz: {
+      type: Object,
+      default () {
+        return {}
+      }
+    },
+    tileArcGISRest: {
       type: Object,
       default () {
         return {}
@@ -154,6 +160,9 @@ export default {
         case 'BD_DARK':
           this.initBD('dark')
           break
+        case 'ARCGISREST':
+          this.initTileArcGISRest()
+          break
         case 'ARCGIS_BLUE':
           this.initArcgisTile('blue')
           break
@@ -175,6 +184,24 @@ export default {
         default:
           this.initTD()
           break
+      }
+    },
+    initTileArcGISRest () {
+      let tileGrid
+      if (validObjKey(this.tileArcGISRest, 'tileGrid')) {
+        tileGrid = new TileGrid(this.tileArcGISRest.tileGrid)
+      }
+      const xyzOpt = { ...this.tileArcGISRest, ...{ tileGrid } }
+      const source = new TileArcGISRest(xyzOpt)
+      const layerOpt = { ...this.$props, ...{ source } }
+      this.layer = new TileLayer(layerOpt)
+      this.layer.set('base', this.base)
+      // this.layer.setZIndex(0)
+      this.layers = [this.layer]
+      if (!this.addForOverview) {
+        this.layers.forEach(layer => {
+          this.map.addLayer(layer)
+        })
       }
     },
     initTileXYZ () {
