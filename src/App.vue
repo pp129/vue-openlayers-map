@@ -116,10 +116,11 @@
           <li @click="controls.FullScreen = !controls.FullScreen">{{ controls.FullScreen?'关闭':'显示' }}全屏按钮</li>
           <li class="group">draw-绘制</li>
           <li v-if="drawType" @click="drawType = ''">清除</li>
-          <li @click="drawHandler('Polygon')">🔷</li>
-          <li @click="drawHandler('Circle')">⭕️</li>
-          <li @click="drawHandler('Star')">⭐️</li>
-          <li @click="drawHandler('Star-6')">✡️</li>
+          <li @click="drawHandler('Polygon')">多边形</li>
+          <li @click="drawHandler('LineString')">线</li>
+          <li @click="drawHandler('Circle')">圆</li>
+          <li @click="drawHandler('Star')">五角星</li>
+          <li @click="drawHandler('Star-6')">六芒星</li>
           <li class="group">measure-测量</li>
           <li v-if="measureType" @click="measureType = ''">清除</li>
           <li @click="measureHandler('Polygon')">面积</li>
@@ -799,6 +800,7 @@ export default {
       const geometry = feature.getGeometry()
       const extent = geometry.getExtent()
       const inExtent = []
+      console.log('flatCoordinates--', geometry.flatCoordinates)
       this.$refs.layer1.layer.getSource().forEachFeatureInExtent(extent, feature => {
         if (feature.get('flash')) {
           inExtent.push(feature)
