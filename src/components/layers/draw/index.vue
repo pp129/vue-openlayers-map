@@ -6,6 +6,7 @@ import VectorLayer from 'ol/layer/Vector'
 import Draw, { createBox, createRegularPolygon } from 'ol/interaction/Draw'
 import { Polygon } from 'ol/geom'
 import { Modify, Select } from 'ol/interaction'
+import { arrowLine } from '@/utils/arrowLine'
 
 export default {
   name: 'v-draw',
@@ -113,6 +114,12 @@ export default {
     },
     freehandCondition: {
       type: Object
+    },
+    arrow: {
+      type: [Object, Boolean],
+      default () {
+        return false
+      }
     }
   },
   data () {
@@ -237,6 +244,15 @@ export default {
         this.$emit('drawstart', evt, this.map)
       })
       this.draw.on('drawend', evt => {
+        if (this.arrow) {
+          arrowLine({
+            coordinates: evt.target.sketchCoords_,
+            map: this.map,
+            source: this.layer.getSource(),
+            zIndex: this.layer.getZIndex() + 1,
+            ...this.arrow
+          })
+        }
         this.$emit('drawend', evt, this.map)
       })
       if (this.editable) {

@@ -86,7 +86,7 @@
           select
           :z-index="4"
           @select="onselect" @modifystart="modifystart" @modifyend="modifyend" @modifychange="modifychange"></v-vector>
-      <v-draw ref="drawLayer" :type="drawType" end-right @drawend="drawend"></v-draw>
+      <v-draw ref="drawLayer" :type="drawType" :arrow="arrow" end-right @drawend="drawend"></v-draw>
       <v-measure ref="measureLayer" :type="measureType" end-right></v-measure>
       <v-overlay class="overlay" :position="positionRadius">半径：{{radius}} 米</v-overlay>
       <v-overlay class="overlay-cluster" :position="positionCluster" :offset="[15,15]">
@@ -284,14 +284,21 @@ export default {
           style: {
             stroke: {
               color: 'rgba(220,171,119,1)',
-              width: 2
+              width: 4
               // lineDash: [20, 10, 20, 10]
             },
             text: {
               text: 'line'
             }
           },
-          coordinates: [[118.20513460817911, 24.6005204040184], [118.22511304202654, 24.607323827184675], [118.22998527470209, 24.627570481933592]]
+          coordinates: [[118.20513460817911, 24.6005204040184], [118.22511304202654, 24.607323827184675], [118.22998527470209, 24.627570481933592]],
+          arrow: {
+            icon: {
+              src: new URL('assets/img/arrow.png', import.meta.url).href,
+              scale: 0.6
+            },
+            pixel: 60 // 方向箭头之间的像素距离，单位像素。数值越小，箭头越密集
+          }
         },
         {
           type: 'circle',
@@ -304,6 +311,13 @@ export default {
           }
         }
       ],
+      arrow: {
+        icon: {
+          src: new URL('assets/img/arrow.png', import.meta.url).href,
+          scale: 0.6
+        },
+        pixel: 60 // 方向箭头之间的像素距离，单位像素。数值越小，箭头越密集
+      },
       toggleCluster: false,
       clusterOption: {
         distance: 120

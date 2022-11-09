@@ -1,7 +1,7 @@
 <script>
 import BaseLayer from '@/components/layers/BaseLayer.vue'
 import { nanoid } from 'nanoid'
-import { addClusterLayer, addVectorSource, setFeatures, setStyle, validObjKey } from '@/utils'
+import { OlMap, addClusterLayer, addVectorSource, setFeatures, setFeatureStyle, setStyle, validObjKey } from '@/utils'
 import VectorLayer from 'ol/layer/Vector'
 import { Modify, Select } from 'ol/interaction'
 import { Collection } from 'ol'
@@ -12,6 +12,8 @@ import { Stroke, Style } from 'ol/style'
 import CircleStyle from 'ol/style/Circle'
 import { asArray } from 'ol/color'
 import { Cluster } from 'ol/source'
+import { feature } from '@turf/turf'
+import { arrowLine } from '@/utils/arrowLine'
 
 export default {
   name: 'v-vector',
@@ -170,7 +172,7 @@ export default {
         this.layer = new VectorLayer(this.layerOpt)
         this.layer.setStyle((feature) => {
           if (feature.get('style')) {
-            return setStyle(feature.get('style'))
+            return setFeatureStyle(feature, feature.get('style'), this.map)
           } else {
             if (this.FeatureStyle && Object.keys(this.FeatureStyle).length > 0) {
               return setStyle(this.FeatureStyle)
@@ -194,6 +196,17 @@ export default {
       this.layer.set('users', true)
       this.layer.setZIndex(1)
       this.map.addLayer(this.layer)
+      this.features.forEach(feature => {
+        if (feature.type === 'polyline' && validObjKey(feature, 'arrow')) {
+          arrowLine({
+            coordinates: feature.coordinates,
+            map: this.map,
+            source,
+            zIndex: this.layer.getZIndex() + 1,
+            ...feature.arrow
+          })
+        }
+      })
       this.setFlashAnimate()
       this.flashInterval = setInterval(() => {
         this.setFlashAnimate()
