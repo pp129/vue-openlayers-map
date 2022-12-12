@@ -86,7 +86,7 @@
           select
           :z-index="4"
           @select="onselect" @modifystart="modifystart" @modifyend="modifyend" @modifychange="modifychange"></v-vector>
-      <v-draw ref="drawLayer" :type="drawType" :arrow="arrow" end-right @drawend="drawend"></v-draw>
+      <v-draw ref="drawLayer" :type="drawType" :arrow="arrow" :feature-style="drawFeatureStyle" :end-right="true" :clear="true" draw-once editable @drawend="drawend"></v-draw>
       <v-measure ref="measureLayer" :type="measureType" end-right></v-measure>
       <v-overlay class="overlay" :position="positionRadius">半径：{{radius}} 米</v-overlay>
       <v-overlay class="overlay-cluster" :position="positionCluster" :offset="[15,15]">
@@ -127,7 +127,7 @@
           <li @click="measureHandler('LineString')">线段</li>
         </ul>
       </v-overlay>
-      <v-track ref="track" :id="track.id" :paths="track.paths" :options="track.options" @onLoad="onLoadTrack"></v-track>
+      <v-track ref="track" :id="track.id" :paths="track.paths" :options="track.options" @onLoad="onLoadTrack" change-car-rotate></v-track>
       <v-echarts :options="echarts.options" :visible="echarts.visible"></v-echarts>
       <v-heatmap :features="heatmap.features" :visible="heatmap.visible" :radius="3" :blur="6"></v-heatmap>
     </v-map>
@@ -283,8 +283,9 @@ export default {
           type: 'polyline',
           style: {
             stroke: {
-              color: 'rgba(220,171,119,1)',
-              width: 4
+              // color: 'rgba(220,171,119,1)',
+              color: 'rgba(51, 181, 94, 1)',
+              width: 6
               // lineDash: [20, 10, 20, 10]
             },
             text: {
@@ -294,10 +295,32 @@ export default {
           coordinates: [[118.20513460817911, 24.6005204040184], [118.22511304202654, 24.607323827184675], [118.22998527470209, 24.627570481933592]],
           arrow: {
             icon: {
-              src: new URL('assets/img/arrow.png', import.meta.url).href,
-              scale: 0.6
+              src: new URL('assets/img/road-arrow.png', import.meta.url).href,
+              scale: 1
             },
             pixel: 60 // 方向箭头之间的像素距离，单位像素。数值越小，箭头越密集
+          }
+        },
+        {
+          type: 'polyline',
+          style: {
+            stroke: {
+              // color: 'rgba(220,171,119,1)',
+              color: 'rgba(51, 181, 94, 1)',
+              width: 6
+              // lineDash: [20, 10, 20, 10]
+            },
+            text: {
+              text: 'line'
+            }
+          },
+          coordinates: [[118.25156700065546, 24.6221373022732], [118.25156700065546, 24.6221373022732], [118.25002070715837, 24.61987888228266], [118.24817735901289, 24.617151746266767], [118.24632663479261, 24.614808166140005], [118.24326958706789, 24.61118517231314], [118.24051495840959, 24.60785319816439], [118.23908802321367, 24.606357866638586], [118.23849793723039, 24.605842211955473], [118.23570441654138, 24.603383967393324], [118.2325206344407, 24.601446071380064], [118.23193054845743, 24.60100417744486], [118.23069337954931, 24.600246453398153], [118.23022600462846, 24.599913188928053], [118.22946693947725, 24.59947867106764], [118.22848390987329, 24.598636457436964], [118.2271622513812, 24.597646051758215], [118.22660032859258, 24.597295352929518], [118.22519820383005, 24.59642966996996], [118.22445322027616, 24.5960581840214], [118.22297800531797, 24.595690721386358], [118.22213445058279, 24.595305153840467], [118.22192322662286, 24.595199877136633], [118.22145585170202, 24.594933667891905], [118.22033200612478, 24.59423227023451], [118.22012078216486, 24.594126993530676], [118.219471017031, 24.593548306935713], [118.21915451636724, 24.59316944491236], [118.21899626603536, 24.593011865132734], [118.21866233101301, 24.592545160764143], [118.21806151619367, 24.591798165553495], [118.21789253702573, 24.59151787471144], [118.21744997253828, 24.590854698532507], [118.21683842888288, 24.589984992259428], [118.216680178551, 24.589827412479803], [118.21627181222848, 24.588894674294874], [118.21565356305055, 24.587410742157385], [118.21527335992269, 24.58595094990103], [118.21512919118814, 24.58449786316721], [118.21498837521486, 24.583866202944204], [118.2148790751975, 24.58336127709715], [118.21481939604692, 24.583003872745916], [118.21481939604692, 24.582793319338247], [118.21481939604692, 24.582014808171675], [118.21476977518014, 24.581867286675855], [118.21476977518014, 24.581825712436125]],
+          arrow: {
+            icon: {
+              src: new URL('assets/img/road-arrow.png', import.meta.url).href,
+              scale: 1
+            },
+            pixel: 30 // 方向箭头之间的像素距离，单位像素。数值越小，箭头越密集
           }
         },
         {
@@ -316,7 +339,19 @@ export default {
           src: new URL('assets/img/arrow.png', import.meta.url).href,
           scale: 0.6
         },
-        pixel: 60 // 方向箭头之间的像素距离，单位像素。数值越小，箭头越密集
+        pixel: 30 // 方向箭头之间的像素距离，单位像素。数值越小，箭头越密集
+      },
+      drawStyle: {
+        stroke: {
+          width: 4,
+          color: 'green'
+        }
+      },
+      drawFeatureStyle: {
+        stroke: {
+          width: 4,
+          color: 'green'
+        }
       },
       toggleCluster: false,
       clusterOption: {
@@ -598,7 +633,7 @@ export default {
             src: new URL('./assets/img/car2.png', import.meta.url).href,
             scale: 0.1
           }, // 小车图标
-          speed: 120, // 车速，设置时为匀速模式，否则为实际速度模式
+          speed: 250, // 车速，设置时为匀速模式，否则为实际速度模式
           arrowPixel: 20, // 方向箭头之间的像素距离，单位是 px
           tracePlay: false, // 是否进行轨迹回放，默认为 false
           lineWidth: 5, // 轨迹线宽度，单位为像素
@@ -810,17 +845,22 @@ export default {
     },
     drawend (evt, map) {
       console.log('on drawend: ', evt, map)
+      console.log('sketchCoords_--', JSON.stringify(evt.target.sketchCoords_))
+      if (this.drawType !== 'Polygon') return
       const feature = evt.feature
       const geometry = feature.getGeometry()
       const extent = geometry.getExtent()
       const inExtent = []
-      console.log('flatCoordinates--', geometry.flatCoordinates)
       this.$refs.layer1.layer.getSource().forEachFeatureInExtent(extent, feature => {
         if (feature.get('flash')) {
           inExtent.push(feature)
         }
       })
       this.$refs.map.updateFeature(feature, 'style', {
+        stroke: {
+          color: 'red',
+          width: 8
+        },
         text: {
           text: `范围内包含${inExtent.length}个预警点`,
           fill: {

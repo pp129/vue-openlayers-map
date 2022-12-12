@@ -63,8 +63,9 @@ const createArrows = params => {
   }
   const breakPoints = getArrowPoints(breakParams)
 
-  const src = icon.src || 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAABfUlEQVQ4T3WTTSvFYRDFf8dLKIqytFckthTpJkQWlyhF2fgEVr6BheytpChEsqB08xbZWPgOJAs7ieRlNMzV//75P7vnmZkz58ycR2ZWD7QBF5KM1DGzTuBO0k065neZ2S3QBGwAU5I+iolmNgrsAI9An6SrNIgDnAE9EdgFJiS9+93MuoEToBx4AgYkXSZBHKAWOAS6IrAP5CW9BUge2AIqgJdg8guiSKoBDoDeDJBhwNlVBsiQpNPvGST0VgF7TjPeCsCIpNdo0g84O2fibx4r/AJEUjVwlJDjXbybU/eZjAGbMROXmC8BiKQ64BxoDyYLkuYTTCeB9WD/9B9AA3AMdGQAzALLAfCcluDF3r01itMS5oDFiP3MIUHNi90T7ko/XjyYGOIMsFJSXByimTVGQbFzegOuew0o+7PGKL4AmjM8MA2shua/RjIzX1suw8pucZfiUjOt/AC4BHfaeOoz+d63oziX9Zla3CzAkqTP9G8zM4/dS7r+7zt/Aaattn1kX8VgAAAAAElFTkSuQmCC'
-  const scale = icon.scale || 0.5
+  const src = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAABfUlEQVQ4T3WTTSvFYRDFf8dLKIqytFckthTpJkQWlyhF2fgEVr6BheytpChEsqB08xbZWPgOJAs7ieRlNMzV//75P7vnmZkz58ycR2ZWD7QBF5KM1DGzTuBO0k065neZ2S3QBGwAU5I+iolmNgrsAI9An6SrNIgDnAE9EdgFJiS9+93MuoEToBx4AgYkXSZBHKAWOAS6IrAP5CW9BUge2AIqgJdg8guiSKoBDoDeDJBhwNlVBsiQpNPvGST0VgF7TjPeCsCIpNdo0g84O2fibx4r/AJEUjVwlJDjXbybU/eZjAGbMROXmC8BiKQ64BxoDyYLkuYTTCeB9WD/9B9AA3AMdGQAzALLAfCcluDF3r01itMS5oDFiP3MIUHNi90T7ko/XjyYGOIMsFJSXByimTVGQbFzegOuew0o+7PGKL4AmjM8MA2shua/RjIzX1suw8pucZfiUjOt/AC4BHfaeOoz+d63oziX9Zla3CzAkqTP9G8zM4/dS7r+7zt/Aaattn1kX8VgAAAAAElFTkSuQmCC'
+  const scale = 0.5
+
   for (let b = 0; b < breakPoints.length; b++) {
     const coordinates = breakPoints[b].coordinate
     const rotate = breakPoints[b].rotate
@@ -74,8 +75,9 @@ const createArrows = params => {
     marker.setStyle(new Style({
       image: new Icon({
         src,
-        rotation: rotate,
-        scale
+        scale,
+        ...icon,
+        rotation: rotate
       })
     }))
     // linesFeatures.push(marker)
@@ -85,25 +87,8 @@ const createArrows = params => {
 }
 
 export const arrowLine = params => {
-  console.log(params)
+  // console.log(params)
   if (!params.map || !params.coordinates || params.coordinates.length < 2) return
-  const { map, zIndex, source } = params
-  console.log(zIndex)
+  const { source } = params
   createArrows({ ...params, ...{ source } })
-  map.getView().on('change:resolution', () => {
-    const zoom = map.getView().getZoom()
-    // source.clear()
-    source.getFeatures().forEach(feature => {
-      if (feature.get('isArrow')) {
-        source.removeFeature(feature)
-      }
-    })
-    if (Math.round(zoom) === zoom) {
-      createArrows({ ...params, ...{ source } })
-      // luLocus.arrowsLayer.getSource().clear()
-      // luLocus.createArrows()
-    }
-  })
-  // console.log('linesFeatures', linesFeatures)
-  // return linesFeatures
 }

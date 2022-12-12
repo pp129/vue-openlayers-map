@@ -47,7 +47,7 @@ export default {
     // 抽稀距离，单位像素
     vacuateDistance: {
       type: [Number, undefined],
-      default: undefined
+      default: 10
     },
     // 是否显示轨迹点信息标签
     labelShow: {
@@ -93,6 +93,14 @@ export default {
           // passlineColor: 'lightgreen' // 通过动画轨迹线颜色
         }
       }
+    },
+    autoPlay: {
+      type: Boolean,
+      default: false
+    },
+    labelStyle: {
+      type: String,
+      default: 'timeContentClass'
     }
   },
   data () {
@@ -124,10 +132,13 @@ export default {
   methods: {
     init (paths) {
       if ((paths && paths.length > 0) || (this.paths && this.paths.length > 0)) {
-        const option = { ...this.$props, ...{ map: this.map, paths: paths || this.paths } }
+        const option = { ...this.$props, ...{ map: this.map, paths: paths || this.paths, opts: this.options } }
         // console.log(this.$props)
         this.track = PathSimplifier(option)
         this.$emit('onLoad', this.track)
+        if (this.autoPlay) {
+          this.start()
+        }
       }
     },
     start () {

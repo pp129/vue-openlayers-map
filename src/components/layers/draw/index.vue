@@ -1,11 +1,11 @@
 <script>
 import BaseLayer from '@/components/layers/BaseLayer.vue'
 import { nanoid } from 'nanoid'
-import { addVectorSource, setFeatures, setStyle } from '@/utils'
+import { addVectorSource, formatArea, formatLength, setFeatures, setStyle } from '@/utils'
 import VectorLayer from 'ol/layer/Vector'
 import Draw, { createBox, createRegularPolygon } from 'ol/interaction/Draw'
 import { Polygon } from 'ol/geom'
-import { Modify, Select } from 'ol/interaction'
+import { Modify, Snap } from 'ol/interaction'
 import { arrowLine } from '@/utils/arrowLine'
 
 export default {
@@ -70,7 +70,19 @@ export default {
       type: Number,
       default: undefined
     },
+    drawOnce: {
+      type: Boolean,
+      default () {
+        return false
+      }
+    },
     endRight: {
+      type: Boolean,
+      default () {
+        return false
+      }
+    },
+    endDblclick: {
       type: Boolean,
       default () {
         return false
@@ -114,6 +126,12 @@ export default {
     },
     freehandCondition: {
       type: Object
+    },
+    drawStyle: {
+      type: [Object, Boolean],
+      default () {
+        return false
+      }
     },
     arrow: {
       type: [Object, Boolean],
@@ -229,38 +247,47 @@ export default {
       this.resetDraw()
       this.draw.set('type', 'draw')
       this.map.addInteraction(this.draw)
-      if (this.endRight) {
-        this.map.on('contextmenu', evt => {
-          console.log(this.draw)
-          this.draw.setActive(false)
-        })
-      }
-      if (this.clear) {
-        this.draw.on('drawstart', evt => {
-          this.layer.getSource().clear()
-        })
-      }
+      console.log('endDblclick', this.endDblclick)
+      console.log('endRight', this.endRight)
       this.draw.on('drawstart', evt => {
         this.$emit('drawstart', evt, this.map)
+        if (this.clear) {
+          this.layer.getSource().clear()
+        }
       })
       this.draw.on('drawend', evt => {
-        if (this.arrow) {
-          arrowLine({
-            coordinates: evt.target.sketchCoords_,
-            map: this.map,
-            source: this.layer.getSource(),
-            zIndex: this.layer.getZIndex() + 1,
-            ...this.arrow
-          })
+        const geometry = evt.feature.getGeometry()
+        if (this.type === 'LineString') {
+          evt.measure = formatLength(geometry)
+        } else if (this.type === 'Polygon') {
+          evt.measure = formatArea(geometry)
         }
         this.$emit('drawend', evt, this.map)
+        if (this.drawOnce) {
+          this.draw.setActive(false)
+        }
+        if (this.endRight) {
+          this.map.on('contextmenu', evt => {
+            console.log('end draw')
+            this.draw.setActive(false)
+            // this.draw.finishDrawing()
+          })
+        }
+        if (this.endDblclick) {
+          this.map.on('dblclick', evt => {
+            console.log('end draw')
+            this.draw.setActive(false)
+            // this.draw.finishDrawing()
+          })
+        }
       })
       if (this.editable) {
-        this.select = new Select()
-        this.select.set('type', 'select')
+        // this.select = new Select()
+        this.select = new Snap({ source: this.layer.getSource() })
+        // this.select.set('type', 'select')
         this.map.addInteraction(this.select)
         this.modify = new Modify({
-          features: this.select.getFeatures()
+          source: this.layer.getSource()
         })
         this.modify.set('type', 'modify')
         this.map.addInteraction(this.modify)
@@ -268,6 +295,13 @@ export default {
           this.$emit('modifystart', evt, this.map)
         })
         this.modify.on('modifyend', evt => {
+          const geometry = evt.features.getArray()[0].getGeometry()
+          if (this.type === 'LineString') {
+            evt.measure = formatLength(geometry)
+          } else if (this.type === 'Polygon') {
+            evt.measure = formatArea(geometry)
+          }
+          console.log('draw modify end', evt)
           this.$emit('modifyend', evt, this.map)
         })
       }
@@ -290,7 +324,8 @@ export default {
         minPoints: this.minPoints,
         wrapX: this.wrapX,
         geometryName: this.geometryName,
-        geometryFunction: this.geometryFunction
+        geometryFunction: this.geometryFunction,
+        style: this.drawStyle ? setStyle(this.drawStyle) : null
       }
       if (this.type === 'Rectangle') {
         const drawOpt = {
@@ -333,7 +368,29 @@ export default {
         }
         this.draw = new Draw(drawOpt)
       } else {
+        console.log(option)
         this.draw = new Draw(option)
+        if (this.arrow) {
+          // 线加箭头
+          this.layer.on('postrender', () => { // 应对编辑后的箭头重制所以用postrender
+            const zoom = this.map.getView().getZoom()
+            this.layer.getSource().getFeatures().forEach(feature => {
+              if (feature.get('isArrow')) {
+                this.layer.getSource().removeFeature(feature)
+              }
+            })
+            if (Math.round(zoom) === zoom) {
+              this.layer.getSource().getFeatures().forEach(feature => {
+                arrowLine({
+                  coordinates: feature.getGeometry().getCoordinates(),
+                  map: this.map,
+                  source: this.layer.getSource(),
+                  ...this.arrow
+                })
+              })
+            }
+          })
+        }
       }
     },
     dispose () {

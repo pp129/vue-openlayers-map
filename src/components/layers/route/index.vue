@@ -5,6 +5,7 @@ import axios from 'axios'
 import qs from 'qs'
 import { addVectorSource, setFeatures, setStyle } from '@/utils'
 import VectorLayer from 'ol/layer/Vector'
+import { arrowLine } from '@/utils/arrowLine'
 
 export default {
   name: 'v-route',
@@ -61,6 +62,12 @@ export default {
     routeStyle: {
       type: Object,
       default: undefined
+    },
+    arrow: {
+      type: [Object, Boolean],
+      default () {
+        return false
+      }
     },
     // arcgis
     barriers: {
@@ -350,9 +357,79 @@ export default {
      * @returns {Promise<*[]|[]>}
      */
     async getArcgisRouteData () {
-      let params = this.$props
+      let params = {}
+      const {
+        barriers,
+        polylineBarriers,
+        polygonBarriers,
+        outSR,
+        ignoreInvalidLocations,
+        accumulateAttributeNames,
+        impedanceAttributeName,
+        restrictionAttributeNames,
+        attributeParameterValues,
+        restrictUTurns,
+        useHierarchy,
+        returnDirections,
+        returnRoutes,
+        returnStops,
+        returnBarriers,
+        returnPolygonBarriers,
+        directionsLanguage,
+        directionsStyleName,
+        outputLines,
+        findBestSequence,
+        preserveFirstStop,
+        preserveLastStop,
+        useTimeWindows,
+        startTime,
+        startTimeIsUTC,
+        outputGeometryPrecision,
+        outputGeometryPrecisionUnits,
+        directionsOutputType,
+        directionsTimeAttributeName,
+        directionsLengthUnits,
+        returnZ,
+        travelMode,
+        f
+      } = this.$props
       if (this.stops.length > 0) {
-        params = { ...this.$props, ...{ stops: this.stops.join(';'), routeStyle: '' } }
+        params = {
+          barriers,
+          polylineBarriers,
+          polygonBarriers,
+          outSR,
+          ignoreInvalidLocations,
+          accumulateAttributeNames,
+          impedanceAttributeName,
+          restrictionAttributeNames,
+          attributeParameterValues,
+          restrictUTurns,
+          useHierarchy,
+          returnDirections,
+          returnRoutes,
+          returnStops,
+          returnBarriers,
+          returnPolygonBarriers,
+          directionsLanguage,
+          directionsStyleName,
+          outputLines,
+          findBestSequence,
+          preserveFirstStop,
+          preserveLastStop,
+          useTimeWindows,
+          startTime,
+          startTimeIsUTC,
+          outputGeometryPrecision,
+          outputGeometryPrecisionUnits,
+          directionsOutputType,
+          directionsTimeAttributeName,
+          directionsLengthUnits,
+          returnZ,
+          travelMode,
+          f,
+          stops: this.stops.join(';')
+        }
         if (this.method.toUpperCase() === 'POST') {
           return axios.post(this.serviceUrl, qs.stringify(params)).then(res => {
             if (res.status === 200 && res.data) {
@@ -440,8 +517,28 @@ export default {
      * @returns {Promise<*[]|[]>}
      */
     async getGraphhopperRouteData () {
-      const props = { ...this.$props, ...{ routeStyle: '' } }
-      let params = qs.stringify(props)
+      // const props = { ...this.$props, ...{ routeStyle: '' } }
+      /* eslint-disable */
+      const {
+        type,
+        points_encoded,
+        point_hint,
+        locale,
+        vehicle,
+        weighting,
+        elevation,
+        convert
+      } = this.$props
+      let params = qs.stringify({
+        type,
+        points_encoded,
+        point_hint,
+        locale,
+        vehicle,
+        weighting,
+        elevation,
+        convert
+      })
       if (this.stops.length > 0) {
         let points = '&point='
         this.stops.forEach((point, index) => {
@@ -565,7 +662,28 @@ export default {
         this.layer.setZIndex(1)
         this.map.addLayer(this.layer)
       }
-      this.$emit('render', this.routeData, this.map, this.features)
+      if (this.stops.length >= 2) {
+        if (this.arrow) {
+          // 线加箭头
+          this.layer.on('postrender', () => { // 应对编辑后的箭头重制所以用postrender
+            const zoom = this.map.getView().getZoom()
+            this.layer.getSource().getFeatures().forEach(feature => {
+              if (feature.get('isArrow')) {
+                this.layer.getSource().removeFeature(feature)
+              }
+            })
+            if (Math.round(zoom) === zoom) {
+              arrowLine({
+                coordinates: this.routeType === 'arcgis' ? this.routeData.routes.features[0].geometry.paths[0] : this.routeData.paths[0].points.coordinates,
+                map: this.map,
+                source: this.layer.getSource(),
+                ...this.arrow
+              })
+            }
+          })
+        }
+        this.$emit('render', this.routeData, this.map, this.features)
+      }
     }
   }
 }

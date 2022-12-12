@@ -8,6 +8,7 @@ import { FeatureExt } from '@/utils'
 import { LineString, Point, Polygon } from 'ol/geom'
 import { Overlay } from 'ol'
 import { nanoid } from 'nanoid'
+import { point, bearing } from '@turf/turf'
 
 /**
  * 根据id获取图层
@@ -394,8 +395,10 @@ LushuTrack.prototype.tracePointsPlay = function () {
 LushuTrack.prototype.timePointsPlay = function () {
   const me = this
   const tracePoints = me._tracePoints
+  console.log(tracePoints)
   const tracePointsFromTime = me._tracePointsFromTime
   const passPath = me._passPath
+  console.log(passPath)
   if (passPath.length === 0) {
     me.tracePassLayer.getSource().clear()
   }
@@ -471,10 +474,12 @@ LushuTrack.prototype.timePointsPlay = function () {
           }))
           me.tracePassLayer.getSource().addFeature(passlineFeature)
         }
-
+        const rotate = calculateRotate(lenFromTime[me._traceIndex - 1].coordinate, lenFromTime[me._traceIndex].coordinate)
+        console.log(rotate)
         me.carMarker.setPosition(lenFromTime[me._traceIndex].coordinate)
+        console.log(lenFromTime[me._traceIndex].rotate)
         if (me.changeCarRotate) {
-          me.carMarker.setRotateAngle(lenFromTime[me._traceIndex].rotate)
+          me.carMarker.setRotateAngle(rotate)
         }
 
         const index = me._troughPointIndex(lenFromTime[me._traceIndex].coordinate)
@@ -507,8 +512,12 @@ LushuTrack.prototype.timePointsPlay = function () {
         }
 
         me.carMarker.setPosition(lenFromTime[me._traceIndex].coordinate)
+        // console.log(lenFromTime[me._traceIndex].rotate)
+        const rotate = calculateRotate(lenFromTime[me._traceIndex - 1].coordinate, lenFromTime[me._traceIndex].coordinate)
+        console.log(rotate)
         if (me.changeCarRotate) {
-          me.carMarker.setRotateAngle(lenFromTime[me._traceIndex].rotate)
+          me.carMarker.setRotateAngle(rotate)
+          console.log(me.carMarker.getStyle().getImage())
         }
         const index = me._troughPointIndex(tracePoints[me._pointIndex].coordinate)
         if (me._opts.showInfoWin) {
@@ -1346,23 +1355,23 @@ Bounds.prototype.intersects = function (bounds) {
   return max2.x <= min.x || min2.x >= max.x || max2.y <= min.y || min2.y >= max.y
 }
 
-export const PathSimplifier = function (options = {}) {
-  const map = options.map ? options.map : {} // 地图对象
-  let paths = options.paths ? options.paths : [] // 轨迹点集合
-  const id = options.id ? options.id : nanoid()
-  const opts = options.options ? options.options : {}
-  opts.id = id
-  const changeCarRotate = false
-  opts.changeCarRotate = options.changeCarRotate ? options.changeCarRotate : changeCarRotate
-  opts.centerAtCar = options.centerAtCar ? options.centerAtCar : false
-  const vacuate = options.vacuate ? options.vacuate : false // 是否抽稀
-  const smokeMode = options.smokeMode ? options.smokeMode : 'distance' // 是否为距离抽稀
-  const tracePointsModePlay = options.tracePointsModePlay ? options.tracePointsModePlay : 'animation' // 是否为轨迹点回放模式
-  const vacuateDistance = options.vacuateDistance ? options.vacuateDistance : 10 // 抽稀距离，单位像素
-  const labelShow = options.labelShow ? options.labelShow : false
-  const labelStyle = options.labelStyle ? options.labelStyle : 'timeContentClass'
-  const showTracePoint = options.showTracePoint !== false
+/**
+ * @计算两点之间夹角
+ * @param from
+ * @param to
+ * @returns {number}
+ */
+function calculateRotate (from, to) {
+  const point1 = point(from)
+  const point2 = point(to)
+  return bearing(point1, point2)
+}
 
+export const PathSimplifier = function (options) {
+  let { map, paths, id, opts, vacuate, smokeMode, tracePointsModePlay, vacuateDistance, labelShow, labelStyle, showTracePoint } = options
+  opts.id = id || nanoid()
+  opts.changeCarRotate = options.changeCarRotate
+  opts.centerAtCar = options.centerAtCar
   let vacuatePaths = paths
   let luLocus
   let zoom = map.getView().getZoom()

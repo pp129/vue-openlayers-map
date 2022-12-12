@@ -1,7 +1,7 @@
 <script>
 import BaseLayer from '@/components/layers/BaseLayer.vue'
 import { nanoid } from 'nanoid'
-import { OlMap, addClusterLayer, addVectorSource, setFeatures, setFeatureStyle, setStyle, validObjKey } from '@/utils'
+import { addClusterLayer, addVectorSource, setFeatures, setFeatureStyle, setStyle, validObjKey } from '@/utils'
 import VectorLayer from 'ol/layer/Vector'
 import { Modify, Select } from 'ol/interaction'
 import { Collection } from 'ol'
@@ -12,7 +12,6 @@ import { Stroke, Style } from 'ol/style'
 import CircleStyle from 'ol/style/Circle'
 import { asArray } from 'ol/color'
 import { Cluster } from 'ol/source'
-import { feature } from '@turf/turf'
 import { arrowLine } from '@/utils/arrowLine'
 
 export default {
@@ -202,11 +201,32 @@ export default {
             coordinates: feature.coordinates,
             map: this.map,
             source,
-            zIndex: this.layer.getZIndex() + 1,
             ...feature.arrow
           })
         }
       })
+      // 线加箭头
+      this.map.getView().on('change:resolution', () => {
+        const zoom = this.map.getView().getZoom()
+        source.getFeatures().forEach(feature => {
+          if (feature.get('isArrow')) {
+            source.removeFeature(feature)
+          }
+        })
+        if (Math.round(zoom) === zoom) {
+          this.features.forEach(feature => {
+            if (feature.type === 'polyline' && validObjKey(feature, 'arrow')) {
+              arrowLine({
+                coordinates: feature.coordinates,
+                map: this.map,
+                source,
+                ...feature.arrow
+              })
+            }
+          })
+        }
+      })
+      // 闪光点
       this.setFlashAnimate()
       this.flashInterval = setInterval(() => {
         this.setFlashAnimate()

@@ -255,6 +255,9 @@ export default {
           this.map.on('contextmenu', evt => {
             this.$emit('contextmenu', evt, this.map)
           })
+          this.map.on('postrender', evt => {
+            this.$emit('postrender', evt, this.map)
+          })
           this.$emit('load')
           this.load = true
         }

@@ -16,6 +16,7 @@ import { nanoid } from 'nanoid'
 import VectorSource from 'ol/source/Vector'
 import VectorLayer from 'ol/layer/Vector'
 import ImageCanvasSource from 'ol/source/ImageCanvas'
+import { getArea, getLength } from 'ol/sphere'
 
 /**
  * Map扩展
@@ -96,7 +97,8 @@ export class FeatureExt extends Feature {
   }
 
   setRotateAngle = function (angle) {
-    this.getStyle().getImage().setRotation(angle)
+    console.log(angle)
+    this.getStyle().getImage().setRotation(angle * 0.01745329251 /* in rad / 360° = 6.28318531 rad = 2PI rad */)
   }
 
   /**
@@ -294,11 +296,9 @@ export const setFeatureStyle = (feature, style, map) => {
  * @returns {*[]}
  */
 export const setFeatures = (features, map, hasStyle = false) => {
-  const output = []
-  features.forEach(val => {
-    output.push(setFeature(val, map, hasStyle))
+  return features.map(val => {
+    return setFeature(val, map, hasStyle)
   })
-  return output
 }
 
 /**
@@ -817,6 +817,34 @@ export const setControl = (map, control, options, controlOptions) => {
       OlMap.map.mapControlsZoomSlider = new ZoomSlider(OlMap.map.mapControlsZoomSlider)
       map.addControl(OlMap.map.mapControlsZoomSlider)
     }
+  }
+}
+
+export const formatLength = (line) => {
+  const length = getLength(line, {
+    projection: 'EPSG:4326'
+  })
+  const format = {
+    kilo: Math.round((length / 1000) * 100) / 100, // km
+    meter: Math.round(length * 100) / 100 // m
+  }
+  return {
+    format,
+    length
+  }
+}
+
+export const formatArea = (polygon) => {
+  const area = getArea(polygon, {
+    projection: 'EPSG:4326'
+  })
+  const format = {
+    kilo: Math.round((area / 1000000) * 100) / 100, // ' km\xB2',
+    meter: Math.round(area * 100) / 100 // ' m\xB2'
+  }
+  return {
+    format,
+    area
   }
 }
 
