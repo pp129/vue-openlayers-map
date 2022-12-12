@@ -10,20 +10,22 @@ import { VTrack } from 'vue-openlayers-map'
 
 ## 参数 props
 
-| 参数                  | 类型                 | 默认值            | 描述                                                |
-| --------------------- | -------------------- | ----------------- | --------------------------------------------------- |
-| `id`                  | String               | `track-${uuid()}` | id                                                  |
-| `paths`               | Array                | `[]`              | 轨迹路径数据集合。                                  |
-| `tracePointsModePlay` | String               | `animation`       | 轨迹点播放模式。`skip`跳动模式、`animation`动画模式 |
-| `smokeMode`           | String               | `distance`        | 轨迹抽稀模式。可选：`distance`或`track`             |
-| `vacuate`             | Boolean              | `false`           | 是否抽稀                                            |
-| `vacuateDistance`     | Number / `undefined` | `undefined`       | 抽稀距离，单位像素                                  |
-| `labelShow`           | Boolean              | `false`           | 是否显示轨迹点信息标签                              |
-| `showTracePoint`      | Boolean              | `true`            | 是否显示轨迹点                                      |
-| `centerAtCar`         | Boolean              | `false`           | 视图是否跟随小车                                    |
-| `options`             | Object               | `{}`              | 小车参数                                            |
+| 参数                    | 类型                   | 默认值                | 描述                                                          |
+|-----------------------|----------------------|--------------------|-------------------------------------------------------------|
+| `id`                  | String               | `track-${uuid()}`  | id                                                          |
+| `paths`               | Array                | [paths](#paths)    | 轨迹路径数据集合。                                                   |
+| `tracePointsModePlay` | String               | `animation`        | 轨迹点播放模式。`skip`跳动模式、`animation`动画模式                          |
+| `smokeMode`           | String               | `distance`         | 轨迹抽稀模式。可选：`distance`或`track`                                |
+| `vacuate`             | Boolean              | `false`            | 是否抽稀                                                        |
+| `vacuateDistance`     | Number / `undefined` | `10`               | 抽稀距离，单位像素                                                   |
+| `labelShow`           | Boolean              | `false`            | 是否显示轨迹点信息标签                                                 |
+| `showTracePoint`      | Boolean              | `true`             | 是否显示轨迹点                                                     |
+| `centerAtCar`         | Boolean              | `false`            | 视图是否跟随小车                                                    |
+| `options`             | Object               | [option](#options) | 小车参数                                                        |
+| `autoPlay`            | Boolean              | `false`            | 是否自动开始                                                      |
+| `changeCarRotate`     | Boolean              | `false`            | 轨迹动画开始后是否自动变化车头角度，仅在`tracePointsModePlay`值设置为`animation`时有效 |
 
-### 轨迹点数据样例 paths
+### paths
 
 ```javascript
 const paths = [
@@ -37,7 +39,7 @@ const paths = [
 ]
 ```
 
-### 小车参数样例及说明 option
+### options
 
 ```javascript
 const options = {
@@ -65,12 +67,14 @@ const options = {
 }
 ```
 
-## 轨迹图层生成 use
+## demo
+
+> 生成图层并自动开始轨迹动画
 
 ```vue
 <template>
   <v-map>
-    <v-track ref="track" :id="track.id" :paths="track.paths" :options="track.options"></v-track>
+    <v-track ref="track" :id="track.id" :paths="track.paths" :options="track.options" auto-play></v-track>
   </v-map>
 </template>
 <script>
@@ -202,7 +206,7 @@ this.$refs.track.dispose()
 
 ## 事件 events
 
-| Event Name | Description            | Parameters |
-| ---------- | ---------------------- | ---------- |
-| onLoad     | 轨迹对象加载完成时触发 | 组件实例   |
+| Event Name | Description | Parameters |
+|------------|-------------|------------|
+| onLoad     | 轨迹对象加载完成时触发 | 组件实例       |
 

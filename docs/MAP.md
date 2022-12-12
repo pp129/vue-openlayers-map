@@ -27,16 +27,16 @@ export default {
 
 未设置宽度时默认宽度为100%，需要父节点有宽度，否则地图容器无法撑开。
 
-| 说明  | 是否必填 | 类型            | 可选值 | 默认值    |
-|-----|------|---------------|-----|--------|
-|  地图容器宽度   | 否    | `String`/`Number` | -   | `100%` |
+| 说明     | 是否必填 | 类型                | 可选值 | 默认值    |
+|--------|------|-------------------|-----|--------|
+| 地图容器宽度 | 否    | `String`/`Number` | -   | `100%` |
 
 ## 高 height
 
 未设置宽度时默认高度为100%，需要父节点有高度，否则地图容器无法撑开。
 
-| 说明     | 是否必填 | 类型            | 可选值 | 默认值    |
-|--------|------|---------------|-----|--------|
+| 说明     | 是否必填 | 类型                | 可选值 | 默认值    |
+|--------|------|-------------------|-----|--------|
 | 地图容器高度 | 否    | `String`/`Number` | -   | `100%` |
 
 ```vue
@@ -49,16 +49,16 @@ export default {
 
 ## 地图容器标识 target
 
-| 说明                 | 是否必填             | 类型   | 可选值 | 默认值        |
-| :------------------- | :------------------- | ------ | :----: | ------------- |
-| 地图容器的唯一标识。 | 否，多地图时避免重复 | `String` |   -    | `map-${uuid}` |
+| 说明         | 是否必填       | 类型       | 可选值 | 默认值           |
+|:-----------|:-----------|----------|:---:|---------------|
+| 地图容器的唯一标识。 | 否，多地图时避免重复 | `String` |  -  | `map-${uuid}` |
 
 <span id="view"></span>
 ## 视图 view
 
-| 说明 | 是否必填 | 类型   | 可选值                                                                                                                                                                                                | 默认值                                                                                                  |
-| ---- | -------- | ------ |----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|------------------------------------------------------------------------------------------------------|
-| 视图 | 否       | Object | 继承[ol/view](https://openlayers.org/en/latest/apidoc/module-ol_View-View.html)   | `{view={center: [108.552500, 34.322700],zoom: 5,constrainResolution: true,projection: 'EPSG:4326'}}` |
+| 说明  | 是否必填 | 类型     | 可选值                                                                           | 默认值                                                                                                  |
+|-----|------|--------|-------------------------------------------------------------------------------|------------------------------------------------------------------------------------------------------|
+| 视图  | 否    | Object | 继承[ol/view](https://openlayers.org/en/latest/apidoc/module-ol_View-View.html) | `{view={center: [108.552500, 34.322700],zoom: 5,constrainResolution: true,projection: 'EPSG:4326'}}` |
 
 
 ### 扩展属性
@@ -80,9 +80,9 @@ export default {
 
 默认值说明：不显示层级操作按钮、不显示视图旋转按钮。
 
-| 说明 | 是否必填 | 类型   | 可选值                                                       | 默认值                                    |
-| ---- | -------- | ------ | ------------------------------------------------------------ | ----------------------------------------- |
-| 控件 | 否       | Object | 继承 [ol/control](https://openlayers.org/en/latest/apidoc/module-ol_control.html) | `{controls={zoom: false, rotate: false}}` |
+| 说明  | 是否必填 | 类型     | 可选值                                                                             | 默认值                                       |
+|-----|------|--------|---------------------------------------------------------------------------------|-------------------------------------------|
+| 控件  | 否    | Object | 继承 [ol/control](https://openlayers.org/en/latest/apidoc/module-ol_control.html) | `{controls={zoom: false, rotate: false}}` |
 
 ### 监听controls属性
 
@@ -98,9 +98,9 @@ export default {
 <span id="interactions"></span>
 ## 交互 interactions
 
-| 说明    | 是否必填 | 类型      | 可选值        | 默认值 |
-|-------|------|---------|------------|-----|
-| 地图交互功能    | 否    | Object | 继承 [ol/interactions](https://openlayers.org/en/latest/apidoc/module-ol_interaction.html) | -   |
+| 说明     | 是否必填 | 类型     | 可选值                                                                                      | 默认值 |
+|--------|------|--------|------------------------------------------------------------------------------------------|-----|
+| 地图交互功能 | 否    | Object | 继承 [ol/interactions](https://openlayers.org/en/latest/apidoc/module-ol_interaction.html) | -   |
 
 <span id="cesiumMap"></span>
 ## cesium cesium地图
@@ -114,28 +114,29 @@ export default {
 <span id="events"></span>
 ## 事件 events
 
-| 事件名         | 说明         | 参数                                                                                                                                   |
-| ------------- |------------|--------------------------------------------------------------------------------------------------------------------------------------|
-| load          | 地图对象生成完成事件 | -                                                                                                                                    |
-| click         | 点击事件       | (evt, map)接受2个参数。1、事件实例 [模块：ol/MapEvent~MapEvent](https://openlayers.org/en/latest/apidoc/module-ol_MapEvent-MapEvent.html) 。2、地图实例。 |
+| 事件名          | 说明         | 参数                                                                                                                                   |
+|--------------|------------|--------------------------------------------------------------------------------------------------------------------------------------|
+| load         | 地图对象生成完成事件 | -                                                                                                                                    |
+| click        | 点击事件       | (evt, map)接受2个参数。1、事件实例 [模块：ol/MapEvent~MapEvent](https://openlayers.org/en/latest/apidoc/module-ol_MapEvent-MapEvent.html) 。2、地图实例。 |
 | clickfeature | 点击要素       | (feature, layer)接受2个参数。1、要素实例。2、要素归属的图层实例。                                                                                           |
-| dblclick | 双击事件       | (feature, layer)接受2个参数。1、要素实例。2、要素归属的图层实例。                                                                                           |
-| changeZoom    | 层级变化事件     | (evt,map)接受2个参数。1、事件实例 [模块：ol/MapEvent~MapEvent](https://openlayers.org/en/latest/apidoc/module-ol_MapEvent-MapEvent.html) 。2、地图实例。  |
-| pointermove   | 鼠标悬停事件     | (evt,map)接受2个参数。                                                                                                                     |
-| contextmenu   | 鼠标右键点击事件   | (evt,map)接受2个参数。                                                                                                                     |
+| dblclick     | 双击事件       | (feature, layer)接受2个参数。1、要素实例。2、要素归属的图层实例。                                                                                           |
+| changeZoom   | 层级变化事件     | (evt,map)接受2个参数。1、事件实例 [模块：ol/MapEvent~MapEvent](https://openlayers.org/en/latest/apidoc/module-ol_MapEvent-MapEvent.html) 。2、地图实例。  |
+| pointermove  | 鼠标悬停事件     | (evt,map)接受2个参数。                                                                                                                     |
+| contextmenu  | 鼠标右键点击事件   | (evt,map)接受2个参数。                                                                                                                     |
+| postrender   | 渲染完成事件     | (evt,map)接受2个参数。                                                                                                                     |
 
 
 <span id="methods"></span>
 
 ## 方法 methods
 
-| 方法名                                     | 说明                                                      | 参数                                                         |
-|-----------------------------------------| --------------------------------------------------------- | ------------------------------------------------------------ |
-| [panTo](#panTo)                         | 移动视图动画                                              | {center:中心点数组,zoom:缩放层级数字}接受一个对象参数。      |
-| [getDistancePoint](#getDistancePoint)   | 获取两点之间距离                                          | (from, to, units)接受三个参数，1、起点经纬度，2、终点经纬度，3、距离单位 |
-| [getDistanceString](#getDistanceString) | 计算折线长度                                              | (lines, units)接受两个参数，1、折线经纬度集合，2、长度单位   |
-| [getCenterByExtent](#getCenterByExtent) | 获取区域中心点                                            | (extent)接受一个数组参数。区域范围经纬度集合。               |
-| [exportPNG](#exportPNG)                 | 将当前视图内的地图（包括图层、要素）转成png格式图片导出。 | （pngName）接受一个参数，要导出的图片文件名。                |
+| 方法名                                     | 说明                             | 参数                                             |
+|-----------------------------------------|--------------------------------|------------------------------------------------|
+| [panTo](#panTo)                         | 移动视图动画                         | {center:中心点数组,zoom:缩放层级数字}接受一个对象参数。            |
+| [getDistancePoint](#getDistancePoint)   | 获取两点之间距离                       | (from, to, units)接受三个参数，1、起点经纬度，2、终点经纬度，3、距离单位 |
+| [getDistanceString](#getDistanceString) | 计算折线长度                         | (lines, units)接受两个参数，1、折线经纬度集合，2、长度单位          |
+| [getCenterByExtent](#getCenterByExtent) | 获取区域中心点                        | (extent)接受一个数组参数。区域范围经纬度集合。                    |
+| [exportPNG](#exportPNG)                 | 将当前视图内的地图（包括图层、要素）转成png格式图片导出。 | （pngName）接受一个参数，要导出的图片文件名。                     |
 
 ### 地图中心移动动画 panTo
 
