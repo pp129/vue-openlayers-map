@@ -3,8 +3,8 @@ import BaseLayer from '@/components/layers/BaseLayer.vue'
 import { nanoid } from 'nanoid'
 import { validObjKey } from '@/utils/index.js'
 import TileGrid from 'ol/tilegrid/TileGrid'
-import { OSM, TileArcGISRest, TileWMS, XYZ } from 'ol/source.js'
-import TileLayer from 'ol/layer/Tile.js'
+import { OSM, TileArcGISRest, TileWMS, XYZ } from 'ol/source'
+import TileLayer from 'ol/layer/Tile'
 
 export default {
   name: 'v-tile',
@@ -343,9 +343,14 @@ export default {
 
             if (customid) {
               // https://api.map.baidu.com/customimage/tile?qt=customimage&x=787&y=290&z=12&udt=20220819&scale=2&ak=E4805d16520de693a3fe707cdc962045&customid=midnight&v=2.1&seckey=9LZaB7DLvQ7m%2FRRaNMpgH4S9Zhcxe6d7n%2FqWfPnSoEY%3D%2CDGZ_XDIb0iZ2S_XjrNUTXaf57stJrPVtt77DgTiPElcmmxLfFQRplqMLY-DcBrNQ73d-IDnPJdvDOt8ywP9tRUdmE__T2m_3re7uE7Bh4ZEawAqJa4FkUTq2CDzXupYGQdr0DnfvZsq1eBICikh7cQcvdN1JVdk7P4J_MoGEaDzTI0nkFHNlmD-ntA8DuGMa&timeStamp=1661247410473&sign=98ca621224b9
-              return 'https://api.map.baidu.com/customimage/tile?qt=customimage&x=' +
-                  x + '&y=' + y + '&z=' + z +
-                  'udt=20220819&scale=2&ak=E4805d16520de693a3fe707cdc962045&v=2.1&seckey=9LZaB7DLvQ7m%2FRRaNMpgH4S9Zhcxe6d7n%2FqWfPnSoEY%3D%2CDGZ_XDIb0iZ2S_XjrNUTXaf57stJrPVtt77DgTiPElcmmxLfFQRplqMLY-DcBrNQ73d-IDnPJdvDOt8ywP9tRUdmE__T2m_3re7uE7Bh4ZEawAqJa4FkUTq2CDzXupYGQdr0DnfvZsq1eBICikh7cQcvdN1JVdk7P4J_MoGEaDzTI0nkFHNlmD-ntA8DuGMa&timeStamp=1661247410473&sign=98ca621224b9&customid=' + customid
+              return 'http://api0.map.bdimg.com/customimage/tile?' +
+                  '&x=' + x +
+                  '&y=' + y +
+                  '&z=' + z +
+                  'udt=20220819' +
+                  '&scale=1' +
+                  '&ak=5ieMMexWmzB9jivTq6oCRX9j' +
+                  '&customid=' + customid
             } else {
               return 'https://maponline1.bdimg.com/tile/?qt=vtile&x=' +
                   x + '&y=' + y + '&z=' + z +
