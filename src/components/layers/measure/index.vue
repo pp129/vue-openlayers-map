@@ -3,7 +3,7 @@ import BaseLayer from '@/components/layers/BaseLayer.vue'
 import { Circle as CircleStyle, Fill, RegularShape, Stroke, Style, Text } from 'ol/style'
 import { getArea, getLength } from 'ol/sphere'
 import { nanoid } from 'nanoid'
-import { addVectorSource, setFeatures } from '@/utils'
+import { addVectorSource, setFeatures, setStyle } from '@/utils'
 import { Modify } from 'ol/interaction'
 import { LineString, Point } from 'ol/geom'
 import VectorLayer from 'ol/layer/Vector'
@@ -55,7 +55,29 @@ export default {
     },
     endRight: {
       type: Boolean,
+      default: false
+    },
+    modifiable: {
+      type: Boolean,
       default: true
+    },
+    labelStyle: {
+      type: [Object, Boolean],
+      default () {
+        return false
+      }
+    },
+    tipStyle: {
+      type: [Object, Boolean],
+      default () {
+        return false
+      }
+    },
+    modifyStyle: {
+      type: [Object, Boolean],
+      default () {
+        return false
+      }
     }
   },
   data () {
@@ -74,10 +96,11 @@ export default {
   watch: {
     type: {
       handler (value) {
+        this.map.removeInteraction(this.draw)
+        this.map.removeInteraction(this.select)
+        this.map.removeInteraction(this.modify)
         if (value) {
           this.init()
-        } else {
-          this.dispose()
         }
       },
       immediate: false
@@ -118,67 +141,9 @@ export default {
           })
         })
       })
-      const labelStyle = new Style({
-        text: new Text({
-          font: '14px Calibri,sans-serif',
-          fill: new Fill({
-            color: 'rgba(255, 255, 255, 1)'
-          }),
-          backgroundFill: new Fill({
-            color: 'rgba(0, 0, 0, 0.7)'
-          }),
-          padding: [3, 3, 3, 3],
-          textBaseline: 'bottom',
-          offsetY: -15
-        }),
-        image: new RegularShape({
-          radius: 8,
-          points: 3,
-          angle: Math.PI,
-          displacement: [0, 10],
-          fill: new Fill({
-            color: 'rgba(0, 0, 0, 0.7)'
-          })
-        })
-      })
-      const tipStyle = new Style({
-        text: new Text({
-          font: '12px Calibri,sans-serif',
-          fill: new Fill({
-            color: 'rgba(255, 255, 255, 1)'
-          }),
-          backgroundFill: new Fill({
-            color: 'rgba(0, 0, 0, 0.4)'
-          }),
-          padding: [2, 2, 2, 2],
-          textAlign: 'left',
-          offsetX: 15
-        })
-      })
-      const modifyStyle = new Style({
-        image: new CircleStyle({
-          radius: 5,
-          stroke: new Stroke({
-            color: 'rgba(0, 0, 0, 0.7)'
-          }),
-          fill: new Fill({
-            color: 'rgba(0, 0, 0, 0.4)'
-          })
-        }),
-        text: new Text({
-          text: '编辑测量',
-          font: '12px Calibri,sans-serif',
-          fill: new Fill({
-            color: 'rgba(255, 255, 255, 1)'
-          }),
-          backgroundFill: new Fill({
-            color: 'rgba(0, 0, 0, 0.7)'
-          }),
-          padding: [2, 2, 2, 2],
-          textAlign: 'left',
-          offsetX: 15
-        })
-      })
+      const labelStyle = this.labelStyle ? setStyle(this.labelStyle) : this.labelDefaultStyle()
+      const tipStyle = this.tipStyle ? setStyle(this.tipStyle) : this.tipDefaultStyle()
+      const modifyStyle = this.modifyStyle ? setStyle(this.modifyStyle) : this.modifyDefaultStyle()
       const segmentStyle = new Style({
         text: new Text({
           font: '12px Calibri,sans-serif',
@@ -230,7 +195,7 @@ export default {
       this.modify = new Modify({ source, style: modifyStyle })
       let tipPoint
       const styleFunction = (feature, segments, drawType, tip) => {
-        const styles = [style]
+        const styles = [this.featureStyle ? setStyle(this.featureStyle) : style]
         const geometry = feature.getGeometry()
         const type = geometry.getType()
         let point, label, line
@@ -284,10 +249,14 @@ export default {
       this.layer.set('id', this.layerId)
       this.layer.set('type', 'measure')
       this.layer.set('users', true)
-      this.layer.setZIndex(1)
+      if (this.zIndex) {
+        this.layer.setZIndex(this.zIndex)
+      }
       this.map.addLayer(this.layer)
       this.modify.set('type', 'measure')
-      this.map.addInteraction(this.modify)
+      if (this.modifiable) {
+        this.map.addInteraction(this.modify)
+      }
       const drawType = this.type
       const activeTip =
           '点击继续测量' +
@@ -327,7 +296,7 @@ export default {
       this.map.addInteraction(this.draw)
     },
     dispose () {
-      this.layer.getSource().clear()
+      // this.layer.getSource().clear()
       this.map.removeInteraction(this.draw)
       this.map.removeInteraction(this.select)
       this.map.removeInteraction(this.modify)
@@ -341,6 +310,73 @@ export default {
     },
     setActive (value) {
       this.draw.setActive(value)
+    },
+    labelDefaultStyle () {
+      return new Style({
+        text: new Text({
+          font: '14px Calibri,sans-serif',
+          fill: new Fill({
+            color: 'rgba(255, 255, 255, 1)'
+          }),
+          backgroundFill: new Fill({
+            color: 'rgba(0, 0, 0, 0.7)'
+          }),
+          padding: [3, 3, 3, 3],
+          textBaseline: 'bottom',
+          offsetY: -15
+        }),
+        image: new RegularShape({
+          radius: 8,
+          points: 3,
+          angle: Math.PI,
+          displacement: [0, 10],
+          fill: new Fill({
+            color: 'rgba(0, 0, 0, 0.7)'
+          })
+        })
+      })
+    },
+    tipDefaultStyle () {
+      return new Style({
+        text: new Text({
+          font: '12px Calibri,sans-serif',
+          fill: new Fill({
+            color: 'rgba(255, 255, 255, 1)'
+          }),
+          backgroundFill: new Fill({
+            color: 'rgba(0, 0, 0, 0.4)'
+          }),
+          padding: [2, 2, 2, 2],
+          textAlign: 'left',
+          offsetX: 15
+        })
+      })
+    },
+    modifyDefaultStyle () {
+      return new Style({
+        image: new CircleStyle({
+          radius: 5,
+          stroke: new Stroke({
+            color: 'rgba(0, 0, 0, 0.7)'
+          }),
+          fill: new Fill({
+            color: 'rgba(0, 0, 0, 0.4)'
+          })
+        }),
+        text: new Text({
+          text: '编辑测量',
+          font: '12px Calibri,sans-serif',
+          fill: new Fill({
+            color: 'rgba(255, 255, 255, 1)'
+          }),
+          backgroundFill: new Fill({
+            color: 'rgba(0, 0, 0, 0.7)'
+          }),
+          padding: [2, 2, 2, 2],
+          textAlign: 'left',
+          offsetX: 15
+        })
+      })
     }
   }
 }

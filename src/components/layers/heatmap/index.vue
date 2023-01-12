@@ -131,11 +131,13 @@ export default {
     this.layer.set('id', this.layerId)
     this.layer.set('type', 'heatmap')
     this.layer.set('users', true)
-    this.layer.setZIndex(1)
+    if (this.zIndex) {
+      this.layer.setZIndex(this.zIndex)
+    }
     this.map.addLayer(this.layer)
   },
   beforeDestroy () {
-    this.layer.getSource().clear()
+    // this.layer.getSource().clear()
     this.map.removeLayer(this.layer)
   }
 }

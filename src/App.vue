@@ -63,6 +63,7 @@
         @changeZoom="changeZoom"
         @click="onClick"
         @clickfeature="onClickFeature"
+        @clickfeatures="onClickFeatures"
         @dblclick="onDblClick"
         @contextmenu.prevent="onContextmenu"
         @pointermove="pointermove"
@@ -87,7 +88,7 @@
           :z-index="4"
           @select="onselect" @modifystart="modifystart" @modifyend="modifyend" @modifychange="modifychange"></v-vector>
       <v-draw ref="drawLayer" :type="drawType" :arrow="arrow" :feature-style="drawFeatureStyle" :end-right="true" :clear="true" draw-once editable @drawend="drawend"></v-draw>
-      <v-measure ref="measureLayer" :type="measureType" end-right></v-measure>
+      <v-measure ref="measureLayer" :type="measureType" :feature-style="measureStyle" :label-style="measureLabelStyle" :tip-style="measureTipStyle" :modify-style="measureModifyStyle" :modifiable="true"></v-measure>
       <v-overlay class="overlay" :position="positionRadius">半径：{{radius}} 米</v-overlay>
       <v-overlay class="overlay-cluster" :position="positionCluster" :offset="[15,15]">
         <ul>
@@ -418,6 +419,61 @@ export default {
           noCluster: true
         },
         {
+          id: 'point11',
+          coordinates: [118.140448, 24.512917],
+          convert: 'bd-84', // 特殊属性，经纬度转化。支持：百度(bd)、高德(gd)、wgs84(84)互转
+          style: {
+            icon: {
+              scale: 0.6,
+              // src: require('@/assets/img/point_6.png')
+              src: new URL('./assets/img/point_3.png', import.meta.url).href
+            },
+            text: {
+              text: '百度转84',
+              font: '13px sans-serif',
+              fill: {
+                color: '#3d73e8'
+              },
+              backgroundFill: {
+                color: '#ffffff'
+              },
+              stroke: {
+                color: '#ffffff',
+                width: 1
+              },
+              backgroundStroke: {
+                color: '#000000',
+                width: 1
+              },
+              offsetX: 0,
+              offsetY: 30
+            },
+            styleFunction: function (feature, resolution, map, style) {
+              const viewZoom = map.getView().getZoom()
+              const minZoom = 12
+              const maxZoom = 16
+              const textStyle = style.getText()
+              if (viewZoom >= 14) {
+                textStyle.setText('百度转84')
+              }
+              if (viewZoom >= 15) {
+                textStyle.setText('根据层级显示不同内容')
+              }
+              style.setText(textStyle)
+              return minZoom <= viewZoom && viewZoom <= maxZoom ? style : null
+            }
+          },
+          properties: {
+            name: 'feature1',
+            level: 1
+          },
+          flash: {
+            rate: 1,
+            color: 'green'
+          },
+          noCluster: true
+        },
+        {
           id: 'point2',
           coordinates: [118.168742, 24.487505],
           style: {
@@ -647,6 +703,84 @@ export default {
       },
       drawType: '',
       measureType: '',
+      measureStyle: {
+        fill: {
+          color: 'rgba(74,226,199,0.15)'
+        },
+        stroke: {
+          color: '#4AE2C7',
+          lineDash: [10, 10],
+          width: 2
+        },
+        circle: {
+          radius: 5,
+          fill: {
+            color: '#4AE2C7'
+          }
+        }
+      },
+      measureLabelStyle: {
+        text: {
+          fill: {
+            color: '#4AE2C7'
+          },
+          backgroundFill: {
+            color: 'rgba(74,226,199,0.15)'
+          },
+          backgroundStroke: {
+            color: 'rgba(74,226,199,1)'
+          },
+          padding: [3, 3, 3, 3],
+          textBaseline: 'bottom',
+          offsetY: -15
+        },
+        shape: {
+          radius: 8,
+          points: 3,
+          angle: Math.PI,
+          displacement: [0, 8],
+          fill: {
+            color: 'rgba(74,226,199,1)'
+          }
+        }
+      },
+      measureTipStyle: {
+        text: {
+          fill: {
+            color: '#4AE2C7'
+          },
+          backgroundFill: {
+            color: 'rgba(74,226,199,0.15)'
+          },
+          padding: [2, 2, 2, 2],
+          textAlign: 'left',
+          offsetX: 15
+        }
+      },
+      measureModifyStyle: {
+        circle: {
+          radius: 5,
+          stroke: {
+            color: '#4AE2C7'
+          },
+          fill: {
+            color: 'rgba(74,226,199,0.15)'
+          }
+        },
+        text: {
+          text: '编辑测量',
+          font: '12px Calibri,sans-serif',
+          fill: {
+            color: 'rgba(74,226,199,1)'
+          },
+          backgroundFill: {
+            color: 'rgba(74,226,199,0.15)'
+          },
+          padding: [2, 2, 2, 2],
+          textAlign: 'left',
+          offsetX: 15
+        }
+      },
       currentCoordinateText: '',
       heatmap: {
         features: [],
@@ -743,6 +877,11 @@ export default {
     },
     onContextmenu (evt, map) {
       this.positionMenu = evt.coordinate
+    },
+    onClickFeatures (params, evt, map) {
+      console.log(params)
+      console.log(evt)
+      console.log(map)
     },
     onClickFeature (feature, layer, evt) {
       console.log(feature)

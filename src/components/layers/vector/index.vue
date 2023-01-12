@@ -161,7 +161,7 @@ export default {
         } else {
           defaultOptions = this.cluster
         }
-        const clusterOption = { source, ...defaultOptions }
+        const clusterOption = { ...defaultOptions, ...{ source } }
         this.clusterObj = new Cluster(clusterOption)
         this.layerOpt = { ...this.$props, ...{ source: this.clusterObj, style: clusterOption.style } }
         this.layer = addClusterLayer(this.layerOpt, this.map)
@@ -193,7 +193,9 @@ export default {
       this.layer.set('id', this.layerId)
       this.layer.set('type', 'vector')
       this.layer.set('users', true)
-      this.layer.setZIndex(1)
+      if (this.zIndex) {
+        this.layer.setZIndex(this.zIndex)
+      }
       this.map.addLayer(this.layer)
       this.features.forEach(feature => {
         if (feature.type === 'polyline' && validObjKey(feature, 'arrow')) {
@@ -270,11 +272,11 @@ export default {
     },
     dispose () {
       clearInterval(this.flashInterval)
-      if (this.cluster && this.clusterObj) {
-        this.clusterObj.clear()
-      } else {
-        this.layer.getSource().clear()
-      }
+      // if (this.cluster && this.clusterObj) {
+      //   this.clusterObj.clear()
+      // } else {
+      //   this.layer.getSource().clear()
+      // }
       this.map.removeLayer(this.layer)
       this.map.removeInteraction(this.selectObj)
       this.map.removeInteraction(this.modifyObj)

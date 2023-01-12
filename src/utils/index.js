@@ -10,7 +10,7 @@ import { applyTransform, containsCoordinate, containsExtent, getHeight, getWidth
 import { distance, point } from '@turf/turf'
 import coordtransform from '@/utils/coordtransform'
 import { Circle, LineString, Point, Polygon } from 'ol/geom'
-import { Fill, Icon, Stroke, Style, Text } from 'ol/style'
+import { Fill, Icon, RegularShape, Stroke, Style, Text } from 'ol/style'
 import CircleStyle from 'ol/style/Circle'
 import { nanoid } from 'nanoid'
 import VectorSource from 'ol/source/Vector'
@@ -43,6 +43,7 @@ Map.prototype.forEachSmFeatureAtPixel = function (t, r, s, i) {
     // eslint-disable-next-line no-useless-call
     h.getVisible() && a.call(null, h) && e(h, l, o, r, t, i)
   }
+  // t:pixel, r:callback(feature,layer), s:options
   return this.forEachFeatureAtPixel(t, r, s)
 }
 const getGraphicsInExtent = function (source, e) {
@@ -270,6 +271,25 @@ export const setStyle = (option) => {
     const optionText = option.text
     const textStyle = setText(optionText)
     style.setText(textStyle)
+  }
+  if (validObjKey(option, 'shape')) {
+    let shapeFill
+    let shapeStroke
+    if (validObjKey(option.shape, 'fill')) {
+      shapeFill = new Fill(option.shape.fill)
+    }
+    if (validObjKey(option.shape, 'stroke')) {
+      shapeStroke = new Stroke(option.shape.stroke)
+    }
+    const shapeOptions = {
+      ...option.shape,
+      ...{
+        stroke: shapeStroke,
+        fill: shapeFill
+      }
+    }
+    const shape = new RegularShape(shapeOptions)
+    style.setImage(shape)
   }
   return style
 }

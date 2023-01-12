@@ -215,6 +215,9 @@ export default {
       this.layer = new TileLayer(layerOpt)
       this.layer.set('base', this.base)
       // this.layer.setZIndex(0)
+      if (this.zIndex) {
+        this.layer.setZIndex(this.zIndex)
+      }
       this.layers = [this.layer]
       if (!this.addForOverview) {
         this.layers.forEach(layer => {
@@ -251,9 +254,9 @@ export default {
         })
       }
     },
-    initXYZbyURL (url) {
+    initXYZbyURL (url, sourceOptions = {}) {
       const xyzOpt = { ...{ crossOrigin: 'anonymous' }, ...this.$props.xyz, ...{ url } }
-      const source = new XYZ(xyzOpt)
+      const source = new XYZ({ ...xyzOpt, ...sourceOptions })
       const layerOpt = { ...this.$props, ...{ source } }
       const layer = new TileLayer(layerOpt)
       layer.set('base', true)
@@ -276,7 +279,7 @@ export default {
       switch (type) {
         case 'blue':
           url = import.meta.env.DEV ? 'http:' : 'https:'
-          url = url + '//cache1.arcgisonline.cn/arcgis/rest/services/ChinaOnlineStreetPurplishBlue/MapServer/tile'
+          url = url + '//map.geoq.cn/ArcGIS/rest/services/ChinaOnlineStreetPurplishBlue/MapServer/tile/'
           break
         case 'warm':
           url = import.meta.env.DEV ? 'http:' : 'https:'
@@ -295,7 +298,7 @@ export default {
           url = url + '//cache1.arcgisonline.cn/arcgarcgis/rest/services/ChinaOnlineCommunity/MapServer/tile'
           break
       }
-      this.layer = this.initXYZbyURL(`${url}/{z}/{y}/{x}`)
+      this.layer = this.initXYZbyURL(`${url}/{z}/{y}/{x}`, { projection: 'GCJ02' })
       this.layers = [this.layer]
       if (!this.addForOverview) {
         this.layers.forEach(layer => {

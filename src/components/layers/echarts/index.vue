@@ -78,6 +78,9 @@ export default {
   methods: {
     init () {
       this.layer = new EChartsLayer(this.options)
+      if (this.zIndex) {
+        this.layer.setZIndex(this.zIndex)
+      }
       this.layer.appendTo(this.map)
     },
     dispose () {

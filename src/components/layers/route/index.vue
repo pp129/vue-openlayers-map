@@ -348,8 +348,8 @@ export default {
     this.init()
   },
   beforeDestroy () {
-    this.layer.getSource().clear()
-    this.map.removeLayer(this.layer)
+    // this.layer.getSource().clear()
+    this.dispose()
   },
   methods: {
     /**
@@ -659,7 +659,9 @@ export default {
         this.layer.set('id', this.layerId)
         this.layer.set('type', 'vector')
         this.layer.set('users', true)
-        this.layer.setZIndex(1)
+        if (this.zIndex) {
+          this.layer.setZIndex(this.zIndex)
+        }
         this.map.addLayer(this.layer)
       }
       if (this.stops.length >= 2) {
@@ -684,6 +686,9 @@ export default {
         }
         this.$emit('render', this.routeData, this.map, this.features)
       }
+    },
+    dispose(){
+      this.map.removeLayer(this.layer)
     }
   }
 }

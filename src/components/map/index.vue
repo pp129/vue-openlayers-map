@@ -9,6 +9,7 @@
 import { nanoid } from 'nanoid'
 import { OlMap, setStyle } from '@/utils/index.js'
 import { getCenter } from 'ol/extent'
+import _ from 'lodash'
 
 export default {
   name: 'v-map',
@@ -219,11 +220,17 @@ export default {
             this.map3dEvents()
           }
           // 点击事件
-          this.map.on('singleclick', (r) => {
-            this.$emit('click', r, this.map)
-            this.map.forEachSmFeatureAtPixel(r.pixel, (i, e) => {
-              this.$emit('clickfeature', i, e, r)
-            }, {}, r)
+          this.map.on('singleclick', (evt) => {
+            const params = []
+            this.$emit('click', evt, this.map)
+            this.map.forEachSmFeatureAtPixel(evt.pixel, (feature, layer) => {
+              if (layer) {
+                params.push({ layerId: layer.get('id'), layer, feature })
+                this.$emit('clickfeature', feature, layer, evt, this.map)
+              }
+            }, {}, evt)
+            // console.log(_.groupBy(params, 'layerId'))
+            this.$emit('clickfeatures', _.groupBy(params, 'layerId'), evt, this.map)
           })
           // 双击时间
           this.map.on('dblclick', (evt) => {

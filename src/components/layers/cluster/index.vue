@@ -135,7 +135,9 @@ export default {
       this.layer.set('id', this.layerId)
       this.layer.set('type', 'cluster')
       this.layer.set('users', true)
-      this.layer.setZIndex(1)
+      if (this.zIndex) {
+        this.layer.setZIndex(this.zIndex)
+      }
       this.map.addLayer(this.layer)
     },
     dispose () {

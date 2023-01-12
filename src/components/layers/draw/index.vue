@@ -202,7 +202,6 @@ export default {
     this.init()
   },
   beforeDestroy () {
-    this.map.removeLayer(this.layer)
     this.dispose()
   },
   methods: {
@@ -237,7 +236,9 @@ export default {
       this.layer.set('id', this.layerId)
       this.layer.set('type', 'draw')
       this.layer.set('users', true)
-      this.layer.setZIndex(1)
+      if (this.zIndex) {
+        this.layer.setZIndex(this.zIndex)
+      }
       this.map.addLayer(this.layer)
       if (this.type) {
         this.initDraw()
@@ -247,8 +248,6 @@ export default {
       this.resetDraw()
       this.draw.set('type', 'draw')
       this.map.addInteraction(this.draw)
-      console.log('endDblclick', this.endDblclick)
-      console.log('endRight', this.endRight)
       this.draw.on('drawstart', evt => {
         this.$emit('drawstart', evt, this.map)
         if (this.clear) {
@@ -395,10 +394,11 @@ export default {
     },
     dispose () {
       // this.map.removeLayer(this.layer)
-      this.layer.getSource().clear()
+      // this.layer.getSource().clear()
       this.map.removeInteraction(this.draw)
       this.map.removeInteraction(this.select)
       this.map.removeInteraction(this.modify)
+      this.map.removeLayer(this.layer)
     },
     finish () {
       this.draw.finishDrawing()
