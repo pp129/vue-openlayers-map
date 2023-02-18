@@ -70,7 +70,7 @@
         @map3dClick="map3dClick"
         @map3dMoveEnd="moveEnd"
     >
-      <v-tile :tile-type="tile" :xyz="xyz" :z-index="1"></v-tile>
+      <v-tile :tile-type="tile" :xyz="xyz" :z-index="1" :mask="tileFilter"></v-tile>
       <v-tile ref="wms" tile-type="WMS" :wms="wms" :z-index="2"></v-tile>
       <v-overview :tile-type="tile" :rotateWithView="rotateWithView" collapsible></v-overview>
       <v-vector
@@ -128,6 +128,12 @@
           <li @click="measureHandler('LineString')">线段</li>
         </ul>
       </v-overlay>
+      <v-image :source="imageSource" :z-index="9"></v-image>
+      <v-vector
+          :features="textFeatures"
+          modify
+          @modifyend="textLayerModifyEnd"
+          :z-index="10"></v-vector>
       <v-track ref="track" :id="track.id" :paths="track.paths" :options="track.options" @onLoad="onLoadTrack" change-car-rotate></v-track>
       <v-echarts :options="echarts.options" :visible="echarts.visible"></v-echarts>
       <v-heatmap :features="heatmap.features" :visible="heatmap.visible" :radius="3" :blur="6"></v-heatmap>
@@ -166,7 +172,9 @@ export default {
       rotateWithView: true,
       interactions: {
         DragRotateAndZoom: true,
-        doubleClickZoom: false
+        doubleClickZoom: false,
+        dragPan: true,
+        mouseWheelZoom: true
       },
       map3d: false,
       perspectiveMap: {
@@ -220,7 +228,7 @@ export default {
           value: 'OSM'
         }
       ],
-      tile: 'BD_BLUE',
+      tile: 'bd',
       xyz: {
         attributions:
             ['custom attribution &copy; XXX Inc. ' +
@@ -230,6 +238,7 @@ export default {
             '<a href="https://pp129.github.io/vue-openlayers-map/"' +
             'target="_blank">See Docs</a></span>']
       },
+      tileFilter: undefined,
       wms: {
         url: 'http://218.5.80.6:6600/geoserver/nd/wms',
         params: {
@@ -250,36 +259,6 @@ export default {
         }
       },
       features2: [
-        {
-          id: 'polygon',
-          type: 'polygon', // 除了普通icon点位，其他元素需注明元素类型
-          style: {
-            fill: {
-              color: 'rgba(67,126,152,0.15)'
-            },
-            stroke: {
-              color: 'rgba(67,126,255,1)',
-              width: 1,
-              lineDash: [20, 10, 20, 10]
-            },
-            text: {
-              text: '多边形',
-              font: '13px sans-serif',
-              fill: {
-                color: '#3d73e8'
-              }
-            }
-          },
-          updateStyle: {
-            fill: {
-              color: 'rgba(4,3,43,0.5)'
-            }
-          },
-          coordinates: [
-            [118.23048075355373, 24.587052571002776], [118.25051461705989, 24.592192894082423],
-            [118.24383041710121, 24.561810933485354], [118.23048075355373, 24.587052571002776]
-          ]
-        },
         {
           type: 'polyline',
           style: {
@@ -785,7 +764,75 @@ export default {
       heatmap: {
         features: [],
         visible: true
-      }
+      },
+      imageSource: {
+        url: new URL('./assets/img/siming.jpg', import.meta.url).href,
+        imageExtent: [118.0531, 24.423728, 118.197989, 24.502344]
+      },
+      textFeatures: [
+        {
+          coordinates: [118.057099, 24.500103],
+          style: {
+            text: {
+              text: '滨北',
+              font: '24px sans-serif',
+              fill: {
+                color: '#FFFFFF'
+              }
+            }
+          }
+        },
+        {
+          coordinates: [118.07076307714804, 24.49984086168768],
+          style: {
+            text: {
+              text: '50',
+              font: '28px sans-serif',
+              fill: {
+                color: '#FF9D2F'
+              }
+            }
+          }
+        },
+        {
+          coordinates: [118.108984, 24.464809],
+          style: {
+            circle: {
+              radius: 5,
+              fill: {
+                color: 'red'
+              },
+              stroke: {
+                width: 0,
+                color: 'red'
+              }
+            }
+          },
+          flash: {
+            color: 'red'
+          }
+        },
+        {
+          type: 'polyline',
+          style: {
+            stroke: {
+              color: '#34D1FE',
+              width: 2
+            }
+          },
+          coordinates: [[118.085664, 24.482754], [118.07431, 24.495718], [118.05317343756677, 24.49607713463211]]
+        },
+        {
+          type: 'polyline',
+          style: {
+            stroke: {
+              color: '#34D1FE',
+              width: 2
+            }
+          },
+          coordinates: [[118.071986, 24.4628], [118.058538, 24.472773], [118.0380779141473, 24.472963941494164]]
+        }
+      ]
     }
   },
   methods: {
@@ -869,11 +916,21 @@ export default {
     },
     changeZoom (evt, map) {
       this.mapZoom = map.getView().getZoom()
-      // if (this.mapZoom >= 16) {
-      //   this.toggleCluster = true
-      // } else {
-      //   this.toggleCluster = false
-      // }
+      if (this.mapZoom >= 14) {
+        this.tileFilter = {
+          feature: {
+            type: 'polygon',
+            coordinates: [
+              [118.23048075355373, 24.587052571002776], [118.25051461705989, 24.592192894082423],
+              [118.24383041710121, 24.561810933485354], [118.23048075355373, 24.587052571002776]
+            ]
+          },
+          shadowWidth: 50,
+          fill: 'rgba(0,0,0,0.8)'
+        }
+      } else {
+        this.tileFilter = undefined
+      }
     },
     onContextmenu (evt, map) {
       this.positionMenu = evt.coordinate
@@ -1450,6 +1507,10 @@ export default {
           this.tile = 'TD_IMG'
         }
       }
+    },
+    textLayerModifyEnd (params) {
+      const coordinates = params.features.getArray()[0].getGeometry().getCoordinates()
+      console.log(JSON.stringify(coordinates))
     }
   },
   mounted () {

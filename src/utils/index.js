@@ -9,7 +9,7 @@ import { addCoordinateTransforms, addProjection, Projection, transform } from 'o
 import { applyTransform, containsCoordinate, containsExtent, getHeight, getWidth, getCenter } from 'ol/extent.js'
 import { distance, point } from '@turf/turf'
 import coordtransform from '@/utils/coordtransform'
-import { Circle, LineString, Point, Polygon } from 'ol/geom'
+import { Circle, LineString, MultiPolygon, Point, Polygon } from 'ol/geom'
 import { Fill, Icon, RegularShape, Stroke, Style, Text } from 'ol/style'
 import CircleStyle from 'ol/style/Circle'
 import { nanoid } from 'nanoid'
@@ -162,6 +162,13 @@ export const validObjKey = (obj, key) => {
   } else {
     return false
   }
+}
+
+export const isFunction = (obj) => {
+  // In some browsers, typeof returns "function" for HTML <object> elements
+  // (i.e., `typeof document.createElement( "object" ) === "function"`).
+  // We don't want to classify *any* DOM node as a function.
+  return typeof obj === 'function' && typeof obj.nodeType !== 'number'
 }
 
 /**
@@ -336,6 +343,8 @@ export const setFeature = (option, map, hasStyle = false) => {
         return setPointFeature(option, map, hasStyle)
       case 'polygon':
         return setPolygon(option)
+      case 'MultiPolygon':
+        return setMultiPolygon(option)
       case 'polyline':
         return setPolyline(option)
       case 'circle':
@@ -407,6 +416,29 @@ export const setPolygon = (option) => {
   }
   const feature = new FeatureExt({
     geometry: new Polygon([coordinates])
+  })
+  feature.setId(option.id || `polygon-${nanoid()}`)
+  if (typeof option === 'object') {
+    for (const i in option) {
+      if (Object.prototype.hasOwnProperty.call(option, i)) {
+        feature.set(i, option[i])
+      }
+    }
+  }
+  return feature
+}
+
+export const setMultiPolygon = (option) => {
+  let coordinates = []
+  if (validObjKey(option, 'convert') && option.convert) {
+    option.coordinates.forEach(coordinate => {
+      coordinates.push(convertCoordinate(coordinate, option.convert))
+    })
+  } else {
+    coordinates = option.coordinates
+  }
+  const feature = new FeatureExt({
+    geometry: new MultiPolygon([coordinates])
   })
   feature.setId(option.id || `polygon-${nanoid()}`)
   if (typeof option === 'object') {
@@ -916,25 +948,6 @@ export class OlMap {
     // const controls = defaultControls(controlsOption).extend([])
 
     // 生成地图
-    // if (Object.prototype.hasOwnProperty.call(option, 'perspectiveMap') && typeof option.perspectiveMap === 'object') {
-    //   this.map = new PerspectiveMap({
-    //     target: option.target,
-    //     view,
-    //     controls: [],
-    //     interactions: defaultInteraction(option.interactions)
-    //   })
-    //
-    //   if (Object.keys(option.perspectiveMap).length > 0) {
-    //     this.map.setPerspective(option.perspectiveMap.angle, option.perspectiveMap.options)
-    //   }
-    // } else {
-    //   this.map = new Map({
-    //     target: option.target,
-    //     view,
-    //     controls: [],
-    //     interactions: defaultInteraction(option.interactions)
-    //   })
-    // }
     this.map = new Map({
       target: option.target,
       view,

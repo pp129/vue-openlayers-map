@@ -44,13 +44,18 @@ export default {
       default: 8
     },
     weight: {
-      type: [String, Function],
+      type: String,
       default: 'weight'
     },
     gradient: {
       type: Array,
       default () {
-        return ['#00f', '#0ff', '#0f0', '#ff0', '#f00']
+        return [
+          '#00f',
+          '#0ff',
+          '#0f0',
+          '#ff0',
+          '#f00']
       }
     }
   },

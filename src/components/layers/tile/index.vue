@@ -1,10 +1,12 @@
 <script>
 import BaseLayer from '@/components/layers/BaseLayer.vue'
 import { nanoid } from 'nanoid'
-import { validObjKey } from '@/utils/index.js'
+import { setFeature, validObjKey } from '@/utils/index.js'
 import TileGrid from 'ol/tilegrid/TileGrid'
 import { OSM, TileArcGISRest, TileWMS, XYZ } from 'ol/source'
 import TileLayer from 'ol/layer/Tile'
+import Mask from 'ol-ext/filter/Mask'
+import { Fill } from 'ol/style'
 
 export default {
   name: 'v-tile',
@@ -63,13 +65,17 @@ export default {
     wms: {
       type: Object,
       default () {}
+    },
+    mask: {
+      type: Object
     }
   },
   data () {
     return {
       layer: null,
       layers: [],
-      addForOverview: false
+      addForOverview: false,
+      filterMask: null
     }
   },
   computed: {
@@ -121,6 +127,23 @@ export default {
     'xyz.attributions': {
       handler (value) {
         this.layers.map(layer => layer.getSource().setAttributions(value))
+      },
+      immediate: false,
+      deep: true
+    },
+    mask: {
+      handler (newValue, oldValue) {
+        if (newValue && newValue !== oldValue) {
+          this.layers.forEach(layer => {
+            layer.removeFilter(this.filterMask)
+            this.addMask(layer, this.mask)
+          })
+        } else if (!newValue) {
+          this.layers.forEach(layer => {
+            // layer.addFilter(this.filterMask)
+            layer.removeFilter(this.filterMask)
+          })
+        }
       },
       immediate: false,
       deep: true
@@ -200,6 +223,9 @@ export default {
       this.layers = [this.layer]
       if (!this.addForOverview) {
         this.layers.forEach(layer => {
+          if (this.mask && Object.keys(this.mask).length > 0) {
+            this.addMask(layer, this.mask)
+          }
           this.map.addLayer(layer)
         })
       }
@@ -221,6 +247,9 @@ export default {
       this.layers = [this.layer]
       if (!this.addForOverview) {
         this.layers.forEach(layer => {
+          if (this.mask && Object.keys(this.mask).length > 0) {
+            this.addMask(this.mask)
+          }
           this.map.addLayer(layer)
         })
       }
@@ -237,9 +266,15 @@ export default {
       this.layer.set('base', this.base)
       this.layer.set('type', 'wms')
       // this.layer.setZIndex(0)
+      if (this.zIndex) {
+        this.layer.setZIndex(this.zIndex)
+      }
       this.layers = [this.layer]
       if (!this.addForOverview) {
         this.layers.forEach(layer => {
+          if (this.mask && Object.keys(this.mask).length > 0) {
+            this.addMask(layer, this.mask)
+          }
           this.map.addLayer(layer)
         })
       }
@@ -250,6 +285,9 @@ export default {
       this.layers = [layerVec, layerCva]
       if (!this.addForOverview) {
         this.layers.forEach(layer => {
+          if (this.zIndex) {
+            layer.setZIndex(this.zIndex)
+          }
           this.map.addLayer(layer)
         })
       }
@@ -260,7 +298,12 @@ export default {
       const layerOpt = { ...this.$props, ...{ source } }
       const layer = new TileLayer(layerOpt)
       layer.set('base', true)
-      layer.setZIndex(0)
+      if (this.zIndex) {
+        layer.setZIndex(this.zIndex)
+      }
+      if (this.mask && Object.keys(this.mask).length > 0) {
+        this.addMask(layer, this.mask)
+      }
       return layer
     },
     initTDIMG () {
@@ -302,6 +345,9 @@ export default {
       this.layers = [this.layer]
       if (!this.addForOverview) {
         this.layers.forEach(layer => {
+          if (this.zIndex) {
+            layer.setZIndex(this.zIndex)
+          }
           this.map.addLayer(layer)
         })
       }
@@ -311,7 +357,10 @@ export default {
       if (this.layers.length > 0) {
         if (!this.addForOverview) {
           this.layers.forEach(layer => {
-            layer.setZIndex(0)
+            // layer.setZIndex(0)
+            if (this.mask && Object.keys(this.mask).length > 0) {
+              this.addMask(layer, this.mask)
+            }
             this.map.addLayer(layer)
           })
         }
@@ -370,12 +419,18 @@ export default {
       layer.set('type', 'bd')
       layer.set('name', 'bd')
       layer.set('base', true)
+      if (this.zIndex) {
+        layer.setZIndex(this.zIndex)
+      }
       return [layer]
     },
     initGD () {
       this.layers = this.getAMap(this.xyz, this.$props, this.gdUrl)
       if (!this.addForOverview) {
         this.layers.forEach(layer => {
+          if (this.mask && Object.keys(this.mask).length > 0) {
+            this.addMask(layer, this.mask)
+          }
           this.map.addLayer(layer)
         })
       }
@@ -395,6 +450,9 @@ export default {
       layer.set('type', 'AMap')
       layer.set('name', 'AMap')
       layer.set('base', true)
+      if (this.zIndex) {
+        layer.setZIndex(this.zIndex)
+      }
       return [layer]
     },
     initTileOSM () {
@@ -406,9 +464,35 @@ export default {
       this.layers = [this.layer]
       if (!this.addForOverview) {
         this.layers.forEach(layer => {
+          if (this.mask && Object.keys(this.mask).length > 0) {
+            this.addMask(layer, this.mask)
+          }
+          if (this.zIndex) {
+            layer.setZIndex(this.zIndex)
+          }
           this.map.addLayer(layer)
         })
       }
+    },
+    addMask (layer, maskOption) {
+      console.log(maskOption)
+      const option = {
+        feature: maskOption.feature,
+        wrapX: maskOption.wrapX || true,
+        inner: maskOption.inner || false,
+        shadowWidth: maskOption.shadowWidth || 0,
+        fill: maskOption.fill || 'rgba(255, 255, 255, 0.8)'
+      }
+      console.log(this.layers)
+      const filterFeature = setFeature(option.feature, this.map)
+      this.filterMask = new Mask({
+        feature: filterFeature,
+        wrapX: option.wrapX || true,
+        inner: option.inner || false,
+        fill: new Fill({ color: option.fill })
+      })
+      this.filterMask.set('shadowWidth', option.shadowWidth || 0)
+      layer.addFilter(this.filterMask)
     }
   },
   updated () {
