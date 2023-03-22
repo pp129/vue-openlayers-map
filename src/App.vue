@@ -38,7 +38,7 @@
        <label>X轴旋转角：{{perspectiveMap.roll}}°</label>
        <label>Z轴旋转角：{{perspectiveMap.heading}}°</label>
 <!--       <input type="range" step=1 min=0 max=30 v-model="perspectiveMap.angle" />-->
-       <p><span class="tag">实验性功能</span></p>
+<!--       <p><span class="tag">实验性功能</span></p>-->
      </div>
       <div class="item">
         <p v-if="mapLoaded">当前层级：{{mapZoom}} 级</p>
@@ -49,6 +49,7 @@
       <div class="item">
         <button @click="panTo">厦门</button>
         <button @click="flyTo">杭州</button>
+        <button @click="getExtent">边界</button>
       </div>
     </div>
     <v-map
@@ -72,6 +73,8 @@
     >
       <v-tile :tile-type="tile" :xyz="xyz" :z-index="1" :mask="tileFilter"></v-tile>
       <v-tile ref="wms" tile-type="WMS" :wms="wms" :z-index="2"></v-tile>
+      <v-image :source="imageSource" :z-index="9"></v-image>
+      <v-image :source="imageSource2" geo-image :opacity="0.9" :z-index="9"></v-image>
       <v-overview :tile-type="tile" :rotateWithView="rotateWithView" collapsible></v-overview>
       <v-vector
           ref="layer1"
@@ -79,7 +82,7 @@
           :features="features"
           :cluster="toggleCluster?cluster:false"
           :visible="visible1"
-          :z-index="3"></v-vector>
+          :z-index="3" @featuresChange="featuresChange"></v-vector>
       <v-vector
           :features="features2"
           :modify="modify"
@@ -128,14 +131,12 @@
           <li @click="measureHandler('LineString')">线段</li>
         </ul>
       </v-overlay>
-      <v-image :source="imageSource" :z-index="9"></v-image>
       <v-vector
           :features="textFeatures"
           modify
           @modifyend="textLayerModifyEnd"
           :z-index="10"></v-vector>
       <v-track ref="track" :id="track.id" :paths="track.paths" :options="track.options" @onLoad="onLoadTrack" change-car-rotate></v-track>
-      <v-echarts :options="echarts.options" :visible="echarts.visible"></v-echarts>
       <v-heatmap :features="heatmap.features" :visible="heatmap.visible" :radius="3" :blur="6"></v-heatmap>
     </v-map>
   </div>
@@ -155,7 +156,7 @@ export default {
       view: {
         city: '厦门', // 优先级比center高
         // center: [118.1689, 24.6478], // 预留此参数，组件监听view.center变化，触发panTo方法
-        zoom: 8
+        zoom: 12
         // maxZoom: 12
       },
       controls: {
@@ -226,6 +227,10 @@ export default {
         {
           name: 'OSM',
           value: 'OSM'
+        },
+        {
+          name: '福建省深色',
+          value: 'FJ_BLUE'
         }
       ],
       tile: 'bd',
@@ -237,6 +242,19 @@ export default {
             '&nbsp;&nbsp;<span style="white-space: nowrap;">' +
             '<a href="https://pp129.github.io/vue-openlayers-map/"' +
             'target="_blank">See Docs</a></span>']
+      },
+      PGis: {
+        projection: 'EPSG:4326',
+        tileUrlFunction: function (tileCoord) {
+          if (!tileCoord) {
+            return ''
+          }
+          const z = tileCoord[0]
+          const x = tileCoord[1]
+          const y = -tileCoord[2] - 1
+          return `44.64.18.11/Tile_sl2019/40219e3adef540b4b3d0b9b5e1d66c53/EzMap?Service=getImage&Type=RGB&ZoomOffset=0&Col=${x}&Row=${y}&Zoom=${z}&V=1.0.00.0`
+        },
+        crossOrigin: 'anonymous'
       },
       tileFilter: undefined,
       wms: {
@@ -396,6 +414,16 @@ export default {
             color: 'green'
           },
           noCluster: true
+        },
+        // 118.101962,24.513600
+        {
+          id: 'point-gif',
+          coordinates: [118.197339, 24.543658],
+          style: {
+            gif: {
+              src: new URL('./assets/img/18.gif', import.meta.url).href
+            }
+          }
         },
         {
           id: 'point11',
@@ -769,6 +797,11 @@ export default {
         url: new URL('./assets/img/siming.jpg', import.meta.url).href,
         imageExtent: [118.0531, 24.423728, 118.197989, 24.502344]
       },
+      imageSource2: {
+        url: new URL('./assets/img/xiangan.jpg', import.meta.url).href,
+        imageCenter: [118.213269, 24.569244],
+        imageScale: [0.00004, 0.00004]
+      },
       textFeatures: [
         {
           coordinates: [118.057099, 24.500103],
@@ -866,6 +899,7 @@ export default {
     },
     onClick (evt, map) {
       console.log(evt)
+      console.log(this.$refs.layer1.getFeatures())
       this.currentCoordinateText = [evt.coordinate[0].toFixed(6), evt.coordinate[1].toFixed(6)].join(',')
       this.positionMenu = undefined
       if (this.addModify && !this.drawType && !this.measureType) {
@@ -916,21 +950,21 @@ export default {
     },
     changeZoom (evt, map) {
       this.mapZoom = map.getView().getZoom()
-      if (this.mapZoom >= 14) {
-        this.tileFilter = {
-          feature: {
-            type: 'polygon',
-            coordinates: [
-              [118.23048075355373, 24.587052571002776], [118.25051461705989, 24.592192894082423],
-              [118.24383041710121, 24.561810933485354], [118.23048075355373, 24.587052571002776]
-            ]
-          },
-          shadowWidth: 50,
-          fill: 'rgba(0,0,0,0.8)'
-        }
-      } else {
-        this.tileFilter = undefined
-      }
+      // if (this.mapZoom >= 14) {
+      //   this.tileFilter = {
+      //     feature: {
+      //       type: 'polygon',
+      //       coordinates: [
+      //         [118.23048075355373, 24.587052571002776], [118.25051461705989, 24.592192894082423],
+      //         [118.24383041710121, 24.561810933485354], [118.23048075355373, 24.587052571002776]
+      //       ]
+      //     },
+      //     shadowWidth: 50,
+      //     fill: 'rgba(0,0,0,0.8)'
+      //   }
+      // } else {
+      //   this.tileFilter = undefined
+      // }
     },
     onContextmenu (evt, map) {
       this.positionMenu = evt.coordinate
@@ -1389,6 +1423,10 @@ export default {
         center: [120.126360, 30.230779]
       })
     },
+    getExtent () {
+      const extent = this.$refs.map.map.getView().calculateExtent(this.$refs.map.map.getSize())
+      console.log(extent)
+    },
     getHeatmapData () {
       axios.get('/heatmap.json').then(res => {
         console.log(res)
@@ -1511,6 +1549,9 @@ export default {
     textLayerModifyEnd (params) {
       const coordinates = params.features.getArray()[0].getGeometry().getCoordinates()
       console.log(JSON.stringify(coordinates))
+    },
+    featuresChange (features) {
+      console.log('features change', features)
     }
   },
   mounted () {

@@ -91,8 +91,7 @@ export default {
     features: {
       handler (value) {
         // console.log('layer features change', value)
-        this.dispose()
-        this.init()
+        this.setFeatures(this.layer.getSource())
       },
       immediate: false,
       deep: true
@@ -148,8 +147,8 @@ export default {
     }
   },
   methods: {
-    init () {
-      const source = addVectorSource(this.source, this.map)
+    setFeatures (source) {
+      source.clear()
       if (this.source.features.length <= 0 && this.features.length > 0) {
         const features = setFeatures(this.features, this.map, this.FeatureStyle && Object.keys(this.FeatureStyle).length > 0)
         source.addFeatures(features)
@@ -190,13 +189,6 @@ export default {
           }
         })
       }
-      this.layer.set('id', this.layerId)
-      this.layer.set('type', 'vector')
-      this.layer.set('users', true)
-      if (this.zIndex) {
-        this.layer.setZIndex(this.zIndex)
-      }
-      this.map.addLayer(this.layer)
       this.features.forEach(feature => {
         if (feature.type === 'polyline' && validObjKey(feature, 'arrow')) {
           arrowLine({
@@ -207,6 +199,35 @@ export default {
           })
         }
       })
+      // this.layer.getSource().getFeatures().forEach(feature => {
+      //   const style = feature.get('style')
+      //   console.log(style)
+      //   if (validObjKey(style, 'gif')) {
+      //     const gifUrl = style.gif
+      //     // eslint-disable-next-line no-undef
+      //     const gif = gifler(gifUrl)
+      //     console.log(gif)
+      //     const map = this.map
+      //     gif.frames(
+      //       document.createElement('canvas'),
+      //       function (ctx, frame) {
+      //         feature.setStyle(
+      //           new Style({
+      //             image: new Icon({
+      //               img: ctx.canvas,
+      //               imgSize: [frame.width, frame.height],
+      //               opacity: 0.8
+      //             })
+      //           })
+      //         )
+      //         ctx.clearRect(0, 0, frame.width, frame.height)
+      //         ctx.drawImage(frame.buffer, frame.x, frame.y)
+      //         map.render()
+      //       },
+      //       true
+      //     )
+      //   }
+      // })
       // 线加箭头
       this.map.getView().on('change:resolution', () => {
         const zoom = this.map.getView().getZoom()
@@ -233,6 +254,18 @@ export default {
       this.flashInterval = setInterval(() => {
         this.setFlashAnimate()
       }, 1000)
+      this.$emit('featuresChange', this.features)
+    },
+    init () {
+      const source = addVectorSource(this.source, this.map)
+      this.setFeatures(source)
+      this.layer.set('id', this.layerId)
+      this.layer.set('type', 'vector')
+      this.layer.set('users', true)
+      if (this.zIndex) {
+        this.layer.setZIndex(this.zIndex)
+      }
+      this.map.addLayer(this.layer)
       // this.map.on('moveend', () => this.setFlashAnimate())
       this.$emit('load', this.layer, this.map)
       if (this.modify) {
@@ -280,6 +313,9 @@ export default {
       this.map.removeLayer(this.layer)
       this.map.removeInteraction(this.selectObj)
       this.map.removeInteraction(this.modifyObj)
+    },
+    getFeatures () {
+      return this.layer.getSource().getFeatures()
     },
     getFeatureById (id) {
       const features = this.layer.getSource().getFeatures()

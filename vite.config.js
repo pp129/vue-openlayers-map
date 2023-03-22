@@ -26,7 +26,8 @@ const build = (env) => {
         output: {
           globals: {
             vue: 'Vue'
-          }
+          },
+          assetFileNames: 'v-ol-map.[ext]'
         }
       },
       target: ['es2015']

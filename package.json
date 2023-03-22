@@ -1,7 +1,7 @@
 {
   "name": "v-ol-map",
   "private": false,
-  "version": "1.8.0",
+  "version": "1.9.2",
   "main": "lib/ol-map.umd.js",
   "files": [
     "lib"
@@ -35,6 +35,7 @@
     "@turf/turf": "^6.5.0",
     "axios": "^0.27.2",
     "echarts": "^4.9.0",
+    "gifler": "^0.1.0",
     "kdbush": "^3.0.0",
     "lodash": "^4.17.21",
     "nanoid": "^4.0.0",

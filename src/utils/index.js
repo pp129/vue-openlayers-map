@@ -17,6 +17,7 @@ import VectorSource from 'ol/source/Vector'
 import VectorLayer from 'ol/layer/Vector'
 import ImageCanvasSource from 'ol/source/ImageCanvas'
 import { getArea, getLength } from 'ol/sphere'
+// import gifler from 'gifler'
 
 /**
  * Map扩展
@@ -310,6 +311,47 @@ export const setFeatureStyle = (feature, style, map) => {
     })
   } else {
     feature.setStyle(featureStyle)
+  }
+  if (validObjKey(style, 'gif')) {
+    const option = style.gif
+    const gifOption = {
+      opacity: 1,
+      scale: 1,
+      offset: [0, 0],
+      offsetOrigin: 'top-left',
+      anchor: [0.5, 0.5],
+      anchorOrigin: 'top-left',
+      rotation: 0,
+      rotateWithView: false,
+      ...option
+    }
+    // eslint-disable-next-line no-undef
+    const gif = gifler(gifOption.src)
+    gif.frames(
+      document.createElement('canvas'),
+      function (ctx, frame) {
+        feature.setStyle(
+          new Style({
+            image: new Icon({
+              img: ctx.canvas,
+              imgSize: [frame.width, frame.height],
+              opacity: gifOption.opacity,
+              offset: gifOption.offset,
+              offsetOrigin: gifOption.offsetOrigin,
+              anchor: gifOption.anchor,
+              anchorOrigin: gifOption.anchorOrigin,
+              scale: gifOption.scale,
+              rotation: gifOption.rotation,
+              rotateWithView: gifOption.rotateWithView
+            })
+          })
+        )
+        ctx.clearRect(0, 0, frame.width, frame.height)
+        ctx.drawImage(frame.buffer, frame.x, frame.y)
+        map.render()
+      },
+      true
+    )
   }
 }
 

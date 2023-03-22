@@ -8,7 +8,7 @@
 <script>
 import { nanoid } from 'nanoid'
 import { OlMap, setStyle } from '@/utils/index.js'
-import { getCenter } from 'ol/extent'
+import { getCenter, boundingExtent } from 'ol/extent'
 import _ from 'lodash'
 
 export default {
@@ -328,6 +328,9 @@ export default {
     },
     getCenterByExtent (extent) {
       return getCenter(extent)
+    },
+    boundingExtent (coordinates) {
+      return boundingExtent(coordinates)
     },
     calculateCenter (geometry) {
       return OlMap.calculateCenter(geometry)

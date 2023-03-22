@@ -29,7 +29,25 @@ export default {
     tileType: {
       type: String,
       default: 'TD',
-      validator: value => ['TD', 'TD_IMG', 'XYZ', 'BD', 'BD_DARK', 'BD_BLUE', 'GD', 'OSM', 'WMS', 'ARCGIS_BLUE', 'ARCGIS_WARM', 'ARCGIS_NORMAL', 'ARCGIS_GRAY'].includes(value.toUpperCase())
+      validator: value => [
+        'TD',
+        'TD_IMG',
+        'XYZ',
+        'BD',
+        'BD_DARK',
+        'BD_BLUE',
+        'GD',
+        'OSM',
+        'WMS',
+        'ARCGIS_BLUE',
+        'ARCGIS_WARM',
+        'ARCGIS_NORMAL',
+        'ARCGIS_GRAY',
+        'PGIS_XM_GA',
+        'PGIS_XM_GA_IMG',
+        'FJ_BLUE',
+        'FJ_BLUE_GA'
+      ].includes(value.toUpperCase())
     },
     tdVec: {
       type: String
@@ -165,6 +183,15 @@ export default {
         case 'XYZ':
           this.initTileXYZ()
           break
+        case 'PGIS_XM_GA':
+          this.initTilePGISXMGA()
+          break
+        case 'FJ_BLUE':
+          this.initTileFJBlue()
+          break
+        case 'FJ_BLUE_GA':
+          this.initTileFJBlueGA()
+          break
         case 'WMS':
           this.initTileWMS()
           break
@@ -249,6 +276,68 @@ export default {
         this.layers.forEach(layer => {
           if (this.mask && Object.keys(this.mask).length > 0) {
             this.addMask(this.mask)
+          }
+          this.map.addLayer(layer)
+        })
+      }
+    },
+    /**
+     * @厦门规划局2022版本
+     */
+    initTileFJBlue () {
+      // const url = 'https://xmghszzx.com/arcgis/rest/services/Updata/XMMAP_DP_2000/MapServer/tile'
+      const url = 'http://172.16.28.120:6080/arcgis/rest/services/xiamen/MapServer/tile' // 加自绘翔安大桥
+      this.layer = this.initXYZbyURL(`${url}/{z}/{y}/{x}`, { projection: 'EPSG:4326' })
+      this.layers = [this.layer]
+      if (!this.addForOverview) {
+        this.layers.forEach(layer => {
+          if (this.zIndex) {
+            layer.setZIndex(this.zIndex)
+          }
+          this.map.addLayer(layer)
+        })
+      }
+    },
+    /**
+     * @厦门规划局-公安网版本
+     */
+    initTileFJBlueGA () {
+      const url = 'http://10.130.145.45:5001/xmblue'
+      this.layer = this.initXYZbyURL(`${url}/{z}/{y}/{x}.png`, { projection: 'EPSG:4326' })
+      this.layers = [this.layer]
+      if (!this.addForOverview) {
+        this.layers.forEach(layer => {
+          if (this.zIndex) {
+            layer.setZIndex(this.zIndex)
+          }
+          this.map.addLayer(layer)
+        })
+      }
+    },
+    // 厦门公安网PGIS图层-Tile_sl2019
+    initTilePGISXMGA () {
+      const xyzOpt = {
+        projection: 'EPSG:4326',
+        tileUrlFunction: function (tileCoord) {
+          if (!tileCoord) {
+            return ''
+          }
+          const z = tileCoord[0]
+          const x = tileCoord[1]
+          const y = tileCoord[2]
+          // http://44.64.135.5/Tile_sl2019/81326548cf7f46638db93d0ab919f0da/EzMap?Service=getImage&Type=RGB&ZoomOffset=0&Col=3394&Row=742&Zoom=12&V=1.0.0
+          return `http://44.64.18.11/Tile_sl2019/40219e3adef540b4b3d0b9b5e1d66c53/EzMap?Service=getImage&Type=RGB&ZoomOffset=0&Col=${x}&Row=${y}&Zoom=${z}&V=1.0.0`
+        },
+        crossOrigin: 'anonymous'
+      }
+      const source = new XYZ(xyzOpt)
+      const layerOpt = { ...this.$props, ...{ source } }
+      this.layer = new TileLayer(layerOpt)
+      this.layers = [this.layer]
+      if (!this.addForOverview) {
+        this.layers.forEach(layer => {
+          if (this.zIndex) {
+            layer.setZIndex(this.zIndex)
           }
           this.map.addLayer(layer)
         })
