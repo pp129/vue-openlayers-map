@@ -416,6 +416,7 @@ export const setPointFeature = (option, map, hasStyle = false) => {
     setFeatureStyle(feature, option.style, map)
   } else if (!hasStyle) {
     feature.setStyle(new Style({
+      zIndex: 1,
       image: new CircleStyle({
         radius: 4,
         fill: new Fill({

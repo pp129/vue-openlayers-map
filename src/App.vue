@@ -22,6 +22,7 @@
       </div>
       <div class="item">
         <button @click.prevent="addClusterFeatures()">添加点</button>
+        <button @click.prevent="removeFeatures()">添加点</button>
       </div>
       <div class="item">
         <label>
@@ -85,7 +86,7 @@
           :z-index="3" @featuresChange="featuresChange"></v-vector>
       <v-vector
           :features="features2"
-          :modify="modify"
+          modify
           :visible="visible2"
           select
           :z-index="4"
@@ -365,10 +366,12 @@ export default {
           coordinates: [118.140448, 24.512917],
           convert: 'bd-84', // 特殊属性，经纬度转化。支持：百度(bd)、高德(gd)、wgs84(84)互转
           style: {
+            zIndex: 1,
             icon: {
               scale: 0.6,
               // src: require('@/assets/img/point_6.png')
-              src: new URL('./assets/img/point_3.png', import.meta.url).href
+              src: new URL('./assets/img/point_3.png', import.meta.url).href,
+              anchor: [0.5, 1]
             },
             text: {
               text: '百度转84',
@@ -410,7 +413,8 @@ export default {
             level: 1
           },
           flash: {
-            rate: 1,
+            radius: 40,
+            rate: 3,
             color: 'green'
           },
           noCluster: true
@@ -474,29 +478,27 @@ export default {
             name: 'feature1',
             level: 1
           },
-          flash: {
-            rate: 1,
-            color: 'green'
-          },
           noCluster: true
         },
         {
           id: 'point2',
           coordinates: [118.168742, 24.487505],
           style: {
+            zIndex: 1,
             icon: {
               scale: 0.6,
               // src: require('@/assets/img/point_5.png')
               src: new URL('./assets/img/point_4.png', import.meta.url).href
             }
           },
+          flash: {
+            // radius: 40,
+            rate: 1,
+            color: 'red'
+          },
           properties: {
             name: 'feature1',
             level: 2
-          },
-          flash: {
-            rate: 2,
-            color: 'orange'
           },
           noCluster: true
         },
@@ -512,9 +514,6 @@ export default {
           },
           properties: {
             level: 3
-          },
-          flash: {
-            color: 'red'
           },
           noCluster: true
         },
@@ -840,9 +839,6 @@ export default {
                 color: 'red'
               }
             }
-          },
-          flash: {
-            color: 'red'
           }
         },
         {
@@ -872,6 +868,9 @@ export default {
     getRandomIntegerInRange (min, max) {
       return Math.floor((max + 1 - min) * Math.random() + min)
     },
+    removeFeatures () {
+      this.features = []
+    },
     addClusterFeatures (count = 1000) {
       for (let i = 0; i < count; i++) {
         this.features.push({
@@ -882,7 +881,10 @@ export default {
               scale: 0.6
             }
           },
-          name: `聚合要素-${i + 1}`
+          name: `聚合要素-${i + 1}`,
+          flash: {
+            color: 'red'
+          }
         })
       }
     },

@@ -91,7 +91,8 @@ export default {
     features: {
       handler (value) {
         // console.log('layer features change', value)
-        this.setFeatures(this.layer.getSource())
+        this.dispose()
+        this.init(true)
       },
       immediate: false,
       deep: true
@@ -147,8 +148,8 @@ export default {
     }
   },
   methods: {
-    setFeatures (source) {
-      source.clear()
+    init (change) {
+      const source = addVectorSource(this.source, this.map)
       if (this.source.features.length <= 0 && this.features.length > 0) {
         const features = setFeatures(this.features, this.map, this.FeatureStyle && Object.keys(this.FeatureStyle).length > 0)
         source.addFeatures(features)
@@ -189,6 +190,13 @@ export default {
           }
         })
       }
+      this.layer.set('id', this.layerId)
+      this.layer.set('type', 'vector')
+      this.layer.set('users', true)
+      if (this.zIndex) {
+        this.layer.setZIndex(this.zIndex)
+      }
+      this.map.addLayer(this.layer)
       this.features.forEach(feature => {
         if (feature.type === 'polyline' && validObjKey(feature, 'arrow')) {
           arrowLine({
@@ -199,35 +207,6 @@ export default {
           })
         }
       })
-      // this.layer.getSource().getFeatures().forEach(feature => {
-      //   const style = feature.get('style')
-      //   console.log(style)
-      //   if (validObjKey(style, 'gif')) {
-      //     const gifUrl = style.gif
-      //     // eslint-disable-next-line no-undef
-      //     const gif = gifler(gifUrl)
-      //     console.log(gif)
-      //     const map = this.map
-      //     gif.frames(
-      //       document.createElement('canvas'),
-      //       function (ctx, frame) {
-      //         feature.setStyle(
-      //           new Style({
-      //             image: new Icon({
-      //               img: ctx.canvas,
-      //               imgSize: [frame.width, frame.height],
-      //               opacity: 0.8
-      //             })
-      //           })
-      //         )
-      //         ctx.clearRect(0, 0, frame.width, frame.height)
-      //         ctx.drawImage(frame.buffer, frame.x, frame.y)
-      //         map.render()
-      //       },
-      //       true
-      //     )
-      //   }
-      // })
       // 线加箭头
       this.map.getView().on('change:resolution', () => {
         const zoom = this.map.getView().getZoom()
@@ -254,22 +233,13 @@ export default {
       this.flashInterval = setInterval(() => {
         this.setFlashAnimate()
       }, 1000)
-      this.$emit('featuresChange', this.features)
-    },
-    init () {
-      const source = addVectorSource(this.source, this.map)
-      this.setFeatures(source)
-      this.layer.set('id', this.layerId)
-      this.layer.set('type', 'vector')
-      this.layer.set('users', true)
-      if (this.zIndex) {
-        this.layer.setZIndex(this.zIndex)
-      }
-      this.map.addLayer(this.layer)
       // this.map.on('moveend', () => this.setFlashAnimate())
       this.$emit('load', this.layer, this.map)
       if (this.modify) {
         this.setModify()
+      }
+      if (change) {
+        this.$emit('change', source.getFeatures())
       }
     },
     setFlashAnimate () {
@@ -314,9 +284,6 @@ export default {
       this.map.removeInteraction(this.selectObj)
       this.map.removeInteraction(this.modifyObj)
     },
-    getFeatures () {
-      return this.layer.getSource().getFeatures()
-    },
     getFeatureById (id) {
       const features = this.layer.getSource().getFeatures()
       let target
@@ -341,6 +308,9 @@ export default {
           }
         }
       })
+    },
+    getFeatures () {
+      return this.layer.getSource().getFeatures()
     },
     setModify () {
       let features = []
@@ -386,9 +356,11 @@ export default {
     },
     flash (feature) {
       const flash = feature.get('flash')
+      const { radius } = flash
       const duration = Number(flash.rate) * 1000 || 3000
       const start = Date.now()
       const flashGeom = feature.getGeometry().clone()
+
       const listenerKey = this.layer.on('postrender', (event) => {
         const frameState = event.frameState
         const elapsed = frameState.time - start
@@ -398,19 +370,20 @@ export default {
         }
         const vectorContext = getVectorContext(event)
         const elapsedRatio = elapsed / duration
-        // radius will be 5 at start and 30 at end.
-        const radius = easeOut(elapsedRatio) * 25 + 5
+        // radius will be 5 at start and {{flash.radius}} || 30 at end.
+        const circleRadius = easeOut(elapsedRatio) * ((radius > 10 ? radius : 25) || 25)
         const color = asArray(flash.color || 'rgba(255, 0, 0, 1)')
         color.slice()
         const opacity = easeOut(1 - elapsedRatio)
 
         const style = new Style({
+          zIndex: 0,
           image: new CircleStyle({
-            radius,
+            radius: circleRadius,
             stroke: new Stroke({
               // color: 'rgba(255, 0, 0, ' + opacity + ')',
               color: `rgba(${color[0]},${color[1]},${color[2]},${opacity})`,
-              width: 0.25 + opacity
+              width: opacity
             })
           })
         })
