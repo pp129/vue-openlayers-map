@@ -1,7 +1,21 @@
+<template>
+  <v-overlay v-if="overlay" v-bind="overlay">
+    <slot name="overlay" :data="overlay.data"></slot>
+  </v-overlay>
+</template>
+
 <script>
 import BaseLayer from '@/components/layers/BaseLayer.vue'
 import { nanoid } from 'nanoid'
-import { addClusterLayer, addVectorSource, setFeatures, setFeatureStyle, setStyle, validObjKey } from '@/utils'
+import {
+  addClusterLayer,
+  addVectorSource,
+  FeatureExt,
+  setFeatures,
+  setFeatureStyle,
+  setStyle,
+  validObjKey
+} from '@/utils'
 import VectorLayer from 'ol/layer/Vector'
 import { Modify, Select } from 'ol/interaction'
 import { Collection } from 'ol'
@@ -13,14 +27,15 @@ import CircleStyle from 'ol/style/Circle'
 import { asArray } from 'ol/color'
 import { Cluster } from 'ol/source'
 import { arrowLine } from '@/utils/arrowLine'
+import { Point } from 'ol/geom'
+import Zoom from 'ol-ext/featureanimation/Zoom'
+import VOverlay from '@/components/overlay'
 
 export default {
   name: 'v-vector',
-  render (createElement, context) {
-    return null
-  },
   extends: BaseLayer,
   inject: ['VMap'],
+  components: { VOverlay },
   props: {
     layerId: {
       type: String,
@@ -57,11 +72,18 @@ export default {
     cluster: {
       type: [Object, Boolean],
       default: false
+    },
+    flashTime: {
+      type: Number
+    },
+    overlay: {
+      type: Object
     }
   },
   data () {
     return {
       layer: null,
+      ani: null,
       layerOpt: {},
       selectObj: null,
       modifyObj: null,
@@ -79,11 +101,22 @@ export default {
     }
   },
   watch: {
+    // 只监听是否聚合和聚合距离
     cluster: {
       handler (value) {
         console.log('watch cluster', value)
-        this.dispose()
-        this.init()
+        if (value === null || value === false) {
+          this.dispose()
+          this.init(true)
+        } else {
+          if (this.clusterObj) {
+            const { distance } = value
+            if (distance || distance === 0) this.clusterObj.setDistance(distance)
+          } else {
+            this.dispose()
+            this.init(true)
+          }
+        }
       },
       immediate: false,
       deep: true
@@ -91,8 +124,42 @@ export default {
     features: {
       handler (value) {
         // console.log('layer features change', value)
-        this.dispose()
-        this.init(true)
+        if (this.flashInterval) {
+          clearInterval(this.flashInterval)
+          this.flashInterval = null
+        }
+        if (this.cluster) {
+          this.clusterObj.getSource().clear()
+          const features = setFeatures(value, this.map, this.FeatureStyle && Object.keys(this.FeatureStyle).length > 0)
+          this.clusterObj.getSource().addFeatures(features)
+          this.$emit('change', features)
+        } else {
+          const source = this.layer.getSource()
+          source.clear()
+          const features = setFeatures(value, this.map, this.FeatureStyle && Object.keys(this.FeatureStyle).length > 0)
+          features.forEach(feature => {
+            if (feature.type === 'polyline' && validObjKey(feature, 'arrow')) {
+              arrowLine({
+                coordinates: feature.coordinates,
+                map: this.map,
+                source,
+                ...feature.arrow
+              })
+            }
+          })
+          source.addFeatures(features)
+          this.$emit('change', features)
+        }
+        if (this.modify) {
+          this.setModify()
+        }
+        // 闪光点
+        this.setFlashAnimate()
+        if (this.flashTime) {
+          this.flashInterval = setInterval(() => {
+            this.setFlashAnimate()
+          }, this.flashTime)
+        }
       },
       immediate: false,
       deep: true
@@ -166,6 +233,7 @@ export default {
         this.layerOpt = { ...this.$props, ...{ source: this.clusterObj, style: clusterOption.style } }
         this.layer = addClusterLayer(this.layerOpt, this.map)
         this.layer.set('cluster', true)
+        this.layer.set('overlay', this.overlay)
       } else {
         this.layerOpt = { ...this.$props, ...{ source } }
         this.layer = new VectorLayer(this.layerOpt)
@@ -230,10 +298,11 @@ export default {
       })
       // 闪光点
       this.setFlashAnimate()
-      this.flashInterval = setInterval(() => {
-        this.setFlashAnimate()
-      }, 1000)
-      // this.map.on('moveend', () => this.setFlashAnimate())
+      if (this.flashTime) {
+        this.flashInterval = setInterval(() => {
+          this.setFlashAnimate()
+        }, this.flashTime)
+      }
       this.$emit('load', this.layer, this.map)
       if (this.modify) {
         this.setModify()
@@ -251,7 +320,7 @@ export default {
             if (clusters.length === 1) {
               clusters.forEach(feature => {
                 if (feature.get('flash')) {
-                  this.flash(feature)
+                  this.pulseFeature(feature)
                 }
               })
             }
@@ -261,25 +330,16 @@ export default {
         // console.log(this.layer.getSource().getFeatures())
         this.layer.getSource().getFeatures().forEach(feature => {
           if (feature.get('flash')) {
-            this.flash(feature)
+            this.pulseFeature(feature)
           }
         })
       }
     },
-    clearTimer (feature) {
-      let timer = feature.get('timer')
-      if (timer) {
-        clearInterval(timer)
-        timer = null
-      }
-    },
     dispose () {
-      clearInterval(this.flashInterval)
-      // if (this.cluster && this.clusterObj) {
-      //   this.clusterObj.clear()
-      // } else {
-      //   this.layer.getSource().clear()
-      // }
+      if (this.clusterObj) {
+        this.clusterObj.getSource().clear()
+        this.clusterObj = null
+      }
       this.map.removeLayer(this.layer)
       this.map.removeInteraction(this.selectObj)
       this.map.removeInteraction(this.modifyObj)
@@ -354,14 +414,44 @@ export default {
         this.$emit('modifyend', params, this.map)
       })
     },
+    pulseFeature (feature) {
+      const coordinates = feature.get('coordinates')
+      const f = new FeatureExt(new Point(coordinates))
+      const flash = feature.get('flash')
+      const { radius, color, duration, width } = flash
+      f.setStyle(new Style({
+        image: new CircleStyle({
+          radius: radius || 30,
+          // points: 4,
+          stroke: new Stroke({ color, width })
+        })
+      }))
+      this.layer.animateFeature(f, new Zoom({
+        fade: easeOut,
+        duration,
+        easing: easeOut
+      }))
+    },
     flash (feature) {
       const flash = feature.get('flash')
-      const { radius } = flash
+      const { radius, timeout } = flash
       const duration = Number(flash.rate) * 1000 || 3000
       const start = Date.now()
       const flashGeom = feature.getGeometry().clone()
-
-      const listenerKey = this.layer.on('postrender', (event) => {
+      const listenerKey = this.layer.on('postrender', animate)
+      const map = this.map
+      let timer = feature.get('timer')
+      if (timer) {
+        unByKey(listenerKey)
+        clearTimeout(timer)
+        feature.set('timer', null)
+      }
+      if (timeout && timeout > 0) {
+        timer = setTimeout(() => {
+          this.flash(feature)
+        }, timeout)
+      }
+      function animate (event) {
         const frameState = event.frameState
         const elapsed = frameState.time - start
         if (elapsed >= duration) {
@@ -391,8 +481,11 @@ export default {
         vectorContext.setStyle(style)
         vectorContext.drawGeometry(flashGeom)
         // tell OpenLayers to continue postrender animation
-        this.map.render()
-      })
+        map.render()
+      }
+    },
+    overlayClose () {
+      this.overlay.close()
     }
   },
   mounted () {

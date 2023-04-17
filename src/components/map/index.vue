@@ -225,11 +225,27 @@ export default {
             this.$emit('click', evt, this.map)
             this.map.forEachSmFeatureAtPixel(evt.pixel, (feature, layer) => {
               if (layer) {
+                const overlay = layer.get('overlay')
+                if (overlay) {
+                  const { showOnClick, positionOrigin } = overlay
+                  if (showOnClick) {
+                    switch (positionOrigin) {
+                      case 'event':
+                        overlay.position = evt.coordinate
+                        break
+                      case 'feature':
+                        overlay.position = layer.get('cluster') ? feature.getGeometry().getCoordinates() : feature.get('coordinates')
+                        break
+                      default:
+                        overlay.position = evt.coordinate
+                        break
+                    }
+                  }
+                }
                 params.push({ layerId: layer.get('id'), layer, feature })
                 this.$emit('clickfeature', feature, layer, evt, this.map)
               }
             }, {}, evt)
-            // console.log(_.groupBy(params, 'layerId'))
             this.$emit('clickfeatures', _.groupBy(params, 'layerId'), evt, this.map)
           })
           // 双击时间
@@ -371,6 +387,8 @@ export default {
     closeOverlays () {
       this.map.getOverlays().forEach(overlay => {
         overlay.setPosition(undefined)
+        const onClose = overlay.get('close')
+        if (onClose) onClose()
       })
     },
     updateFeature (feature, type, param) {

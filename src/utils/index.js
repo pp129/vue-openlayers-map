@@ -5,8 +5,8 @@ import { defaults as defaultInteraction, DragRotateAndZoom } from 'ol/interactio
 import { Attribution, FullScreen, Rotate, ScaleLine, Zoom, ZoomSlider } from 'ol/control'
 import { getCenterByCity } from '@/utils/cityMap.js'
 import projzh from '@/utils/projConvert'
-import { addCoordinateTransforms, addProjection, Projection, transform } from 'ol/proj.js'
-import { applyTransform, containsCoordinate, containsExtent, getHeight, getWidth, getCenter } from 'ol/extent.js'
+import { addCoordinateTransforms, addProjection, Projection, transform } from 'ol/proj'
+import { applyTransform, containsCoordinate, containsExtent, getHeight, getWidth, getCenter } from 'ol/extent'
 import { distance, point } from '@turf/turf'
 import coordtransform from '@/utils/coordtransform'
 import { Circle, LineString, MultiPolygon, Point, Polygon } from 'ol/geom'
@@ -126,9 +126,17 @@ const baiduMercatorProj = new Projection({
   // extent: applyTransform(extent, projzh.ll2bmerc),
   units: 'm'
 })
+const BDProj = new Projection({
+  code: 'BD09',
+  extent: applyTransform([-180, -90, 180, 90], projzh.ll2bmerc),
+  units: 'm'
+})
 addProjection(baiduMercatorProj)
+addProjection(BDProj)
 addCoordinateTransforms('EPSG:4326', baiduMercatorProj, projzh.ll2bmerc, projzh.bmerc2ll)
+addCoordinateTransforms('EPSG:4326', BDProj, projzh.ll2bmerc, projzh.bmerc2ll)
 addCoordinateTransforms('EPSG:3857', baiduMercatorProj, projzh.smerc2bmerc, projzh.bmerc2smerc)
+addCoordinateTransforms('EPSG:3857', BDProj, projzh.smerc2bmerc, projzh.bmerc2smerc)
 
 /**
  * @Describe-注册高德坐标系
@@ -618,10 +626,10 @@ export const addClusterLayer = (option, map) => {
             if (option.style instanceof Array) {
               option.style.forEach(e => {
                 let min = 0
-                let max = 0
+                let max = total
                 if (validObjKey(e, 'min') || validObjKey(e, 'max')) {
-                  min = e.min || 0
-                  max = e.max || total
+                  min = e.min
+                  max = e.max
                   if (min < size && size <= max) {
                     styleOptions = clusterFeatureStyle(e, size.toString())
                   }
@@ -638,6 +646,9 @@ export const addClusterLayer = (option, map) => {
                   }
                 }
               })
+              style = setStyle(styleOptions)
+            } else {
+              styleOptions = clusterFeatureStyle(option.style, size.toString())
               style = setStyle(styleOptions)
             }
           }

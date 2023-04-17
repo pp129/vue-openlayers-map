@@ -22,7 +22,7 @@
       </div>
       <div class="item">
         <button @click.prevent="addClusterFeatures()">添加点</button>
-        <button @click.prevent="removeFeatures()">添加点</button>
+        <button @click.prevent="removeFeatures()">清楚点</button>
       </div>
       <div class="item">
         <label>
@@ -51,6 +51,7 @@
         <button @click="panTo">厦门</button>
         <button @click="flyTo">杭州</button>
         <button @click="getExtent">边界</button>
+        <button @click="changeImage">图像图层</button>
       </div>
     </div>
     <v-map
@@ -75,15 +76,30 @@
       <v-tile :tile-type="tile" :xyz="xyz" :z-index="1" :mask="tileFilter"></v-tile>
       <v-tile ref="wms" tile-type="WMS" :wms="wms" :z-index="2"></v-tile>
       <v-image :source="imageSource" :z-index="9"></v-image>
-      <v-image :source="imageSource2" geo-image :opacity="0.9" :z-index="9"></v-image>
+      <v-image :source="imageSource2" geo-image :opacity="imageOpacity" :z-index="9" :visible="imageVisible"></v-image>
       <v-overview :tile-type="tile" :rotateWithView="rotateWithView" collapsible></v-overview>
+      <!-- 路况图层 -->
+      <v-tile ref="trafficLayer" :visible="trafficLayer.visible" :xyz="trafficLayer.xyz" :z-index="1" layer-id="traffic" tile-type="XYZ"></v-tile>
       <v-vector
           ref="layer1"
           layer-id="layer1"
           :features="features"
           :cluster="toggleCluster?cluster:false"
           :visible="visible1"
-          :z-index="3" @featuresChange="featuresChange"></v-vector>
+          :flash-time="1500"
+          :overlay="overlay"
+          :z-index="3" @featuresChange="featuresChange">
+        <template #overlay="scope">
+          <div v-if="!clusterOverlay">双击地图关闭弹框【{{scope.data[toggleCluster?overlayIndex:0].name}}】</div>
+          <div v-else>
+            <ul>
+              <li v-for="(item,index) in scope.data" :key="index" @click="showItem(index)">
+                {{ item.name }}
+              </li>
+            </ul>
+          </div>
+        </template>
+      </v-vector>
       <v-vector
           :features="features2"
           modify
@@ -102,7 +118,7 @@
           </li>
         </ul>
       </v-overlay>
-      <v-overlay class="overlay" :position="position">双击地图关闭弹框</v-overlay>
+<!--      <v-overlay class="overlay" :position="position">双击地图关闭弹框</v-overlay>-->
       <v-overlay class="overlay" :position="positionLevel">预警等级： {{ level }} 级</v-overlay>
       <v-overlay class="overlay-menu" :position="positionMenu">
         <ul>
@@ -353,12 +369,23 @@ export default {
         }
       },
       toggleCluster: false,
+      clusterOverlay: true,
       clusterOption: {
         distance: 120
       },
       positionCluster: undefined,
       clusterFeatures: [],
       visible1: true,
+      overlay: {
+        showOnClick: true,
+        positionOrigin: 'feature',
+        position: undefined,
+        data: [],
+        close: () => {
+          this.overlayClose()
+        }
+      },
+      overlayIndex: 0,
       visible2: true,
       features: [
         {
@@ -415,23 +442,24 @@ export default {
           flash: {
             radius: 40,
             rate: 3,
-            color: 'green'
+            color: 'green',
+            timeout: 2000
           },
           noCluster: true
         },
         // 118.101962,24.513600
-        {
-          id: 'point-gif',
-          coordinates: [118.197339, 24.543658],
-          style: {
-            gif: {
-              src: new URL('./assets/img/18.gif', import.meta.url).href
-            }
-          }
-        },
+        // {
+        //   id: 'point-gif',
+        //   coordinates: [118.197339, 24.543658],
+        //   style: {
+        //     gif: {
+        //       src: new URL('./assets/img/18.gif', import.meta.url).href
+        //     }
+        //   }
+        // },
         {
           id: 'point11',
-          coordinates: [118.140448, 24.512917],
+          coordinates: [118.111760, 24.511762],
           convert: 'bd-84', // 特殊属性，经纬度转化。支持：百度(bd)、高德(gd)、wgs84(84)互转
           style: {
             icon: {
@@ -475,8 +503,14 @@ export default {
             }
           },
           properties: {
-            name: 'feature1',
+            name: 'feature11',
             level: 1
+          },
+          flash: {
+            radius: 50,
+            rate: 1,
+            // color: 'green',
+            timeout: 3000
           },
           noCluster: true
         },
@@ -494,10 +528,11 @@ export default {
           flash: {
             // radius: 40,
             rate: 1,
-            color: 'red'
+            color: 'blue',
+            timeout: 0
           },
           properties: {
-            name: 'feature1',
+            name: 'feature2',
             level: 2
           },
           noCluster: true
@@ -801,6 +836,8 @@ export default {
         imageCenter: [118.213269, 24.569244],
         imageScale: [0.00004, 0.00004]
       },
+      imageOpacity: 0.5,
+      imageVisible: false,
       textFeatures: [
         {
           coordinates: [118.057099, 24.500103],
@@ -861,7 +898,17 @@ export default {
           },
           coordinates: [[118.071986, 24.4628], [118.058538, 24.472773], [118.0380779141473, 24.472963941494164]]
         }
-      ]
+      ],
+      trafficLayer: {
+        visible: true,
+        xyz: {
+          url: 'http://its.map.baidu.com:8002/traffic/TrafficTileService?x={x}&y={y}&level={z}&time=' + (new Date()).getTime() + '&label=web2D&v=017',
+          // url: 'http://tm.amap.com/trafficengine/mapabc/traffictile?v=1.0&;t=1&x={x}&y={y}&z={z}&&t=' + (new Date()).getTime(),
+          // projection: 'GCJ02'
+          projection: 'BD09'
+          // url: 'http://rtt2b.map.qq.com/rtt/?z={z}&x={x}&y={reverseY}&time=' + (new Date()).getTime() + '&times=1'
+        }
+      }
     }
   },
   methods: {
@@ -871,7 +918,7 @@ export default {
     removeFeatures () {
       this.features = []
     },
-    addClusterFeatures (count = 1000) {
+    addClusterFeatures (count = 10) {
       for (let i = 0; i < count; i++) {
         this.features.push({
           coordinates: [117.6 + Math.random(), 24.1 + Math.random()],
@@ -883,7 +930,10 @@ export default {
           },
           name: `聚合要素-${i + 1}`,
           flash: {
-            color: 'red'
+            color: 'purple',
+            radius: 40,
+            rate: 3,
+            timeout: 2000
           }
         })
       }
@@ -975,30 +1025,25 @@ export default {
       console.log(params)
       console.log(evt)
       console.log(map)
+      if (this.toggleCluster) {
+        this.overlay.data = []
+        const features = params.layer1[0].feature.get('features')
+        features.forEach(feature => {
+          this.overlay.data.push(feature.get('properties'))
+        })
+        console.log(this.overlay.data)
+      } else {
+        this.overlay.data = [params.layer1[0].feature.get('properties')]
+      }
     },
     onClickFeature (feature, layer, evt) {
       console.log(feature)
       console.log(layer)
       console.log(evt)
-      if (this.drawType || this.measureType) return
-      if (layer.get('id') === 'layer1' && feature.getId() === 'point4') {
-        this.position = evt.coordinate
-      }
-      if (layer.get('cluster')) {
-        const coordinates = feature.getGeometry().getCoordinates()
-        console.log(coordinates)
-        this.clusterFeatures = []
-        feature.get('features').forEach(feature => {
-          console.log(feature)
-          this.clusterFeatures.push({
-            name: feature.get('name')
-          })
-        })
-        this.positionCluster = coordinates
-      }
+      if (this.drawType || this.measureType) return false
     },
     onDblClick (evt, map) {
-      this.position = undefined
+      this.$refs.map.closeOverlays()
     },
     pointermove (evt, map) {
       const pixel = map.getEventPixel(evt.originalEvent)
@@ -1429,6 +1474,11 @@ export default {
       const extent = this.$refs.map.map.getView().calculateExtent(this.$refs.map.map.getSize())
       console.log(extent)
     },
+    changeImage () {
+      this.imageSource2.url = new URL('./assets/img/siming.jpg', import.meta.url).href
+      this.imageOpacity = 0.9
+      this.imageVisible = true
+    },
     getHeatmapData () {
       axios.get('/heatmap.json').then(res => {
         console.log(res)
@@ -1554,6 +1604,15 @@ export default {
     },
     featuresChange (features) {
       console.log('features change', features)
+    },
+    showItem (index) {
+      this.clusterOverlay = false
+      this.overlayIndex = index
+    },
+    overlayClose () {
+      if (this.toggleCluster) {
+        this.clusterOverlay = true
+      }
     }
   },
   mounted () {

@@ -1,6 +1,6 @@
 <template>
   <div :id="element" :class="className">
-    <slot :position="position"></slot>
+    <slot :data="data"></slot>
   </div>
 </template>
 
@@ -45,6 +45,12 @@ export default {
     },
     className: {
       type: String
+    },
+    data: {
+      type: Array
+    },
+    close: {
+      type: Function
     }
   },
   data () {
@@ -60,7 +66,6 @@ export default {
   watch: {
     position: {
       handler (value) {
-        // console.log('overlay change', value)
         this.overlay.setPosition(value)
       },
       immediate: false
@@ -86,6 +91,11 @@ export default {
     }
     const overlayOption = { ...this.$props, ...{ id: this.overlayId, element: overlayEl } }
     this.overlay = new Overlay(overlayOption)
+    for (const i in overlayOption) {
+      if (Object.prototype.hasOwnProperty.call(overlayOption, i)) {
+        this.overlay.set(i, overlayOption[i])
+      }
+    }
     this.map.addOverlay(this.overlay)
     this.$emit('load', this.overlay, this.map)
   },

@@ -89,13 +89,28 @@ export default {
       },
       immediate: false,
       deep: true
+    },
+    opacity: {
+      handler (value) {
+        this.layer.setOpacity(value)
+      },
+      immediate: false,
+      deep: true
+    },
+    source: {
+      handler (value) {
+        this.layer.setSource(new Source(value))
+      },
+      immediate: false,
+      deep: true
     }
   },
   methods: {
     init () {
       if (this.geoImage) {
+        this.layerOpt = { ...this.$props }
         this.layer = new Layer({
-          opacity: this.opacity,
+          ...this.layerOpt,
           source: new Source(this.source)
         })
       } else {
@@ -113,7 +128,9 @@ export default {
           ...projection
         }
         const source = new Static(sourceOpts)
+        this.layerOpt = { ...this.$props }
         this.layer = new ImageLayer({
+          ...this.layerOpt,
           source
         })
       }
