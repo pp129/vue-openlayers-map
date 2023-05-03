@@ -2,12 +2,14 @@
   <div id="app">
     <div class="tool">
       <div class="item">
+        <span class="label">选择底图</span>
         <select id="changeLayer" class="btn" v-model="tile" @change="changeTile">
           <option v-for="(item,index) in baseTile" :key="index" :value="item.value">{{item.name}}</option>
         </select>
       </div>
       <div class="item">
-        <span>轨迹动画</span>
+        <span class="label">轨迹动画</span>
+        <button @click="loadTrack">加载</button>
         <button @click="startTrack">开始</button>
         <button @click="pauseTrack">暂停</button>
         <button @click="stopTrack">结束</button>
@@ -22,7 +24,7 @@
       </div>
       <div class="item">
         <button @click.prevent="addClusterFeatures()">添加点</button>
-        <button @click.prevent="removeFeatures()">清楚点</button>
+        <button @click.prevent="removeFeatures()">清除点</button>
       </div>
       <div class="item">
         <label>
@@ -51,35 +53,50 @@
         <button @click="panTo">厦门</button>
         <button @click="flyTo">杭州</button>
         <button @click="getExtent">边界</button>
-        <button @click="changeImage">图像图层</button>
+      </div>
+      <div class="item">
+        <span class="label">图片图层</span>
+        <button @click="changeImage('xiangan',true)">翔安</button>
+        <button @click="changeImage('siming',false)">思明</button>
+        <button @click="imageVisible = false">清除</button>
       </div>
     </div>
     <v-map
+        class="map"
         ref="map"
-        height="95%"
         :view="view"
         :controls="controls"
         :interactions="interactions"
         :cesium="map3d"
-        @load="mapLoaded = true"
-        @load3d="load3d"
-        @changeZoom="changeZoom"
         @click="onClick"
-        @clickfeature="onClickFeature"
-        @clickfeatures="onClickFeatures"
         @dblclick="onDblClick"
         @contextmenu.prevent="onContextmenu"
         @pointermove="pointermove"
+        @load="mapLoaded = true"
+        @changeZoom="changeZoom"
+        @load3d="load3d"
         @map3dClick="map3dClick"
         @map3dMoveEnd="moveEnd"
     >
       <v-tile :tile-type="tile" :xyz="xyz" :z-index="1" :mask="tileFilter"></v-tile>
       <v-tile ref="wms" tile-type="WMS" :wms="wms" :z-index="2"></v-tile>
-      <v-image :source="imageSource" :z-index="9"></v-image>
-      <v-image :source="imageSource2" geo-image :opacity="imageOpacity" :z-index="9" :visible="imageVisible"></v-image>
+      <!-- 图片图层 -->
+      <v-image :source="imageSource2" :geo-image="imageSource2.geoImage" :opacity="imageOpacity" :z-index="9" :visible="imageVisible"></v-image>
       <v-overview :tile-type="tile" :rotateWithView="rotateWithView" collapsible></v-overview>
       <!-- 路况图层 -->
       <v-tile ref="trafficLayer" :visible="trafficLayer.visible" :xyz="trafficLayer.xyz" :z-index="1" layer-id="traffic" tile-type="XYZ"></v-tile>
+      <!-- 海量点聚合 -->
+      <v-super-cluster ref="clusterLayer" :features="clusterFeatures" :cluster="cluster" :z-index="99" @singleclick="onClickCluster">
+        <v-overlay v-if="clusterOverlay.cluster" :position="clusterOverlay.position">
+          <ul>
+            <li v-for="item in clusterOverlay.list" :key="item.id" @click="showClusterItem(item.id)">{{ item.id }}</li>
+          </ul>
+        </v-overlay>
+        <v-overlay v-else :position="clusterOverlay.position">
+          {{ clusterOverlay.info.name }}
+        </v-overlay>
+      </v-super-cluster>
+      <!--矢量图层-->
       <v-vector
           ref="layer1"
           layer-id="layer1"
@@ -88,18 +105,10 @@
           :visible="visible1"
           :flash-time="1500"
           :overlay="overlay"
-          :z-index="3" @featuresChange="featuresChange">
-        <template #overlay="scope">
-          <div v-if="!clusterOverlay">双击地图关闭弹框【{{scope.data[toggleCluster?overlayIndex:0].name}}】</div>
-          <div v-else>
-            <ul>
-              <li v-for="(item,index) in scope.data" :key="index" @click="showItem(index)">
-                {{ item.name }}
-              </li>
-            </ul>
-          </div>
-        </template>
+          :z-index="3" @featuresChange="featuresChange" @singleclick="onClickFeatures">
+        <v-overlay :position="position">{{ overlay.name }}双击地图关闭弹框</v-overlay>
       </v-vector>
+      <!--可编辑图层-->
       <v-vector
           :features="features2"
           modify
@@ -107,17 +116,11 @@
           select
           :z-index="4"
           @select="onselect" @modifystart="modifystart" @modifyend="modifyend" @modifychange="modifychange"></v-vector>
+      <!-- 绘制图层 -->
       <v-draw ref="drawLayer" :type="drawType" :arrow="arrow" :feature-style="drawFeatureStyle" :end-right="true" :clear="true" draw-once editable @drawend="drawend"></v-draw>
+      <!-- 测量图层 -->
       <v-measure ref="measureLayer" :type="measureType" :feature-style="measureStyle" :label-style="measureLabelStyle" :tip-style="measureTipStyle" :modify-style="measureModifyStyle" :modifiable="true"></v-measure>
       <v-overlay class="overlay" :position="positionRadius">半径：{{radius}} 米</v-overlay>
-      <v-overlay class="overlay-cluster" :position="positionCluster" :offset="[15,15]">
-        <ul>
-          <li v-for="(item,index) in clusterFeatures" :key="item.name">
-            <span>#{{ index + 1 }}</span>
-            <span>{{item.name}}</span>
-          </li>
-        </ul>
-      </v-overlay>
 <!--      <v-overlay class="overlay" :position="position">双击地图关闭弹框</v-overlay>-->
       <v-overlay class="overlay" :position="positionLevel">预警等级： {{ level }} 级</v-overlay>
       <v-overlay class="overlay-menu" :position="positionMenu">
@@ -148,12 +151,8 @@
           <li @click="measureHandler('LineString')">线段</li>
         </ul>
       </v-overlay>
-      <v-vector
-          :features="textFeatures"
-          modify
-          @modifyend="textLayerModifyEnd"
-          :z-index="10"></v-vector>
-      <v-track ref="track" :id="track.id" :paths="track.paths" :options="track.options" @onLoad="onLoadTrack" change-car-rotate></v-track>
+      <!-- 轨迹 -->
+      <v-track v-if="showTrack" ref="track" :id="track.id" :paths="track.paths" :options="track.options" @onLoad="onLoadTrack" change-car-rotate></v-track>
       <v-heatmap :features="heatmap.features" :visible="heatmap.visible" :radius="3" :blur="6"></v-heatmap>
     </v-map>
   </div>
@@ -368,8 +367,15 @@ export default {
           color: 'green'
         }
       },
-      toggleCluster: false,
-      clusterOverlay: true,
+      toggleCluster: true,
+      clusterOverlay: {
+        cluster: false,
+        list: [],
+        info: {
+          id: ''
+        },
+        position: undefined
+      },
       clusterOption: {
         distance: 120
       },
@@ -377,6 +383,7 @@ export default {
       clusterFeatures: [],
       visible1: true,
       overlay: {
+        name: '',
         showOnClick: true,
         positionOrigin: 'feature',
         position: undefined,
@@ -548,7 +555,8 @@ export default {
             }
           },
           properties: {
-            level: 3
+            level: 3,
+            name: 'point3'
           },
           noCluster: true
         },
@@ -597,65 +605,31 @@ export default {
       positionLevel: undefined,
       positionMenu: undefined,
       level: undefined,
+      overlayCluster: {
+        trigger: 'pointermove',
+        // autoHide: true,
+        position: undefined
+      },
       cluster: {
-        style: [
-          {
-            min: 0,
-            max: 20,
-            circle: {
-              radius: 16,
-              fill: {
-                color: 'blue'
-              },
-              stroke: {
-                width: 2
-              }
-            },
-            text: {
-              fill: {
-                color: 'yellow'
-              }
-            }
+        style: {
+          // min: 0,
+          // max: 200,
+          icon: {
+            scale: 0.8,
+            // src: require('@/assets/img/point_6.png')
+            src: new URL('./assets/img/point_3.png', import.meta.url).href
           },
-          {
-            min: 20,
-            max: 50,
-            circle: {
-              radius: 16,
-              fill: {
-                color: 'orange'
-              },
-              stroke: {
-                width: 2
-              }
-            },
-            text: {
-              fill: {
-                color: 'white'
-              }
-            }
-          },
-          {
-            min: 50,
-            circle: {
-              radius: 16,
-              fill: {
-                color: 'red'
-              },
-              stroke: {
-                width: 2
-              }
-            },
-            text: {
-              fill: {
-                color: 'white'
-              }
+          text: {
+            fill: {
+              color: 'white'
             }
           }
-        ],
+        },
+        radius: 120, // supercluster radius
         distance: 120, // 要素将聚集在一起的像素距离。
         minDistance: 1// 聚合之间的最小距离（以像素为单位）。将被限制在配置的距离。默认情况下，不设置最小距离。此配置可用于避免重叠图标。作为权衡，聚合要素的位置将不再是其所有要素的中心。
       },
+      showTrack: false,
       track: {
         id: 'track1',
         paths: [
@@ -828,13 +802,15 @@ export default {
         visible: true
       },
       imageSource: {
-        url: new URL('./assets/img/siming.jpg', import.meta.url).href,
+        url: '',
         imageExtent: [118.0531, 24.423728, 118.197989, 24.502344]
       },
       imageSource2: {
-        url: new URL('./assets/img/xiangan.jpg', import.meta.url).href,
+        geoImage: false,
+        url: '',
         imageCenter: [118.213269, 24.569244],
-        imageScale: [0.00004, 0.00004]
+        imageScale: [0.00004, 0.00004],
+        imageExtent: [118.0531, 24.423728, 118.197989, 24.502344]
       },
       imageOpacity: 0.5,
       imageVisible: false,
@@ -918,9 +894,9 @@ export default {
     removeFeatures () {
       this.features = []
     },
-    addClusterFeatures (count = 10) {
+    addClusterFeatures (count = 10000) {
       for (let i = 0; i < count; i++) {
-        this.features.push({
+        this.clusterFeatures.push({
           coordinates: [117.6 + Math.random(), 24.1 + Math.random()],
           style: {
             icon: {
@@ -928,12 +904,17 @@ export default {
               scale: 0.6
             }
           },
+          id: `random-${i + 1}`,
           name: `聚合要素-${i + 1}`,
           flash: {
             color: 'purple',
             radius: 40,
             rate: 3,
             timeout: 2000
+          },
+          properties: {
+            id: `random-${i + 1}`,
+            name: `聚合要素-${i + 1}`
           }
         })
       }
@@ -951,7 +932,7 @@ export default {
     },
     onClick (evt, map) {
       console.log(evt)
-      console.log(this.$refs.layer1.getFeatures())
+      // console.log(this.$refs.layer1.getFeatures())
       this.currentCoordinateText = [evt.coordinate[0].toFixed(6), evt.coordinate[1].toFixed(6)].join(',')
       this.positionMenu = undefined
       if (this.addModify && !this.drawType && !this.measureType) {
@@ -1021,19 +1002,13 @@ export default {
     onContextmenu (evt, map) {
       this.positionMenu = evt.coordinate
     },
-    onClickFeatures (params, evt, map) {
-      console.log(params)
-      console.log(evt)
-      console.log(map)
-      if (this.toggleCluster) {
-        this.overlay.data = []
-        const features = params.layer1[0].feature.get('features')
-        features.forEach(feature => {
-          this.overlay.data.push(feature.get('properties'))
-        })
-        console.log(this.overlay.data)
-      } else {
-        this.overlay.data = [params.layer1[0].feature.get('properties')]
+    onClickFeatures (evt, feature) {
+      console.log(evt, feature)
+      // const feature = features.length ? features[0] : undefined
+      if (feature) {
+        const data = feature.get('features')[0]
+        this.overlay.name = data.get('properties')?.name || ''
+        this.position = data.get('coordinates') || evt.coordinate
       }
     },
     onClickFeature (feature, layer, evt) {
@@ -1059,25 +1034,10 @@ export default {
         const features = map.getFeaturesAtPixel(pixel)
         if (features.length > 0) {
           features.forEach(feature => {
-            if (this.toggleCluster) {
-              features.forEach(item => {
-                const clusterFeatures = item.get('features')
-                if (clusterFeatures && clusterFeatures.length > 0) {
-                  clusterFeatures.forEach(el => {
-                    const properties = el.get('properties')
-                    if (properties && Object.prototype.hasOwnProperty.call(properties, 'level')) {
-                      this.level = properties.level
-                      this.positionLevel = el.get('coordinates')
-                    }
-                  })
-                }
-              })
-            } else {
-              const properties = feature.get('properties')
-              if (properties && Object.prototype.hasOwnProperty.call(properties, 'level')) {
-                this.level = properties.level
-                this.positionLevel = feature.get('coordinates')
-              }
+            const properties = feature.get('properties')
+            if (properties && Object.prototype.hasOwnProperty.call(properties, 'level')) {
+              this.level = properties.level
+              this.positionLevel = feature.get('coordinates')
             }
           })
         }
@@ -1090,6 +1050,9 @@ export default {
     },
     onLoadTrack (track) {
       console.log(track)
+    },
+    loadTrack () {
+      this.showTrack = true
     },
     startTrack () {
       if (this.$refs.track) {
@@ -1113,12 +1076,7 @@ export default {
       }
     },
     disposeTrack () {
-      if (this.$refs.track) {
-        // this.track.paths = []
-        this.$refs.track.dispose()
-      } else {
-        alert('track unload')
-      }
+      this.showTrack = false
     },
     drawend (evt, map) {
       console.log('on drawend: ', evt, map)
@@ -1474,8 +1432,9 @@ export default {
       const extent = this.$refs.map.map.getView().calculateExtent(this.$refs.map.map.getSize())
       console.log(extent)
     },
-    changeImage () {
-      this.imageSource2.url = new URL('./assets/img/siming.jpg', import.meta.url).href
+    changeImage (url, geoImage) {
+      this.imageSource2.geoImage = geoImage
+      this.imageSource2.url = new URL(`./assets/img/${url}.jpg`, import.meta.url).href
       this.imageOpacity = 0.9
       this.imageVisible = true
     },
@@ -1613,6 +1572,32 @@ export default {
       if (this.toggleCluster) {
         this.clusterOverlay = true
       }
+    },
+    showClusterItem (id) {
+      console.log(id)
+      const { properties } = this.clusterFeatures.find(x => x.id === id)
+      this.clusterOverlay.info = properties
+      this.clusterOverlay.cluster = false
+    },
+    onClickCluster (evt, feature) {
+      console.log(feature)
+      // const feature = features.length ? features[0] : undefined
+      if (feature) {
+        this.clusterOverlay.cluster = feature.get('cluster')
+        if (this.clusterOverlay.cluster) {
+          const id = feature.get('cluster_id')
+          const count = feature.get('point_count')
+          if (count <= 10) {
+            const children = this.$refs.clusterLayer.getLeaves(id, Infinity)
+            this.clusterOverlay.list = children.map(child => { return child.properties })
+            this.clusterOverlay.position = feature.get('coordinates') || evt.coordinate
+          }
+        } else {
+          console.log(feature.get('properties'))
+          this.clusterOverlay.info = feature.get('properties')
+          this.clusterOverlay.position = feature.get('coordinates') || evt.coordinate
+        }
+      }
     }
   },
   mounted () {
@@ -1633,6 +1618,7 @@ html,body {
   width: 100%;
   height: 100%;
   overflow: hidden;
+  position: relative;
 }
 ul,li{
   list-style: none;
@@ -1667,20 +1653,37 @@ li{
   height: 200px;
   overflow-x: scroll;
 }
+.map {
+  position: absolute;
+  left: 0;
+  top: 0;
+}
 .tool{
-  width: 100%;
-  height: 5%;
+  width: 10%;
   z-index: 2;
+  position: absolute;
+  right: 10px;
+  top: 5%;
   display: flex;
-  align-items: center;
+  justify-content: flex-start;
+  align-items: start;
   padding-left: 10px;
+  flex-direction: column;
+  //background: #ffffff;
 }
 .item{
-  margin-right: 10px;
+  margin-top: 10px;
   display: flex;
-  border-right: 1px solid #ccc;
-  padding-right: 10px;
+  flex-direction: row;
+  flex-wrap: wrap;
   align-items: center;
+  border: 1px solid #666;
+  border-radius: 6px;
+  padding: 10px;
+  background: rgba(0,0,0,0.2);
+}
+.label {
+  width: 100%;
 }
 .group{
   background:#888888;

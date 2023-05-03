@@ -83,6 +83,11 @@ export default {
       immediate: false
     }
   },
+  methods: {
+    setPosition (coordinates) {
+      this.overlay.setPosition(coordinates)
+    }
+  },
   mounted () {
     // const ele =
     let overlayEl

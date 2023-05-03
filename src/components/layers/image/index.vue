@@ -99,7 +99,13 @@ export default {
     },
     source: {
       handler (value) {
-        this.layer.setSource(new Source(value))
+        // this.layer.getSource().clear()
+        if (this.geoImage) {
+          this.layer.setSource(new Source(value))
+        } else {
+          this.layer.setSource(new Static(value))
+        }
+        // this.layer.getSource().refresh()
       },
       immediate: false,
       deep: true

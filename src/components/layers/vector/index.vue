@@ -1,12 +1,11 @@
 <template>
-  <v-overlay v-if="overlay" v-bind="overlay">
-    <slot name="overlay" :data="overlay.data"></slot>
-  </v-overlay>
+  <div><slot></slot></div>
 </template>
 
 <script>
 import BaseLayer from '@/components/layers/BaseLayer.vue'
 import { nanoid } from 'nanoid'
+
 import {
   addClusterLayer,
   addVectorSource,
@@ -29,13 +28,11 @@ import { Cluster } from 'ol/source'
 import { arrowLine } from '@/utils/arrowLine'
 import { Point } from 'ol/geom'
 import Zoom from 'ol-ext/featureanimation/Zoom'
-import VOverlay from '@/components/overlay'
 
 export default {
   name: 'v-vector',
   extends: BaseLayer,
   inject: ['VMap'],
-  components: { VOverlay },
   props: {
     layerId: {
       type: String,
@@ -92,7 +89,8 @@ export default {
         distance: 20,
         minDistance: 0
       },
-      flashInterval: null
+      flashInterval: null,
+      styleCache: {}
     }
   },
   computed: {
@@ -128,6 +126,8 @@ export default {
           clearInterval(this.flashInterval)
           this.flashInterval = null
         }
+        // const source = this.layer.getSource()
+        // source.clear()
         if (this.cluster) {
           this.clusterObj.getSource().clear()
           const features = setFeatures(value, this.map, this.FeatureStyle && Object.keys(this.FeatureStyle).length > 0)
@@ -264,7 +264,9 @@ export default {
       if (this.zIndex) {
         this.layer.setZIndex(this.zIndex)
       }
+      // console.log(this.layer.getSource().getFeatures())
       this.map.addLayer(this.layer)
+      console.log(this.layer.getZIndex())
       this.features.forEach(feature => {
         if (feature.type === 'polyline' && validObjKey(feature, 'arrow')) {
           arrowLine({
@@ -280,7 +282,7 @@ export default {
         const zoom = this.map.getView().getZoom()
         source.getFeatures().forEach(feature => {
           if (feature.get('isArrow')) {
-            source.removeFeature(feature)
+            this.layer.getSource().removeFeature(feature)
           }
         })
         if (Math.round(zoom) === zoom) {
@@ -310,6 +312,17 @@ export default {
       if (change) {
         this.$emit('change', source.getFeatures())
       }
+      this.map.on('singleclick', (evt) => this.eventHandler('singleclick', evt))
+    },
+    getLayerFeature (pixel) {
+      return this.map.forEachSmFeatureAtPixel(pixel, (feature, layer) => {
+        if (layer.get('id') === this.layer.get('id')) return feature
+      }, {})
+    },
+    eventHandler (name, evt) {
+      const { pixel } = evt
+      const feature = this.getLayerFeature(pixel)
+      this.$emit(name, evt, feature)
     },
     setFlashAnimate () {
       if (this.cluster) {
@@ -341,6 +354,7 @@ export default {
         this.clusterObj = null
       }
       this.map.removeLayer(this.layer)
+      // this.layer = null
       this.map.removeInteraction(this.selectObj)
       this.map.removeInteraction(this.modifyObj)
     },
@@ -486,6 +500,9 @@ export default {
     },
     overlayClose () {
       this.overlay.close()
+    },
+    getClosestFeatureToCoordinate (coordinates, filter) {
+      return this.layer.getSource().getClosestFeatureToCoordinate(coordinates, filter)
     }
   },
   mounted () {

@@ -9,7 +9,6 @@
 import { nanoid } from 'nanoid'
 import { OlMap, setStyle } from '@/utils/index.js'
 import { getCenter, boundingExtent } from 'ol/extent'
-import _ from 'lodash'
 
 export default {
   name: 'v-map',
@@ -219,39 +218,8 @@ export default {
           if (this.map3d) {
             this.map3dEvents()
           }
-          // 点击事件
-          this.map.on('singleclick', (evt) => {
-            const params = []
-            this.$emit('click', evt, this.map)
-            this.map.forEachSmFeatureAtPixel(evt.pixel, (feature, layer) => {
-              if (layer) {
-                const overlay = layer.get('overlay')
-                if (overlay) {
-                  const { showOnClick, positionOrigin } = overlay
-                  if (showOnClick) {
-                    switch (positionOrigin) {
-                      case 'event':
-                        overlay.position = evt.coordinate
-                        break
-                      case 'feature':
-                        overlay.position = layer.get('cluster') ? feature.getGeometry().getCoordinates() : feature.get('coordinates')
-                        break
-                      default:
-                        overlay.position = evt.coordinate
-                        break
-                    }
-                  }
-                }
-                params.push({ layerId: layer.get('id'), layer, feature })
-                this.$emit('clickfeature', feature, layer, evt, this.map)
-              }
-            }, {}, evt)
-            this.$emit('clickfeatures', _.groupBy(params, 'layerId'), evt, this.map)
-          })
-          // 双击时间
-          this.map.on('dblclick', (evt) => {
-            this.$emit('dblclick', evt, this.map)
-          })
+          // 绑定事件
+          const events = ['singleclick', 'click', 'dblclick', 'pointerdrag', 'contextmenu', 'postrender', 'loadend', 'loadstart', 'moveend', 'movestart']
           // 层级变化
           this.map.getView().once('change:resolution', () => {
             this.map.once('moveend', (evt) => {
@@ -274,12 +242,10 @@ export default {
             })
             this.$emit('pointermove', evt, this.map)
           })
-          // 鼠标右键
-          this.map.on('contextmenu', evt => {
-            this.$emit('contextmenu', evt, this.map)
-          })
-          this.map.on('postrender', evt => {
-            this.$emit('postrender', evt, this.map)
+          events.forEach(event => {
+            this.map.on(event, evt => {
+              this.$emit(event, evt, this.map)
+            })
           })
           this.$emit('load')
           this.load = true

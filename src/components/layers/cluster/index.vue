@@ -1,16 +1,20 @@
+<template>
+  <div><slot></slot></div>
+</template>
+
 <script>
 import BaseLayer from '@/components/layers/BaseLayer.vue'
 import { nanoid } from 'nanoid'
-import { addClusterLayer, addVectorSource, setFeatures } from '@/utils'
-// import { Cluster } from 'ol/source'
-import OlSuperCluster from '@/utils/ol-supercluster'
-// import VectorSource from 'ol/source/Vector'
+import VectorLayer from 'ol/layer/Vector'
+import VectorSource from 'ol/source/Vector'
+import GeoJSON from 'ol/format/GeoJSON'
+import { Fill, Style, Text } from 'ol/style'
+import Supercluster from 'supercluster'
+import { setStyle, validObjKey } from '@/utils'
+import CircleStyle from 'ol/style/Circle'
 
 export default {
-  name: 'v-cluster',
-  render (createElement, context) {
-    return null
-  },
+  name: 'v-super-cluster',
   extends: BaseLayer,
   inject: ['VMap'],
   props: {
@@ -19,20 +23,6 @@ export default {
       default () {
         return `cluster-layer-${nanoid()}`
       }
-    },
-    source: {
-      type: Object,
-      default () {
-        return { features: [] }
-      }
-    },
-    distance: {
-      type: Number,
-      default: 20
-    },
-    minDistance: {
-      type: Number,
-      default: 0
     },
     features: {
       type: Array,
@@ -45,12 +35,32 @@ export default {
       default () {
         return undefined
       }
+    },
+    /**
+     * Option  Default  Description
+     * minZoom  0  Minimum zoom level at which clusters are generated.
+     * maxZoom  16  Maximum zoom level at which clusters are generated.
+     * minPoints  2  Minimum number of points to form a cluster.
+     * radius  40  Cluster radius, in pixels.
+     * extent  512  (Tiles) Tile extent. Radius is calculated relative to this value.
+     * nodeSize  64  Size of the KD-tree leaf node. Affects performance.
+     * log  false  Whether timing info should be logged.
+     * generateId  false  Whether to generate ids for input features in vector tiles.
+     */
+    cluster: {
+      type: Object
+    },
+    overlay: {
+      type: Object
     }
   },
   data () {
     return {
       layer: null,
-      cluster: null
+      clusters: null,
+      featureChildren: [],
+      featureCluster: false,
+      total: 0
     }
   },
   computed: {
@@ -59,26 +69,13 @@ export default {
     }
   },
   watch: {
-    distance: {
-      handler (value) {
-        this.cluster.setDistance(value)
-      },
-      immediate: false
-    },
-    minDistance: {
-      handler (value) {
-        this.cluster.setMinDistance(value)
-      },
-      immediate: false
-    },
     features: {
-      handler (value) {
-        if (value && value.length > 0) {
-          this.dispose()
-          this.init()
-        }
+      handler () {
+        this.dispose()
+        this.init()
       },
-      immediate: false
+      immediate: false,
+      deep: true
     },
     visible: {
       handler (value) {
@@ -118,30 +115,128 @@ export default {
     this.dispose()
   },
   methods: {
+    getGeoFeatures () {
+      return this.features.map(feature => {
+        return {
+          type: 'Feature',
+          geometry: {
+            type: 'Point',
+            coordinates: feature.coordinates
+          },
+          properties: feature
+        }
+      })
+    },
+    styleFunction (styleCache, feature) {
+      // console.log(feature)
+      const cluster = feature.get('cluster') || 0
+      const size = feature.get('point_count_abbreviated') || 0
+      let styles = styleCache[size]
+      if (cluster) {
+        if (!styles) {
+          let styleOptions = {}
+          styleOptions = {
+            image: new CircleStyle({
+              radius: 4,
+              fill: new Fill({
+                color: 'blue'
+              })
+            }),
+            text: new Text({
+              font: '16px sans-serif',
+              text: size.toString()
+            })
+          }
+          // const { style } = this.cluster
+          if (validObjKey(this.cluster, 'style')) {
+            styles = setStyle(this.cluster.style)
+            styles.getText().setText(size.toString())
+          } else {
+            styles = new Style(styleOptions)
+          }
+          styleCache[size] = styles
+        }
+      } else {
+        const style = feature.get('style')
+        styles = setStyle(style)
+      }
+      // console.log(styles)
+      return styles
+    },
     init () {
-      const source = addVectorSource(this.source, this.map)
-      if (this.source.features.length <= 0 && this.features.length > 0) {
-        const features = setFeatures(this.features, this.map)
-        source.addFeatures(features)
+      this.clusters = new Supercluster(this.cluster)
+      this.clusters.load(this.getGeoFeatures())
+      console.log(this.clusters)
+      this.total = this.clusters.points.length
+      const extent = this.map.getView().calculateExtent(this.map.getSize())
+      const cluster = this.clusters.getClusters(extent, this.map.getView().getZoom())
+      const features = {
+        type: 'FeatureCollection',
+        features: cluster
       }
-      const option = {
-        source,
-        view: this.map.getView(),
-        radius: this.distance
-      }
-      this.cluster = new OlSuperCluster(option)
-      const layerOpt = { ...this.$props, ...{ source: this.cluster, style: this.FeatureStyle } }
-      this.layer = addClusterLayer(layerOpt, this.map)
+      const styleCache = {}
+      this.layer = new VectorLayer({
+        ...this.$props,
+        source: new VectorSource({
+          features: new GeoJSON().readFeatures(features).map(feature => {
+            const properties = feature.get('properties')
+            if (properties && typeof properties === 'object') {
+              for (const i in properties) {
+                if (Object.prototype.hasOwnProperty.call(properties, i)) {
+                  feature.set(i, properties[i])
+                }
+              }
+            }
+            return feature
+          })
+        }),
+        style: (feature) => this.styleFunction(styleCache, feature)
+      })
+      this.layer.set('cluster', true)
       this.layer.set('id', this.layerId)
-      this.layer.set('type', 'cluster')
+      this.layer.set('type', 'vector')
       this.layer.set('users', true)
       if (this.zIndex) {
         this.layer.setZIndex(this.zIndex)
       }
       this.map.addLayer(this.layer)
+      this.map.on('postrender', (evt) => {
+        const cluster = this.clusters.getClusters(extent, this.map.getView().getZoom())
+        const features = {
+          type: 'FeatureCollection',
+          features: cluster
+        }
+        this.layer.getSource().clear()
+        this.layer.getSource().addFeatures(new GeoJSON().readFeatures(features).map(feature => {
+          const properties = feature.get('properties')
+          if (properties && typeof properties === 'object') {
+            for (const i in properties) {
+              if (Object.prototype.hasOwnProperty.call(properties, i)) {
+                feature.set(i, properties[i])
+              }
+            }
+          }
+          return feature
+        }))
+      })
+      this.map.on('singleclick', (evt) => this.eventHandler('singleclick', evt))
+      // this.map.on('pointermove', (evt) => this.eventHandler('pointermove', evt))
+    },
+    getFeatureAtPixel (pixel) {
+      return this.map.forEachSmFeatureAtPixel(pixel, (feature, layer) => {
+        if (layer.get('id') === this.layer.get('id')) return feature
+      }, {})
+    },
+    eventHandler (name, evt) {
+      const { pixel } = evt
+      const feature = this.getFeatureAtPixel(pixel)
+      this.$emit(name, evt, feature)
+    },
+    getLeaves (id, limit) {
+      return this.clusters.getLeaves(id, limit)
     },
     dispose () {
-      this.cluster.clear()
+      this.layer.getSource().clear()
       this.map.removeLayer(this.layer)
     }
   }
