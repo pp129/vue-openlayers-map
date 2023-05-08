@@ -1,7 +1,7 @@
 {
   "name": "v-ol-map",
   "private": false,
-  "version": "1.11.0",
+  "version": "1.12.4",
   "main": "lib/ol-map.umd.js",
   "files": [
     "lib"
@@ -29,6 +29,7 @@
     "terser": "^5.14.2",
     "vite": "^3.0.9",
     "vite-plugin-html": "^3.2.0",
+    "vite-plugin-require-transform": "^1.0.12",
     "vite-plugin-vue2": "^2.0.2"
   },
   "dependencies": {

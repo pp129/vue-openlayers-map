@@ -247,7 +247,7 @@ export default {
               this.$emit(event, evt, this.map)
             })
           })
-          this.$emit('load')
+          this.$emit('load', this.map)
           this.load = true
         }
       })

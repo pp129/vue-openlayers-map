@@ -23,36 +23,35 @@
         <button v-if="modify" @click="setModify">添加编辑图案（圆）</button>
       </div>
       <div class="item">
+        <label>基于supercluster聚合图层</label>
         <button @click.prevent="addClusterFeatures()">添加点</button>
         <button @click.prevent="removeFeatures()">清除点</button>
       </div>
       <div class="item">
-        <label>
-          聚合
-        </label>
-        <input type="checkbox" name="toggleCluster" v-model="toggleCluster" />
-        <label>聚合距离：{{cluster.distance}}</label>
+        <label>基于ol聚合图层</label>
+        <label> <input type="checkbox" name="toggleCluster" v-model="toggleCluster" style="margin-right: 10px;" />聚合距离：{{cluster.distance}}</label>
         <input type="range" step=10 min=0 max=300 v-model="cluster.distance" :disabled="!toggleCluster"/>
       </div>
       <div class="item">
-       <label>是否3D：</label>
+       <label>是否3D：<span class="tag">实验性功能</span></label>
        <input type="checkbox" name="map3d" v-model="map3d" @change="setMap3dTile"/>
        <label>Y轴旋转角：{{perspectiveMap.pitch}}°</label>
        <label>X轴旋转角：{{perspectiveMap.roll}}°</label>
        <label>Z轴旋转角：{{perspectiveMap.heading}}°</label>
-<!--       <input type="range" step=1 min=0 max=30 v-model="perspectiveMap.angle" />-->
-<!--       <p><span class="tag">实验性功能</span></p>-->
      </div>
       <div class="item">
         <p v-if="mapLoaded">当前层级：{{mapZoom}} 级</p>
       </div>
       <div class="item">
-        <p>点击位置：{{currentCoordinateText}}</p>
+        <label>点击位置（经纬度）</label>
+        <p>{{currentCoordinateText}}</p>
+<!--        <label>获取视窗边界（经纬度）</label>-->
+        <button @click="getExtent">获取视窗边界</button>（控制台输出）
       </div>
       <div class="item">
+        <label>视图移动</label>
         <button @click="panTo">厦门</button>
         <button @click="flyTo">杭州</button>
-        <button @click="getExtent">边界</button>
       </div>
       <div class="item">
         <span class="label">图片图层</span>
@@ -61,6 +60,7 @@
         <button @click="imageVisible = false">清除</button>
       </div>
     </div>
+<!--    <div v-show="mapLoading" class="mask"></div>-->
     <v-map
         class="map"
         ref="map"
@@ -71,8 +71,7 @@
         @click="onClick"
         @dblclick="onDblClick"
         @contextmenu.prevent="onContextmenu"
-        @pointermove="pointermove"
-        @load="mapLoaded = true"
+        @load="onLoad"
         @changeZoom="changeZoom"
         @load3d="load3d"
         @map3dClick="map3dClick"
@@ -86,7 +85,8 @@
       <!-- 路况图层 -->
       <v-tile ref="trafficLayer" :visible="trafficLayer.visible" :xyz="trafficLayer.xyz" :z-index="1" layer-id="traffic" tile-type="XYZ"></v-tile>
       <!-- 海量点聚合 -->
-      <v-super-cluster ref="clusterLayer" :features="clusterFeatures" :cluster="cluster" :z-index="99" @singleclick="onClickCluster">
+      <v-super-cluster ref="clusterLayer" :features="clusterFeatures" :cluster="cluster" :z-index="99" @singleclick="onClickCluster"
+                       @changeesolution="onChangeResolution" @movestart="onmovestart" @moveend="onMoveend">
         <v-overlay v-if="clusterOverlay.cluster" :position="clusterOverlay.position">
           <ul>
             <li v-for="item in clusterOverlay.list" :key="item.id" @click="showClusterItem(item.id)">{{ item.id }}</li>
@@ -105,7 +105,7 @@
           :visible="visible1"
           :flash-time="1500"
           :overlay="overlay"
-          :z-index="3" @featuresChange="featuresChange" @singleclick="onClickFeatures">
+          :z-index="3" @featuresChange="featuresChange" @singleclick="onClickFeatures" @pointermove="pointermove">
         <v-overlay :position="position">{{ overlay.name }}双击地图关闭弹框</v-overlay>
       </v-vector>
       <!--可编辑图层-->
@@ -153,7 +153,8 @@
       </v-overlay>
       <!-- 轨迹 -->
       <v-track v-if="showTrack" ref="track" :id="track.id" :paths="track.paths" :options="track.options" @onLoad="onLoadTrack" change-car-rotate></v-track>
-      <v-heatmap :features="heatmap.features" :visible="heatmap.visible" :radius="3" :blur="6"></v-heatmap>
+      <v-heatmap :features="heatmap.features" :visible="heatmap.visible" :radius="3" :blur="6" :z-index="2"></v-heatmap>
+      <v-traffic v-if="showTraffic" :url="trafficUrl" :timeout="5000"></v-traffic>
     </v-map>
   </div>
 </template>
@@ -166,6 +167,7 @@ export default {
   name: 'App',
   data () {
     return {
+      mapLoading: false,
       mapLoaded: false,
       mapZoom: 5,
       addModify: false,
@@ -884,10 +886,19 @@ export default {
           projection: 'BD09'
           // url: 'http://rtt2b.map.qq.com/rtt/?z={z}&x={x}&y={reverseY}&time=' + (new Date()).getTime() + '&times=1'
         }
-      }
+      },
+      trafficUrl: '',
+      showTraffic: false
     }
   },
   methods: {
+    onLoad () {
+      this.mapLoaded = true
+      // setTimeout(() => {
+      //   this.trafficUrl = 'https://its.map.baidu.com/traffic/'
+      //   this.showTraffic = true
+      // }, 1000)
+    },
     getRandomIntegerInRange (min, max) {
       return Math.floor((max + 1 - min) * Math.random() + min)
     },
@@ -1006,9 +1017,19 @@ export default {
       console.log(evt, feature)
       // const feature = features.length ? features[0] : undefined
       if (feature) {
-        const data = feature.get('features')[0]
-        this.overlay.name = data.get('properties')?.name || ''
-        this.position = data.get('coordinates') || evt.coordinate
+        console.log(feature)
+        if (this.toggleCluster) {
+          if (feature.get('features') && feature.get('features').length <= 1) {
+            const data = feature.get('features')[0]
+            this.overlay.name = data.get('properties')?.name || ''
+            this.position = data.get('coordinates') || evt.coordinate
+          } else {
+            console.log(feature.get('features'))
+          }
+        } else {
+          this.overlay.name = feature.get('properties')?.name || ''
+          this.position = feature.get('coordinates') || evt.coordinate
+        }
       }
     },
     onClickFeature (feature, layer, evt) {
@@ -1020,27 +1041,22 @@ export default {
     onDblClick (evt, map) {
       this.$refs.map.closeOverlays()
     },
-    pointermove (evt, map) {
-      const pixel = map.getEventPixel(evt.originalEvent)
-      const hit = map.hasFeatureAtPixel(pixel)
-      // const wmsLayer = this.$refs.wms.layer
-      // console.log(evt.pixel)
-      // const data = wmsLayer.getData(evt.pixel)
-      // console.log(wmsLayer)
-      // console.log(data)
-      // const wmsHit = data && data[3] > 0 // transparent pixels have zero for data[3]
-      // map.getTargetElement().style.cursor = wmsHit ? 'pointer' : ''
-      if (hit) {
-        const features = map.getFeaturesAtPixel(pixel)
-        if (features.length > 0) {
-          features.forEach(feature => {
-            const properties = feature.get('properties')
-            if (properties && Object.prototype.hasOwnProperty.call(properties, 'level')) {
-              this.level = properties.level
-              this.positionLevel = feature.get('coordinates')
-            }
-          })
+    pointermove (evt, feature) {
+      if (feature) {
+        if (this.toggleCluster) {
+          // console.log(feature)
+          if (feature.get('features') && feature.get('features').length <= 1) {
+            const data = feature.get('features')[0]
+            this.level = data.get('properties')?.level || ''
+            this.positionLevel = data.get('coordinates') || evt.coordinate
+          }
+        } else {
+          console.log(feature)
+          this.level = feature.get('properties')?.level || ''
+          this.positionLevel = feature.get('coordinates') || evt.coordinate
         }
+        // console.log(this.level)
+        // console.log(this.positionLevel)
       }
     },
     changeTile () {
@@ -1579,6 +1595,17 @@ export default {
       this.clusterOverlay.info = properties
       this.clusterOverlay.cluster = false
     },
+    onmovestart () {
+      console.log('on move start')
+      this.mapLoading = true
+    },
+    onMoveend () {
+      console.log('on move end')
+      this.mapLoading = false
+    },
+    onChangeResolution () {
+      console.log('on change Resolution')
+    },
     onClickCluster (evt, feature) {
       console.log(feature)
       // const feature = features.length ? features[0] : undefined
@@ -1632,6 +1659,15 @@ li{
 .ol-rotate-custom{
   right: 5em;
   top: 0.5em;
+}
+.mask {
+  width: 100%;
+  height: 100%;
+  position: absolute;
+  top: 0;
+  left: 0;
+  background: rgba(0,0,0,0.3);
+  z-index: 999;
 }
 .overlay{
   padding: 5px 10px;
@@ -1693,7 +1729,7 @@ li{
 .tag{
   color: #fff;
   background: #f91;
-  padding: 0.2em 0.5em;
+  padding: 0.1em 0.3em;
   display: inline-block;
   -webkit-transform: rotate(-5deg);
   transform: rotate(-5deg);

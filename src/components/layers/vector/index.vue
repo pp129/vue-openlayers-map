@@ -90,7 +90,9 @@ export default {
         minDistance: 0
       },
       flashInterval: null,
-      styleCache: {}
+      styleCache: {},
+      eventRender: [],
+      eventList: ['singleclick', 'pointermove']
     }
   },
   computed: {
@@ -312,17 +314,20 @@ export default {
       if (change) {
         this.$emit('change', source.getFeatures())
       }
-      this.map.on('singleclick', (evt) => this.eventHandler('singleclick', evt))
+      // 绑定事件
+      this.eventList.forEach(listenerKey => {
+        this.eventRender.push(this.map.on(listenerKey, (evt) => this.eventHandler(listenerKey, evt)))
+      })
     },
-    getLayerFeature (pixel) {
-      return this.map.forEachSmFeatureAtPixel(pixel, (feature, layer) => {
+    getFeatureAtPixel (pixel) {
+      return this.map.forEachFeatureAtPixel(pixel, (feature, layer) => {
         if (layer.get('id') === this.layer.get('id')) return feature
       }, {})
     },
-    eventHandler (name, evt) {
+    eventHandler (listenerKey, evt) {
       const { pixel } = evt
-      const feature = this.getLayerFeature(pixel)
-      this.$emit(name, evt, feature)
+      const feature = this.getFeatureAtPixel(pixel)
+      this.$emit(listenerKey, evt, feature)
     },
     setFlashAnimate () {
       if (this.cluster) {
@@ -349,6 +354,10 @@ export default {
       }
     },
     dispose () {
+      // 移除事件
+      this.eventRender.forEach(listenerKey => {
+        unByKey(listenerKey)
+      })
       if (this.clusterObj) {
         this.clusterObj.getSource().clear()
         this.clusterObj = null

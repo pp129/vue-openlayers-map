@@ -12,6 +12,7 @@ import { Fill, Style, Text } from 'ol/style'
 import Supercluster from 'supercluster'
 import { setStyle, validObjKey } from '@/utils'
 import CircleStyle from 'ol/style/Circle'
+import { unByKey } from 'ol/Observable'
 
 export default {
   name: 'v-super-cluster',
@@ -60,7 +61,9 @@ export default {
       clusters: null,
       featureChildren: [],
       featureCluster: false,
-      total: 0
+      total: 0,
+      eventRender: [],
+      eventList: ['singleclick', 'pointermove']
     }
   },
   computed: {
@@ -200,42 +203,64 @@ export default {
         this.layer.setZIndex(this.zIndex)
       }
       this.map.addLayer(this.layer)
-      this.map.on('postrender', (evt) => {
-        const cluster = this.clusters.getClusters(extent, this.map.getView().getZoom())
-        const features = {
-          type: 'FeatureCollection',
-          features: cluster
-        }
-        this.layer.getSource().clear()
-        this.layer.getSource().addFeatures(new GeoJSON().readFeatures(features).map(feature => {
-          const properties = feature.get('properties')
-          if (properties && typeof properties === 'object') {
-            for (const i in properties) {
-              if (Object.prototype.hasOwnProperty.call(properties, i)) {
-                feature.set(i, properties[i])
-              }
+      // 层级变化时重新计算聚合
+      this.map.getView().on('change:resolution', () => {
+        // this.$emit('changeresolution')
+        this.map.on('movestart', evt => {
+          this.$emit('movestart')
+        })
+        this.map.once('moveend', (evt) => {
+          this.zoomEnd(evt)
+        })
+      })
+      // 绑定事件
+      this.eventList.forEach(listenerKey => {
+        this.eventRender.push(this.map.on(listenerKey, (evt) => this.eventHandler(listenerKey, evt)))
+      })
+    },
+    zoomEnd (evt) {
+      const extent = this.map.getView().calculateExtent(this.map.getSize())
+      const cluster = this.clusters.getClusters(extent, this.map.getView().getZoom())
+      const features = {
+        type: 'FeatureCollection',
+        features: cluster
+      }
+      this.layer.getSource().clear()
+      this.layer.getSource().addFeatures(new GeoJSON().readFeatures(features).map(feature => {
+        const properties = feature.get('properties')
+        if (properties && typeof properties === 'object') {
+          for (const i in properties) {
+            if (Object.prototype.hasOwnProperty.call(properties, i)) {
+              feature.set(i, properties[i])
             }
           }
-          return feature
-        }))
+        }
+        return feature
+      }))
+      this.$emit('moveend')
+      // this.$emit('changeZoom', evt, this.map)
+      evt.map.once('moveend', (evt) => {
+        this.zoomEnd(evt)
       })
-      this.map.on('singleclick', (evt) => this.eventHandler('singleclick', evt))
-      // this.map.on('pointermove', (evt) => this.eventHandler('pointermove', evt))
     },
     getFeatureAtPixel (pixel) {
-      return this.map.forEachSmFeatureAtPixel(pixel, (feature, layer) => {
+      return this.map.forEachFeatureAtPixel(pixel, (feature, layer) => {
         if (layer.get('id') === this.layer.get('id')) return feature
       }, {})
     },
-    eventHandler (name, evt) {
+    eventHandler (listenerKey, evt) {
       const { pixel } = evt
       const feature = this.getFeatureAtPixel(pixel)
-      this.$emit(name, evt, feature)
+      this.$emit(listenerKey, evt, feature)
     },
     getLeaves (id, limit) {
       return this.clusters.getLeaves(id, limit)
     },
     dispose () {
+      // 移除事件
+      this.eventRender.forEach(listenerKey => {
+        unByKey(listenerKey)
+      })
       this.layer.getSource().clear()
       this.map.removeLayer(this.layer)
     }
