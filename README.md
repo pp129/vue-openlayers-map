@@ -10,13 +10,12 @@
   - 地图交互 [interactions](https://pp129.github.io/vue-openlayers-map/MAP.html#interactions)
   - Cesium地图 [cesium](https://pp129.github.io/vue-openlayers-map/MAP.md#cesiumMap) （实验性）
   - 事件 [events](https://pp129.github.io/vue-openlayers-map/MAP.html#events)
-  - 可调用方法 [methods](https://pp129.github.io/vue-openlayers-map/MAP.html#methods)
+  - 方法 [methods](https://pp129.github.io/vue-openlayers-map/MAP.html#methods)
 - 鹰眼 [v-overview](https://pp129.github.io/vue-openlayers-map/OVERVIEW.html)
 - 图层
   - 矢量图层 [v-vector](https://pp129.github.io/vue-openlayers-map/VECTORLAYER.html)
-    - 编辑 [modify](https://pp129.github.io/vue-openlayers-map/VECTORLAYER.html#modify)
-    - 聚合 [cluster](https://pp129.github.io/vue-openlayers-map/VECTORLAYER.md#cluster)
   - 瓦片图层 [v-tile](https://pp129.github.io/vue-openlayers-map/TILELAYER.html)
+  - 图像图层 [v-tile](https://pp129.github.io/vue-openlayers-map/IMAGE.html)
   - 热力图 [v-heatmap](https://pp129.github.io/vue-openlayers-map/HEATMAPLAYER.html)
   - 聚合图层 [v-super-cluster](https://pp129.github.io/vue-openlayers-map/CLUSTERLAYER.html) （使用 [SuperCluster](https://github.com/mapbox/supercluster) 实现）
   - 图形图层 [v-graphic](https://pp129.github.io/vue-openlayers-map/GRAPHICLAYER.html)
