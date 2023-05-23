@@ -23,8 +23,8 @@
         <button v-if="modify" @click="setModify">添加编辑图案（圆）</button>
       </div>
       <div class="item">
-        <label>基于supercluster聚合图层</label>
-        <button @click.prevent="addClusterFeatures()">添加点</button>
+        <label>基于super-cluster聚合图层</label>
+        <button @click.prevent="addClusterFeatures()">添加5w个点</button>
         <button @click.prevent="removeFeatures()">清除点</button>
       </div>
       <div class="item">
@@ -85,7 +85,7 @@
       <!-- 路况图层 -->
       <v-tile ref="trafficLayer" :visible="trafficLayer.visible" :xyz="trafficLayer.xyz" :z-index="1" layer-id="traffic" tile-type="XYZ"></v-tile>
       <!-- 海量点聚合 -->
-      <v-super-cluster ref="clusterLayer" :features="clusterFeatures" :cluster="cluster" :z-index="99" @singleclick="onClickCluster"
+      <v-super-cluster ref="clusterLayer" :features="clusterFeatures" :cluster="cluster" :throttle-delay="3000" :z-index="99" @singleclick="onClickCluster"
                        @changeesolution="onChangeResolution" @movestart="onmovestart" @moveend="onMoveend">
         <v-overlay v-if="clusterOverlay.cluster" :position="clusterOverlay.position">
           <ul>
@@ -154,7 +154,7 @@
       <!-- 轨迹 -->
       <v-track v-if="showTrack" ref="track" :id="track.id" :paths="track.paths" :options="track.options" @onLoad="onLoadTrack" change-car-rotate></v-track>
       <v-heatmap :features="heatmap.features" :visible="heatmap.visible" :radius="3" :blur="6" :z-index="2"></v-heatmap>
-      <v-traffic v-if="showTraffic" :url="trafficUrl" :timeout="5000"></v-traffic>
+      <v-traffic :url="trafficUrl" tile-type="bd09" :timeout="5000" :clear-cache="false" visible></v-traffic>
     </v-map>
   </div>
 </template>
@@ -887,6 +887,9 @@ export default {
           // url: 'http://rtt2b.map.qq.com/rtt/?z={z}&x={x}&y={reverseY}&time=' + (new Date()).getTime() + '&times=1'
         }
       },
+      // https://its.map.baidu.com/traffic/?qt=vtraffic&z=12&x=791&y=296&udt=20230510&fn=BMapGL.cbkBMAP_CUSTOM_LAYER_0_default_791_296_12_12&v=gl
+      // https://its.map.baidu.com/traffic/v1/traffic?&ApiAuthorization=eYSfK7oo7MVRcD6bbhAOZQRglX3c3H5K
+      // trafficUrl: 'https://its.map.baidu.com/traffic/v1/traffic?&ApiAuthorization=eYSfK7oo7MVRcD6bbhAOZQRglX3c3H5K',
       trafficUrl: '',
       showTraffic: false
     }
@@ -903,9 +906,9 @@ export default {
       return Math.floor((max + 1 - min) * Math.random() + min)
     },
     removeFeatures () {
-      this.features = []
+      this.clusterFeatures = []
     },
-    addClusterFeatures (count = 10000) {
+    addClusterFeatures (count = 50000) {
       for (let i = 0; i < count; i++) {
         this.clusterFeatures.push({
           coordinates: [117.6 + Math.random(), 24.1 + Math.random()],

@@ -25,6 +25,9 @@ export default {
       type: String,
       require: true
     },
+    tileType: {
+      type: String
+    },
     clearCache: {
       type: Boolean,
       default: true
@@ -81,7 +84,8 @@ export default {
     init () {
       this.trafficLayer = new TrafficLayer({
         map: this.map,
-        trafficURL: this.url
+        trafficURL: this.url,
+        tileType: this.tileType
       })
       this.trafficLayer.layer.set('id', this.layerId)
       this.trafficLayer.layer.set('type', 'traffic')
@@ -89,6 +93,7 @@ export default {
       if (this.zIndex) {
         this.trafficLayer.layer.setZIndex(this.zIndex)
       }
+      this.trafficLayer.layer.setVisible(this.visible)
       this.map.addLayer(this.trafficLayer.layer)
       if (this.timeout) {
         this.timer = setInterval(() => {

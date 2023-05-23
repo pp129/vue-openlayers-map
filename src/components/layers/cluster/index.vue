@@ -13,6 +13,7 @@ import Supercluster from 'supercluster'
 import { setStyle, validObjKey } from '@/utils'
 import CircleStyle from 'ol/style/Circle'
 import { unByKey } from 'ol/Observable'
+// import { throttle } from 'throttle-debounce'
 
 export default {
   name: 'v-super-cluster',
@@ -53,6 +54,10 @@ export default {
     },
     overlay: {
       type: Object
+    },
+    throttleDelay: {
+      type: Number,
+      default: 1000
     }
   },
   data () {
@@ -72,6 +77,36 @@ export default {
     }
   },
   watch: {
+    cluster: {
+      handler (value) {
+        if (value) {
+          this.clusters = new Supercluster(this.cluster)
+          this.clusters.load(this.getGeoFeatures())
+          console.log(this.clusters)
+          this.total = this.clusters.points.length
+          const extent = this.map.getView().calculateExtent(this.map.getSize())
+          const cluster = this.clusters.getClusters(extent, this.map.getView().getZoom())
+          const features = {
+            type: 'FeatureCollection',
+            features: cluster
+          }
+          this.layer.getSource().clear()
+          this.layer.getSource().addFeatures(new GeoJSON().readFeatures(features).map(feature => {
+            const properties = feature.get('properties')
+            if (properties && typeof properties === 'object') {
+              for (const i in properties) {
+                if (Object.prototype.hasOwnProperty.call(properties, i)) {
+                  feature.set(i, properties[i])
+                }
+              }
+            }
+            return feature
+          }))
+        }
+      },
+      immediate: false,
+      deep: true
+    },
     features: {
       handler () {
         this.dispose()
@@ -203,15 +238,30 @@ export default {
         this.layer.setZIndex(this.zIndex)
       }
       this.map.addLayer(this.layer)
-      // 层级变化时重新计算聚合
-      this.map.getView().on('change:resolution', () => {
+      // 重新计算聚合 节流
+      this.map.on('movestart', evt => { this.$emit('movestart') })
+      // this.map.on('moveend', evt => { this.$emit('moveend') })
+      this.map.on('precompose', () => {
         // this.$emit('changeresolution')
-        this.map.on('movestart', evt => {
-          this.$emit('movestart')
-        })
-        this.map.once('moveend', (evt) => {
-          this.zoomEnd(evt)
-        })
+        const extent = this.map.getView().calculateExtent(this.map.getSize())
+        const cluster = this.clusters.getClusters(extent, this.map.getView().getZoom())
+        const features = {
+          type: 'FeatureCollection',
+          features: cluster
+        }
+        this.layer.getSource().clear()
+        this.layer.getSource().addFeatures(new GeoJSON().readFeatures(features).map(feature => {
+          const properties = feature.get('properties')
+          if (properties && typeof properties === 'object') {
+            for (const i in properties) {
+              if (Object.prototype.hasOwnProperty.call(properties, i)) {
+                feature.set(i, properties[i])
+              }
+            }
+          }
+          return feature
+        }))
+        this.$emit('precompose')
       })
       // 绑定事件
       this.eventList.forEach(listenerKey => {
