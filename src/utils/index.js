@@ -1,5 +1,4 @@
 import 'ol/ol.css'
-import OLCesium from 'olcs/OLCesium.js'
 import { Feature, Map, View } from 'ol'
 import { defaults as defaultInteraction, DragRotateAndZoom } from 'ol/interaction'
 import { Attribution, FullScreen, Rotate, ScaleLine, Zoom, ZoomSlider } from 'ol/control'
@@ -17,7 +16,6 @@ import VectorSource from 'ol/source/Vector'
 import VectorLayer from 'ol/layer/Vector'
 import ImageCanvasSource from 'ol/source/ImageCanvas'
 import { getArea, getLength } from 'ol/sphere'
-// import gifler from 'gifler'
 
 /**
  * Map扩展
@@ -956,8 +954,6 @@ export const formatArea = (polygon) => {
 
 export class OlMap {
   map = OlMap
-  map3d = null
-  map3dScene = null
 
   controls = {
     zoom: undefined,
@@ -1008,15 +1004,6 @@ export class OlMap {
       controls: [],
       interactions: defaultInteraction(option.interactions)
     })
-
-    if (validObjKey(option, 'cesium')) {
-      this.map3d = new OLCesium({
-        map: this.map
-      })
-      this.map3d.setEnabled(true)
-      this.map3dScene = this.map3d.getCesiumScene()
-      // this.map3dScene.terrainProvider = false
-    }
 
     // 动态controls
     for (const control in controlsOption) {
@@ -1123,15 +1110,6 @@ export class OlMap {
 
   static setControl (control, options, controlOptions) {
     return setControl(OlMap.map.map, control, options, controlOptions)
-  }
-
-  static setMap3d () {
-    OlMap.map3d = new OLCesium({
-      map: OlMap.map.map
-    })
-    OlMap.map3d.setEnabled(true)
-    OlMap.map3dScene = OlMap.map3d.getCesiumScene()
-    return OlMap.map3d
   }
 
   get mapControlsZoom () {

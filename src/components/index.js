@@ -12,10 +12,11 @@ import VDraw from '@/components/layers/draw/index'
 import VMeasure from '@/components/layers/measure/index'
 import VEcharts from '@/components/layers/echarts/index'
 import VTrack from '@/components/track/index'
+import VPath from '@/components/path/index'
 import VSuperCluster from '@/components/layers/cluster/index'
 import VTraffic from '@/components/layers/traffic/index'
 
-const components = [VMap, VOverview, VOverlay, VTile, VVector, VImage, VRoute, VHeatmap, VGraphic, VDraw, VMeasure, VTrack, VEcharts, VSuperCluster, VTraffic]
+const components = [VMap, VOverview, VOverlay, VTile, VVector, VImage, VRoute, VHeatmap, VGraphic, VDraw, VMeasure, VTrack, VPath, VEcharts, VSuperCluster, VTraffic]
 
 const install = function (Vue) {
   if (install.installed) return
@@ -49,5 +50,5 @@ export {
   VTrack,
   VEcharts,
   VSuperCluster,
-  VTraffic
+  VTraffic, VPath
 }

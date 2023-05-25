@@ -48,13 +48,6 @@ export default {
     // 交互属性
     interactions: {
       type: Object
-    },
-    cesium: {
-      type: Boolean,
-      default: false
-    },
-    cesiumOptions: {
-      type: Object
     }
   },
   computed: {
@@ -63,22 +56,11 @@ export default {
         target: this.target,
         view: this.view,
         controls: this.controls,
-        interactions: this.interactions,
-        cesium: this.cesium,
-        cesiumOptions: this.cesiumOptions
+        interactions: this.interactions
       }
     },
     map () {
       return OlMap.map.map
-    },
-    map3d: {
-      get () {
-        return OlMap.map3d
-      },
-      set (val) {
-        console.log(val)
-        this.cesiumMap = val
-      }
     },
     mapWidth () {
       return typeof this.width === 'string' ? this.width : this.width.toString() + 'px'
@@ -182,19 +164,6 @@ export default {
       },
       immediate: false,
       deep: true
-    },
-    cesium: {
-      handler (value) {
-        if (OlMap.map3d) {
-          OlMap.map3d.setEnabled(value)
-        } else {
-          this.map3d = OlMap.setMap3d()
-          this.$emit('load3d', OlMap.map3d)
-          this.map3dEvents()
-        }
-      },
-      immediate: false,
-      deep: true
     }
   },
   data () {
@@ -206,8 +175,7 @@ export default {
       noBase: true,
       properties: {
         isDefault: true
-      },
-      cesiumMap: null
+      }
     }
   },
   methods: {
@@ -215,9 +183,6 @@ export default {
       this.init().then(res => {
         if (res === 'success') {
           console.log('map load')
-          if (this.map3d) {
-            this.map3dEvents()
-          }
           // 绑定事件
           const events = ['singleclick', 'click', 'dblclick', 'pointerdrag', 'contextmenu', 'postrender', 'loadend', 'loadstart', 'moveend', 'movestart']
           // 层级变化
@@ -328,24 +293,6 @@ export default {
         this.downloadName = `map-export-${nanoid()}.png`
       }
       OlMap.exportPNG(this.downLoadId)
-    },
-    map3dEvents () {
-      // 点击事件
-      const eventHandler = new window.Cesium.ScreenSpaceEventHandler(OlMap.map3d.getCesiumScene().canvas)
-      eventHandler.setInputAction(this.onClickHandlerCS.bind(this), window.Cesium.ScreenSpaceEventType.LEFT_CLICK)
-      // 视角移动事件
-      OlMap.map3d.getCesiumScene().camera.moveEnd.addEventListener(() => {
-        // 获取当前相机高度
-        // height = Math.ceil(earth.camera.positionCartographic.height);
-        this.$emit('map3dMoveEnd', OlMap.map3d.getCesiumScene().camera, this.map3d)
-      })
-    },
-    onClickHandlerCS (event) {
-      if (event.position.x === 0 && event.position.y === 0) {
-        return
-      }
-      const pick = OlMap.map3d.getCesiumScene().pick(event.position)
-      this.$emit('map3dClick', event, OlMap.map3d, pick)
     },
     getDistancePoint (from, to, units) {
       return OlMap.getDistancePoint(from, to, units)

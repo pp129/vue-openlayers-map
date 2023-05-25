@@ -33,19 +33,11 @@
         <input type="range" step=10 min=0 max=300 v-model="cluster.distance" :disabled="!toggleCluster"/>
       </div>
       <div class="item">
-       <label>是否3D：<span class="tag">实验性功能</span></label>
-       <input type="checkbox" name="map3d" v-model="map3d" @change="setMap3dTile"/>
-       <label>Y轴旋转角：{{perspectiveMap.pitch}}°</label>
-       <label>X轴旋转角：{{perspectiveMap.roll}}°</label>
-       <label>Z轴旋转角：{{perspectiveMap.heading}}°</label>
-     </div>
-      <div class="item">
         <p v-if="mapLoaded">当前层级：{{mapZoom}} 级</p>
       </div>
       <div class="item">
         <label>点击位置（经纬度）</label>
         <p>{{currentCoordinateText}}</p>
-<!--        <label>获取视窗边界（经纬度）</label>-->
         <button @click="getExtent">获取视窗边界</button>（控制台输出）
       </div>
       <div class="item">
@@ -60,22 +52,17 @@
         <button @click="imageVisible = false">清除</button>
       </div>
     </div>
-<!--    <div v-show="mapLoading" class="mask"></div>-->
     <v-map
         class="map"
         ref="map"
         :view="view"
         :controls="controls"
         :interactions="interactions"
-        :cesium="map3d"
         @click="onClick"
         @dblclick="onDblClick"
         @contextmenu.prevent="onContextmenu"
         @load="onLoad"
         @changeZoom="changeZoom"
-        @load3d="load3d"
-        @map3dClick="map3dClick"
-        @map3dMoveEnd="moveEnd"
     >
       <v-tile :tile-type="tile" :xyz="xyz" :z-index="1" :mask="tileFilter"></v-tile>
       <v-tile ref="wms" tile-type="WMS" :wms="wms" :z-index="2"></v-tile>
@@ -152,7 +139,7 @@
         </ul>
       </v-overlay>
       <!-- 轨迹 -->
-      <v-track v-if="showTrack" ref="track" :id="track.id" :paths="track.paths" :options="track.options" @onLoad="onLoadTrack" change-car-rotate></v-track>
+      <v-path v-if="showTrack" ref="track" :id="track.id" :path="track.path" :options="track.options" :trace-points-mode-play="track.mode" @load="onLoadTrack"></v-path>
       <v-heatmap :features="heatmap.features" :visible="heatmap.visible" :radius="3" :blur="6" :z-index="2"></v-heatmap>
       <v-traffic :url="trafficUrl" tile-type="bd09" :timeout="5000" :clear-cache="false" visible></v-traffic>
     </v-map>
@@ -161,7 +148,6 @@
 
 <script>
 import axios from 'axios'
-import { polylineMaterial, radarScanMaterial, rippleMaterial } from '@/utils/cesiumMatrial'
 
 export default {
   name: 'App',
@@ -634,84 +620,11 @@ export default {
       showTrack: false,
       track: {
         id: 'track1',
-        paths: [
-          {
-            longitude: 118.15450000867712,
-            latitude: 24.50164504684645,
-            id: 1,
-            info: '起点',
-            time: '2018-08-20 08:21:00'
-          },
-          {
-            longitude: 118.16383838653563,
-            latitude: 24.505768746466842,
-            id: 2,
-            info: '35 号工业园',
-            time: '2018-08-20 08:21:10'
-          },
-          {
-            longitude: 118.16205310926304,
-            latitude: 24.535005617443176,
-            id: 5,
-            info: '不清楚',
-            time: '2018-08-20 08:21:30'
-          },
-          {
-            longitude: 118.15062904357909,
-            latitude: 24.543125760364646,
-            id: 6,
-            info: '厦门敦上加油站',
-            time: '2018-08-20 08:21:40'
-          },
-          {
-            longitude: 118.1449985525105,
-            latitude: 24.539877767388717,
-            id: 7,
-            info: '宝立达汽车',
-            time: '2018-08-20 08:21:50'
-          },
-          {
-            longitude: 118.1348361968994,
-            latitude: 24.53662968915482,
-            id: 8,
-            info: '航空商务广场 9 号楼',
-            time: '2018-08-20 08:22:00'
-          },
-          {
-            longitude: 118.12357520952354,
-            latitude: 24.52800937789857,
-            id: 10,
-            info: '终点',
-            time: '2018-08-20 08:22:20'
-          }
-        ],
+        mode: 'animation',
+        path: [],
         options: {
-          // showInfoWin: false,
-          overlay: {
-            id: 'carOverlay',
-            element: 'carOverlay'
-          },
-          startIcon: {
-            // src: require('@/assets/img/point_start.png'),
-            src: new URL('./assets/img/point_start.png', import.meta.url).href,
-            scale: 0.05
-          },
-          endIcon: {
-            // src: require('@/assets/img/point_end.png'),
-            src: new URL('./assets/img/point_end.png', import.meta.url).href,
-            scale: 0.05
-          },
-          carIcon: {
-            // src: require('@/assets/img/car2.png'),
-            src: new URL('./assets/img/car2.png', import.meta.url).href,
-            scale: 0.1
-          }, // 小车图标
-          speed: 250, // 车速，设置时为匀速模式，否则为实际速度模式
-          arrowPixel: 20, // 方向箭头之间的像素距离，单位是 px
-          tracePlay: false, // 是否进行轨迹回放，默认为 false
-          lineWidth: 5, // 轨迹线宽度，单位为像素
-          lineColor: 'red', // 轨迹线颜色
-          passlineColor: 'lightgreen' // 通过动画轨迹线颜色
+          timeStep: 1, // skip动画的播放间隔,单位秒
+          speed: 60 // animation动画播放的速度设置,单位 km/h
         }
       },
       echarts: {
@@ -978,23 +891,6 @@ export default {
         })
       }
     },
-    map3dClick (event, map3d, pick) {
-      if (pick) {
-        console.log(pick)
-        const feature = pick.primitive.olFeature
-        const layer = pick.primitive.olLayer
-        console.log(layer)
-        if (layer.get('id') === 'layer1') {
-          this.positionLevel = feature.getPosition()
-          const properties = feature.get('properties')
-          this.level = undefined
-          if (properties && Object.prototype.hasOwnProperty.call(properties, 'level')) {
-            this.level = properties.level
-            this.positionLevel = feature.get('coordinates')
-          }
-        }
-      }
-    },
     changeZoom (evt, map) {
       this.mapZoom = map.getView().getZoom()
       // if (this.mapZoom >= 14) {
@@ -1035,12 +931,6 @@ export default {
         }
       }
     },
-    onClickFeature (feature, layer, evt) {
-      console.log(feature)
-      console.log(layer)
-      console.log(evt)
-      if (this.drawType || this.measureType) return false
-    },
     onDblClick (evt, map) {
       this.$refs.map.closeOverlays()
     },
@@ -1071,7 +961,11 @@ export default {
       console.log(track)
     },
     loadTrack () {
-      this.showTrack = true
+      fetch('data-6k.json').then(res => res.json()).then(path => {
+        console.log(path)
+        this.track.path = path
+        this.showTrack = true
+      })
     },
     startTrack () {
       if (this.$refs.track) {
@@ -1153,14 +1047,6 @@ export default {
           }
         })
       }
-    },
-    moveEnd (camera, map) {
-      console.log(camera)
-      console.log(map)
-      console.log(window.Cesium.Math.toDegrees(camera.pitch))
-      this.perspectiveMap.pitch = Math.ceil(window.Cesium.Math.toDegrees(camera.pitch))
-      this.perspectiveMap.roll = Math.ceil(window.Cesium.Math.toDegrees(camera.roll))
-      this.perspectiveMap.heading = Math.ceil(window.Cesium.Math.toDegrees(camera.heading))
     },
     closeOverlays () {
       this.$refs.map.closeOverlays()
@@ -1471,111 +1357,6 @@ export default {
         this.heatmap.features = points
       })
     },
-    load3d (map) {
-      const scene = map.getCesiumScene()
-      const center = [118.148123, 24.218770]
-      const camera = scene.camera
-      camera.setView({
-        destination: window.Cesium.Cartesian3.fromDegrees(0, 0, 10000000)
-      })
-      setTimeout(() => {
-        camera.flyTo({
-          destination: window.Cesium.Cartesian3.fromDegrees(center[0], center[1], 30000),
-          orientation: {
-            pitch: window.Cesium.Math.toRadians(-45)
-          }
-        })
-        console.log(map)
-        const pathCoordinate = [
-          118.111678, 24.506567,
-          118.117875, 24.508892,
-          118.132519, 24.510476,
-          118.133362, 24.502047,
-          118.153924, 24.501707,
-          118.170375, 24.508657,
-          118.179094, 24.513277,
-          118.184858, 24.505822,
-          118.183178, 24.488141
-        ]
-        // 自定义纹理
-        const entities = [{
-          name: 'entity box',
-          position: window.Cesium.Cartesian3.fromDegrees(118.147887, 24.500228, 0),
-          box: {
-            dimensions: new window.Cesium.Cartesian3(600.0, 600.0, 5000.0),
-            material: window.Cesium.Color.RED.withAlpha(0.5),
-            outline: true,
-            outlineColor: window.Cesium.Color.BLACK,
-            heightReference: window.Cesium.HeightReference.CLAMP_TO_GROUND // 设置HeightReference高度参考类型为CLAMP_TO_GROUND贴地类型
-          }
-        }, {
-          name: 'entity label',
-          position: window.Cesium.Cartesian3.fromDegrees(118.147887, 24.500228, 5500),
-          label: {
-            scale: 1,
-            font: 'bolder 16px sans-serif',
-            style: window.Cesium.LabelStyle.FILL_AND_OUTLINE,
-            text: 'Cesium entity test', // 图标名称
-            fillColor: window.Cesium.Color.fromCssColorString('#ffffff'),
-            pixelOffset: new window.Cesium.Cartesian2(0, 0),
-            // eyeOffset: new window.Cesium.Cartesian3(0, 0, 1000),
-            showBackground: true,
-            heightReference: window.Cesium.HeightReference.NONE
-          }
-        }]
-        entities.forEach(entity => {
-          map.getDataSourceDisplay().defaultDataSource.entities.add(entity)
-        })
-        const primitives = [
-          new window.Cesium.Primitive({
-            geometryInstances: new window.Cesium.GeometryInstance({
-              geometry: new window.Cesium.PolylineGeometry({
-                positions: window.Cesium.Cartesian3.fromDegreesArray(pathCoordinate),
-                width: 20.0,
-                vertexFormat: window.Cesium.VertexFormat.ALL
-              })
-            }),
-            appearance: polylineMaterial({
-              color: 'rgba(227, 12, 77, 1)'
-            })
-          }),
-          new window.Cesium.Primitive({
-            geometryInstances: new window.Cesium.GeometryInstance({
-              geometry: new window.Cesium.EllipseGeometry({
-                center: window.Cesium.Cartesian3.fromDegrees(118.170491, 24.469508),
-                semiMajorAxis: 2000.0,
-                semiMinorAxis: 2000.0,
-                rotation: window.Cesium.Math.toRadians(60.0)
-              })
-            }),
-            appearance: rippleMaterial()
-          }),
-          new window.Cesium.Primitive({
-            geometryInstances: new window.Cesium.GeometryInstance({
-              geometry: new window.Cesium.EllipseGeometry({
-                center: window.Cesium.Cartesian3.fromDegrees(118.084657, 24.496752),
-                semiMajorAxis: 2000.0,
-                semiMinorAxis: 2000.0,
-                rotation: window.Cesium.Math.toRadians(60.0)
-              })
-            }),
-            appearance: radarScanMaterial()
-          })
-        ]
-
-        // Add instances to primitives
-        primitives.forEach(primitive => {
-          scene.primitives.add(primitive)
-        })
-      }, 3000)
-    },
-    setMap3dTile () {
-      if (this.map3d) {
-        if (this.tile !== 'TD_IMG') {
-          this.tile = 'TD_IMG'
-        }
-      }
-    },
     textLayerModifyEnd (params) {
       const coordinates = params.features.getArray()[0].getGeometry().getCoordinates()
       console.log(JSON.stringify(coordinates))
@@ -1738,11 +1519,5 @@ li{
   transform: rotate(-5deg);
   margin: -1em 0;
   cursor: pointer;
-}
-.cesium-credit-logoContainer{
-  display: none !important;
-}
-.cesium-credit-textContainer{
-  display: none !important;
 }
 </style>
