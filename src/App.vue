@@ -12,6 +12,7 @@
         <button @click="loadTrack">加载</button>
         <button @click="startTrack">开始</button>
         <button @click="pauseTrack">暂停</button>
+        <button @click="resumeTrack">恢复</button>
         <button @click="stopTrack">结束</button>
         <button @click="disposeTrack">清除</button>
       </div>
@@ -139,7 +140,7 @@
         </ul>
       </v-overlay>
       <!-- 轨迹 -->
-      <v-path v-if="showTrack" ref="track" :id="track.id" :path="track.path" :options="track.options" :trace-points-mode-play="track.mode" @load="onLoadTrack"></v-path>
+      <v-path v-if="showTrack" ref="track" :id="track.id" :path="track.path" :options="track.options" :trace-points-mode-play="track.mode"></v-path>
       <v-heatmap :features="heatmap.features" :visible="heatmap.visible" :radius="3" :blur="6" :z-index="2"></v-heatmap>
       <v-traffic :url="trafficUrl" tile-type="bd09" :timeout="5000" :clear-cache="false" visible></v-traffic>
     </v-map>
@@ -392,11 +393,11 @@ export default {
             icon: {
               scale: 0.6,
               // src: require('@/assets/img/point_6.png')
-              src: new URL('./assets/img/point_3.png', import.meta.url).href,
+              src: new URL('./assets/img/point_1.png', import.meta.url).href,
               anchor: [0.5, 1]
             },
             text: {
-              text: '百度转84',
+              text: '百度转8411',
               font: '13px sans-serif',
               fill: {
                 color: '#3d73e8'
@@ -417,17 +418,23 @@ export default {
             },
             styleFunction: function (feature, resolution, map, style) {
               const viewZoom = map.getView().getZoom()
-              const minZoom = 12
-              const maxZoom = 16
+              // const minZoom = 12
+              // const maxZoom = 16
               const textStyle = style.getText()
+              const image = style.getImage()
+              image.setScale((viewZoom / 12))
               if (viewZoom >= 14) {
                 textStyle.setText('百度转84')
+                // image.setScale(2)
               }
               if (viewZoom >= 15) {
                 textStyle.setText('根据层级显示不同内容')
+                // image.setScale(5)
               }
               style.setText(textStyle)
-              return minZoom <= viewZoom && viewZoom <= maxZoom ? style : null
+              style.setImage(image)
+              return style
+              // return minZoom <= viewZoom && viewZoom <= maxZoom ? style : null
             }
           },
           properties: {
@@ -957,9 +964,6 @@ export default {
         console.log(this.$refs.map.map.getLayers().getArray().filter(x => x.get('base')))
       }, 1000)
     },
-    onLoadTrack (track) {
-      console.log(track)
-    },
     loadTrack () {
       fetch('data-6k.json').then(res => res.json()).then(path => {
         console.log(path)
@@ -977,6 +981,13 @@ export default {
     pauseTrack () {
       if (this.$refs.track) {
         this.$refs.track.pause()
+      } else {
+        alert('track unload')
+      }
+    },
+    resumeTrack () {
+      if (this.$refs.track) {
+        this.$refs.track.resume()
       } else {
         alert('track unload')
       }

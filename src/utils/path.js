@@ -907,11 +907,14 @@ export default class vzPath {
     //   return
     // }
     if (this._originPath instanceof LineString && this._moving && this._step !== undefined && this._step <= 1) {
-      const originLength = this._originPath.getLength()
+      const temp = this._originPath.clone()
+      temp.transform(this._viewCode, 'EPSG:3857') // 在4326的情况要计算成米制的话还要再转换成3857
+      const originLength = temp.getLength()
+      // const originLength = this._originPath.getLength()
       const PASS_LINE = this._animateLine.getGeometry()
 
       const geoline = this._originPath.clone()
-      geoline.transform(this._viewCode, 'EPSG:4326')
+      // geoline.transform(this._viewCode, 'EPSG:4326')
       if (geoline instanceof LineString && this._step !== 0) {
         // 使用geojson进行数据构造
         const geojson = {
@@ -1150,6 +1153,10 @@ export default class vzPath {
       ele.setStyle(this._defaultStyles)
       ele.changed()
     })
+  }
+
+  getEvents () {
+    return this._eventType
   }
 
   /**

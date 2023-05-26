@@ -55,7 +55,12 @@ export default {
         const option = { ...this.$props, ...{ mapObj: this.map, path: paths || this.path, options: this.options } }
         // console.log(this.$props)
         this.pathObj = new VzPath(option)
-        console.log(this.pathObj)
+        // console.log(this.pathObj)
+        this.pathObj.getEvents().forEach(event => {
+          this.pathObj.on(event, e => {
+            this.$emit(event, e)
+          })
+        })
         this.$emit('load', this.pathObj)
         if (this.autoPlay) {
           this.start()
