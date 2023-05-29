@@ -30,7 +30,6 @@ export default {
 | 说明     | 是否必填 | 类型                | 可选值 | 默认值    |
 |--------|------|-------------------|-----|--------|
 | 地图容器宽度 | 否    | `String`/`Number` | -   | `100%` |
-
 ## 高 height
 
 未设置宽度时默认高度为100%，需要父节点有高度，否则地图容器无法撑开。
@@ -46,7 +45,6 @@ export default {
   </div>	
 </template>
 ```
-
 ## 地图容器标识 target
 
 | 说明         | 是否必填       | 类型       | 可选值 | 默认值           |
@@ -103,40 +101,35 @@ export default {
 | 地图交互功能 | 否    | Object | 继承 [ol/interactions](https://openlayers.org/en/latest/apidoc/module-ol_interaction.html) | -   |
 
 <span id="cesiumMap"></span>
-## cesium cesium地图
-
-实验性功能
-
-| 说明    | 是否必填 | 类型      |  默认值 |
-|-------|------|---------|------------|-----|
-| 结合[CesiumJs](https://cesium.com/platform/cesiumjs/) 生成的三维地图，依赖组件[ol-cesium](https://github.com/openlayers/ol-cesium)    | 否    | Boolean |  `false`  |
-
 <span id="events"></span>
 ## 事件 events
 
-| 事件名          | 说明         | 参数                                                                                                                                   |
-|--------------|------------|--------------------------------------------------------------------------------------------------------------------------------------|
-| load         | 地图对象生成完成事件 | -                                                                                                                                    |
-| click        | 点击事件       | (evt, map)接受2个参数。1、事件实例 [模块：ol/MapEvent~MapEvent](https://openlayers.org/en/latest/apidoc/module-ol_MapEvent-MapEvent.html) 。2、地图实例。 |
-| clickfeature | 点击要素       | (feature, layer)接受2个参数。1、要素实例。2、要素归属的图层实例。                                                                                           |
-| dblclick     | 双击事件       | (feature, layer)接受2个参数。1、要素实例。2、要素归属的图层实例。                                                                                           |
-| changeZoom   | 层级变化事件     | (evt,map)接受2个参数。1、事件实例 [模块：ol/MapEvent~MapEvent](https://openlayers.org/en/latest/apidoc/module-ol_MapEvent-MapEvent.html) 。2、地图实例。  |
-| pointermove  | 鼠标悬停事件     | (evt,map)接受2个参数。                                                                                                                     |
-| contextmenu  | 鼠标右键点击事件   | (evt,map)接受2个参数。                                                                                                                     |
-| postrender   | 渲染完成事件     | (evt,map)接受2个参数。                                                                                                                     |
+| 事件名         | 说明         | 参数                                                                                                                                   |
+|-------------|------------|--------------------------------------------------------------------------------------------------------------------------------------|
+| load        | 地图对象生成完成事件 | -                                                                                                                                    |
+| click       | 点击事件       | (evt, map)接受2个参数。1、事件实例 [模块：ol/MapEvent~MapEvent](https://openlayers.org/en/latest/apidoc/module-ol_MapEvent-MapEvent.html) 。2、地图实例。 |
+| singleclick | 点击事件       | (evt, map)接受2个参数。1、事件实例 [模块：ol/MapEvent~MapEvent](https://openlayers.org/en/latest/apidoc/module-ol_MapEvent-MapEvent.html) 。2、地图实例。 |
+| dblclick    | 双击事件       | (evt, map)接受2个参数。1、事件实例 [模块：ol/MapEvent~MapEvent](https://openlayers.org/en/latest/apidoc/module-ol_MapEvent-MapEvent.html) 。2、地图实例。 |
+| changeZoom  | 层级变化事件     | (evt,map)接受2个参数。1、事件实例 [模块：ol/MapEvent~MapEvent](https://openlayers.org/en/latest/apidoc/module-ol_MapEvent-MapEvent.html) 。2、地图实例。  |
+| pointermove | 鼠标悬停事件     | (evt,map)接受2个参数。1、事件实例 [模块：ol/MapEvent~MapEvent](https://openlayers.org/en/latest/apidoc/module-ol_MapEvent-MapEvent.html) 。2、地图实例。  |
+| contextmenu | 鼠标右键点击事件   | (evt,map)接受2个参数。1、事件实例 [模块：ol/MapEvent~MapEvent](https://openlayers.org/en/latest/apidoc/module-ol_MapEvent-MapEvent.html) 。2、地图实例。  |
+| postrender  | 渲染完成事件     | (evt,map)接受2个参数。1、事件实例 [模块：ol/MapEvent~MapEvent](https://openlayers.org/en/latest/apidoc/module-ol_MapEvent-MapEvent.html) 。2、地图实例。  |
+| movestart   | 地图开始移动事件   | (evt,map)接受2个参数。1、事件实例 [模块：ol/MapEvent~MapEvent](https://openlayers.org/en/latest/apidoc/module-ol_MapEvent-MapEvent.html) 。2、地图实例。  |
+| moveend     | 地图移动完成事件   | (evt,map)接受2个参数。1、事件实例 [模块：ol/MapEvent~MapEvent](https://openlayers.org/en/latest/apidoc/module-ol_MapEvent-MapEvent.html) 。2、地图实例。  |
 
 
 <span id="methods"></span>
-
 ## 方法 methods
 
-| 方法名                                     | 说明                             | 参数                                             |
-|-----------------------------------------|--------------------------------|------------------------------------------------|
-| [panTo](#panTo)                         | 移动视图动画                         | {center:中心点数组,zoom:缩放层级数字}接受一个对象参数。            |
-| [getDistancePoint](#getDistancePoint)   | 获取两点之间距离                       | (from, to, units)接受三个参数，1、起点经纬度，2、终点经纬度，3、距离单位 |
-| [getDistanceString](#getDistanceString) | 计算折线长度                         | (lines, units)接受两个参数，1、折线经纬度集合，2、长度单位          |
-| [getCenterByExtent](#getCenterByExtent) | 获取区域中心点                        | (extent)接受一个数组参数。区域范围经纬度集合。                    |
-| [exportPNG](#exportPNG)                 | 将当前视图内的地图（包括图层、要素）转成png格式图片导出。 | （pngName）接受一个参数，要导出的图片文件名。                     |
+| 方法名                                     | 说明                             | 参数                                                                                                    |
+|-----------------------------------------|--------------------------------|-------------------------------------------------------------------------------------------------------|
+| [panTo](#panTo)                         | 移动视图动画                         | {center:中心点数组,zoom:缩放层级数字}接受一个对象参数。                                                                   |
+| [getDistancePoint](#getDistancePoint)   | 获取两点之间距离                       | (from, to, units)接受三个参数，1、起点经纬度，2、终点经纬度，3、距离单位                                                        |
+| [getDistanceString](#getDistanceString) | 计算折线长度                         | (lines, units)接受两个参数，1、折线经纬度集合，2、长度单位                                                                 |
+| [getCenterByExtent](#getCenterByExtent) | 获取区域中心点                        | (extent)接受一个数组参数。区域范围经纬度集合。                                                                           |
+| [calculateCenter](#calculateCenter)     | 获取几何图形中心点                      | ([geometry](https://openlayers.org/en/latest/apidoc/module-ol_geom_Geometry-Geometry.html))接受几何形成类参数。 |
+| [exportPNG](#exportPNG)                 | 将当前视图内的地图（包括图层、要素）转成png格式图片导出。 | （pngName）接受一个参数，要导出的图片文件名。                                                                            |
+| [closeOverlays](#closeOverlays)         | 关闭所有弹框。                        |                                                                                                       |
 
 ### 地图中心移动动画 panTo
 
@@ -179,12 +172,24 @@ const polygonFeature = feature.getGeometry().getExtent()
 const center = this.$refs.map.getCenterByExtent(polygonFeature)
 ```
 
+### 获取要素中心点 calculateCenter
+```javascript
+// 要素的几何图形
+const geometry = feature.getGeometry()
+// 多边形中心点
+const center = this.$refs.map.calculateCenter(geometry)
+```
 ### 图片导出 exportPNG
 
 ```javascript
 /**
- * @param name 图片名称 不必填
+ * @param name 图片名称，可缺省
  */
 this.$refs.map.exportPNG('xm')
 ```
 
+### 关闭所有弹框 closeOverlays
+
+```javascript
+this.$refs.map.closeOverlays()
+```

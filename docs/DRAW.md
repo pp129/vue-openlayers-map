@@ -97,7 +97,7 @@ import { VDraw } from 'v-ol-map'
 </template>
 
 <script>
-import { VMap, VDraw } from 'vue-openlayers-map'
+import { VMap, VDraw } from 'v-ol-map'
 
 export default {
   name: 'App',
