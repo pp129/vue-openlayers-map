@@ -73,8 +73,7 @@
       <!-- 路况图层 -->
       <v-tile ref="trafficLayer" :visible="trafficLayer.visible" :xyz="trafficLayer.xyz" :z-index="1" layer-id="traffic" tile-type="XYZ"></v-tile>
       <!-- 海量点聚合 -->
-      <v-super-cluster ref="clusterLayer" :features="clusterFeatures" :cluster="cluster" :throttle-delay="3000" :z-index="99" @singleclick="onClickCluster"
-                       @changeesolution="onChangeResolution" @movestart="onmovestart" @moveend="onMoveend">
+      <v-super-cluster ref="clusterLayer" :features="clusterFeatures" :cluster="cluster" :z-index="99" @singleclick="onClickCluster">
         <v-overlay v-if="clusterOverlay.cluster" :position="clusterOverlay.position">
           <ul>
             <li v-for="item in clusterOverlay.list" :key="item.id" @click="showClusterItem(item.id)">{{ item.id }}</li>
