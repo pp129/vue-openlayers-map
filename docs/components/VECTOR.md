@@ -1,8 +1,8 @@
-# v-vector
+# 矢量图层 v-vector
 
 矢量数据在客户端呈现为矢量。即使在动画期间，这种图层类型也能提供最准确的渲染。点和标签在旋转视图上保持直立。对于非常大量的矢量数据，在平移和缩放动画期间性能可能会受到影响。在这种情况下，请尝试
 [`module:ol/layer/VectorImage~VectorImageLayer`](https://openlayers.org/en/latest/apidoc/module-ol_layer_VectorImage-VectorImageLayer.html)
---- 对应[`v-graphic`](GRAPHICLAYER.md)组件
+--- 对应[`v-graphic`](GRAPHIC.md)组件
 
 ```javascript
 import { VVector } from 'v-ol-map'
@@ -12,14 +12,14 @@ import { VVector } from 'v-ol-map'
 
 [继承参数查看](LAYER_PROPS.md)
 
-| 参数                                        | 类型                            | 默认值                      | 描述                                                                                                                                                             |
-|-------------------------------------------|-------------------------------|--------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| `layerId`                                 | String                        | `vector-layer-${uuid()}` | 图层id                                                                                                                                                           |
-| `source`                                  | Object / `undefined`          | `undefined`              | 资源。数据结构参考：[ol/source/Vector](https://openlayers.org/en/latest/apidoc/module-ol_source_Vector.html)                                                             |
-| `features`                                | Array                         | `[]`                     | 图层中的要素集合，单个要素参数参考：[feature](FEATURE.md)                                                                                                                        |
-| `FeatureStyle`                            | Object / `null` / `undefined` | `undefined`              | 图层样式。当设置为 时`null`，只有具有自己风格的特征才会被渲染。[`module:ol/style/Style~Style`](https://openlayers.org/en/latest/apidoc/module-ol_style_Style-Style.html)如果未设置，请参阅将使用的默认样式。 |
-| `modify`                                  | Object / Boolean                    | `false`                  | 是否开启编辑，参数：[modify](#modify)                                                                                                                                    |
-| <span id="cluster"></span> `cluster` | Object / Boolean                    | `false`                  | 是否开启聚合，参数：[ol/source/Cluster](https://openlayers.org/en/latest/apidoc/module-ol_source_Cluster-Cluster.html)                                                                 |
+| 参数                                   | 类型                            | 默认值                      | 描述                                                                                                                                                             |
+|--------------------------------------|-------------------------------|--------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `layerId`                            | String                        | `vector-layer-${uuid()}` | 图层id                                                                                                                                                           |
+| `source`                             | Object / `undefined`          | `undefined`              | 资源。数据结构参考：[ol/source/Vector](https://openlayers.org/en/latest/apidoc/module-ol_source_Vector.html)                                                             |
+| `features`                           | Array                         | `[]`                     | 图层中的要素集合，单个要素参数参考：[feature](FEATURE.md)                                                                                                                        |
+| `FeatureStyle`                       | Object / `null` / `undefined` | `undefined`              | 图层样式。当设置为 时`null`，只有具有自己风格的特征才会被渲染。[`module:ol/style/Style~Style`](https://openlayers.org/en/latest/apidoc/module-ol_style_Style-Style.html)如果未设置，请参阅将使用的默认样式。 |
+| `modify`                             | Object / Boolean              | `false`                  | 是否开启编辑，参数：[modify](#modify)                                                                                                                                    |
+| <span id="cluster"></span> `cluster` | Object / Boolean              | `false`                  | 是否开启聚合，参数：[ol/source/Cluster](https://openlayers.org/en/latest/apidoc/module-ol_source_Cluster-Cluster.html)                                                   |
 
 ### 编辑 modify
 
@@ -31,7 +31,7 @@ modify.style 参考：[style](FEATURE.md#feature.style)
 | 方法名                                     | 说明                                                      | 参数                                                                            |
 |-----------------------------------------|---------------------------------------------------------|-------------------------------------------------------------------------------|
 | [updateFeatureById](#updateFeatureByid) | 有些时候不想改动原始数据来改变图层中要素属性，可以使用此方法。在使用此方法前需保证生成的要素带有`id`属性。 | (`id`, `update`) 接收两个参数，1. 要素id。2. 要素更新内容(key,value)。可选key：`position`、`style` |
-| [getFeatureById](#getFeatureById)                     | 根据要素ID获取当前图层上的要素                                        | (`id`) 要素id                                                                   |
+| [getFeatureById](#getFeatureById)       | 根据要素ID获取当前图层上的要素                                        | (`id`) 要素id                                                                   |
 
 ### updateFeatureById
 
@@ -51,15 +51,19 @@ const feature = this.$refs.layer.getFeatureById(id)
 
 ## 事件 events
 
-| 事件名称 | 说明       | 会调参数              |
-|------|----------|-------------------|
-| load    | 图层加载完成回调 | -                 |
-|  modifyStart    | 开始编辑的回调  | (evt,map)         |
-|  modifyEnd      | 编辑结束时的回调 | (evt,map)         |
-|  modifyChange   | 编辑进行时的回调 | (evt,map,feature) |
+| 事件名称         | 说明       | 会调参数              |
+|--------------|----------|-------------------|
+| load         | 图层加载完成回调 | -                 |
+| modifyStart  | 开始编辑的回调  | (evt,map)         |
+| modifyEnd    | 编辑结束时的回调 | (evt,map)         |
+| modifyChange | 编辑进行时的回调 | (evt,map,feature) |
+| singleclick  | 点击事件     | (evt,feature)     |
+| pointermove  | 鼠标悬浮事件   | (evt,feature)     |
 
 
-## 加载矢量图层、在该图层上生成点、线、面 use
+## 示例
+
+### 加载矢量图层、在该图层上生成点、线、面 use
 
 ```vue
 <template>
@@ -201,7 +205,7 @@ export default {
 </script>	
 ```
 
-## 编辑要素
+### 编辑要素
 
 ```vue
 <template>

@@ -75,7 +75,7 @@ import { VDraw } from 'v-ol-map'
 
 编辑结束事件
 
-## 绘制图层 use
+## 示例
 
 ``` vue
 <template>

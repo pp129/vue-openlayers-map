@@ -136,7 +136,9 @@ circle: {
 **stopIndex**：若`featureType`=`stops`, 既途经点下标。
 
 
-## 以Graphhopper为服务的最短路径规划功能 use
+##  示例
+
+### 以Graphhopper为服务的最短路径规划功能
 
 ```vue
 <template>
@@ -264,7 +266,7 @@ export default {
 
 ```
 
-## 以Arcgis为服务例的最短路径规划功能 use
+### 以Arcgis为服务例的最短路径规划功能
 
 ```vue
 <template>

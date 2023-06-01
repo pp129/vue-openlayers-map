@@ -3,7 +3,7 @@
 包含：
 瓦片图层v-tile、
 矢量图层v-vector、
-聚合图层v-cluster、
+聚合图层v-super-cluster、
 热力图v-heatmap、
 图形图层v-graphic
 绘制v-draw

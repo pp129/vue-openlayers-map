@@ -8,6 +8,8 @@ import { VSuperCluster } from 'v-ol-map'
 
 ## 参数 props
 
+[继承参数查看](LAYER_PROPS.md)
+
 | 参数        | 类型     | 默认值                                                       | 描述                     |
 |-----------|--------|-----------------------------------------------------------|------------------------|
 | `cluster` | Object | [Options](https://github.com/mapbox/supercluster#options) | supercluster的options属性 |

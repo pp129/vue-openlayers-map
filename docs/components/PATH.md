@@ -1,4 +1,4 @@
-# v-path
+# 轨迹动画 v-path
 
 轨迹动画组件
 
@@ -56,9 +56,8 @@ const options = {
 }
 ```
 
-## methods
+## 可调用方法 methods
 
-> 可调用方法
 
 ### start
 
@@ -118,7 +117,7 @@ this.$refs.track.destroy()
 ### moveInfo
 
 
-## demo
+## 示例
 
 > 生成图层并自动开始轨迹动画
 
