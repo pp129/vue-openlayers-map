@@ -219,7 +219,10 @@ export default {
   methods: {
     init (change) {
       const source = addVectorSource(this.source, this.map)
-      if (this.source.features.length <= 0 && this.features.length > 0) {
+      console.log(source.getProjection())
+      if (this.features.length > 0) {
+        console.log('has props features')
+        source.clear()
         const features = setFeatures(this.features, this.map, this.FeatureStyle && Object.keys(this.FeatureStyle).length > 0)
         source.addFeatures(features)
       }
@@ -239,6 +242,7 @@ export default {
       } else {
         this.layerOpt = { ...this.$props, ...{ source } }
         this.layer = new VectorLayer(this.layerOpt)
+        console.log(this.layer.getSource().getProjection())
         this.layer.setStyle((feature) => {
           if (feature.get('style')) {
             return setFeatureStyle(feature, feature.get('style'), this.map)
@@ -268,7 +272,7 @@ export default {
       }
       // console.log(this.layer.getSource().getFeatures())
       this.map.addLayer(this.layer)
-      console.log(this.layer.getZIndex())
+      console.log(this.layer.getSource().getFeatures())
       this.features.forEach(feature => {
         if (feature.type === 'polyline' && validObjKey(feature, 'arrow')) {
           arrowLine({
@@ -321,7 +325,7 @@ export default {
     },
     getFeatureAtPixel (pixel) {
       return this.map.forEachFeatureAtPixel(pixel, (feature, layer) => {
-        if (layer.get('id') === this.layer.get('id')) return feature
+        if (layer?.get('id') === this.layer?.get('id')) return feature
       }, {})
     },
     eventHandler (listenerKey, evt) {
@@ -331,7 +335,7 @@ export default {
     },
     setFlashAnimate () {
       if (this.cluster) {
-        const features = this.clusterObj.getFeatures()
+        const features = this.clusterObj?.getFeatures() || []
         if (features.length > 0) {
           features.forEach(cluster => {
             const clusters = cluster.get('features')
@@ -346,11 +350,14 @@ export default {
         }
       } else {
         // console.log(this.layer.getSource().getFeatures())
-        this.layer.getSource().getFeatures().forEach(feature => {
-          if (feature.get('flash')) {
-            this.pulseFeature(feature)
-          }
-        })
+        const source = this.layer.getSource()
+        if (source) {
+          source.getFeatures().forEach(feature => {
+            if (feature.get('flash')) {
+              this.pulseFeature(feature)
+            }
+          })
+        }
       }
     },
     dispose () {

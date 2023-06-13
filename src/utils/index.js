@@ -7,7 +7,7 @@ import projzh from '@/utils/projConvert'
 import { addCoordinateTransforms, addProjection, Projection, transform } from 'ol/proj'
 import { applyTransform, containsCoordinate, containsExtent, getHeight, getWidth, getCenter } from 'ol/extent'
 import { distance, point } from '@turf/turf'
-import coordtransform from '@/utils/coordtransform'
+import coordtransform, { gcj02towgs84 } from '@/utils/coordtransform'
 import { Circle, LineString, MultiPolygon, Point, Polygon } from 'ol/geom'
 import { Fill, Icon, RegularShape, Stroke, Style, Text } from 'ol/style'
 import CircleStyle from 'ol/style/Circle'
@@ -139,7 +139,7 @@ addCoordinateTransforms('EPSG:3857', BDProj, projzh.smerc2bmerc, projzh.bmerc2sm
 /**
  * @Describe-注册高德坐标系
  */
-const AMapMercatorProj = new Projection({
+export const AMapMercatorProj = new Projection({
   code: 'GCJ02',
   extent: applyTransform([-180, -90, 180, 90], projzh.ll2gcj02mc),
   units: 'm'
@@ -194,7 +194,7 @@ export const convertCoordinate = (coordinate, convert) => {
     case 'bd-gd':
       return coordtransform.bd09togcj02(coordinate[0], coordinate[1])
     case 'gd-84':
-      return coordtransform.bd09togcj02(coordinate[0], coordinate[1])
+      return coordtransform.gcj02towgs84(coordinate[0], coordinate[1])
     case 'gd-bd':
       return coordtransform.gcj02tobd09(coordinate[0], coordinate[1])
     case '84-gd':
@@ -567,7 +567,13 @@ export const addVectorSource = (option, map) => {
   if (validObjKey(option, 'features')) {
     features = option.features
   }
+  if (validObjKey(option, 'projection')) {
+    if (option.projection === 'GCJ02') {
+      option.projection = gcj02towgs84
+    }
+  }
   const source = { ...option, ...{ features: setFeatures(features, map) } }
+  console.log(source)
   return new VectorSource(source)
 }
 

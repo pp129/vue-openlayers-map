@@ -90,18 +90,21 @@ export default {
             type: 'FeatureCollection',
             features: cluster
           }
-          this.layer.getSource().clear()
-          this.layer.getSource().addFeatures(new GeoJSON().readFeatures(features).map(feature => {
-            const properties = feature.get('properties')
-            if (properties && typeof properties === 'object') {
-              for (const i in properties) {
-                if (Object.prototype.hasOwnProperty.call(properties, i)) {
-                  feature.set(i, properties[i])
+          const source = this.layer.getSource()
+          if (source) {
+            source.clear()
+            source.addFeatures(new GeoJSON().readFeatures(features).map(feature => {
+              const properties = feature.get('properties')
+              if (properties && typeof properties === 'object') {
+                for (const i in properties) {
+                  if (Object.prototype.hasOwnProperty.call(properties, i)) {
+                    feature.set(i, properties[i])
+                  }
                 }
               }
-            }
-            return feature
-          }))
+              return feature
+            }))
+          }
         }
       },
       immediate: false,
@@ -249,18 +252,21 @@ export default {
           type: 'FeatureCollection',
           features: cluster
         }
-        this.layer.getSource().clear()
-        this.layer.getSource().addFeatures(new GeoJSON().readFeatures(features).map(feature => {
-          const properties = feature.get('properties')
-          if (properties && typeof properties === 'object') {
-            for (const i in properties) {
-              if (Object.prototype.hasOwnProperty.call(properties, i)) {
-                feature.set(i, properties[i])
+        const source = this.layer.getSource()
+        if (source) {
+          source.clear()
+          source.addFeatures(new GeoJSON().readFeatures(features).map(feature => {
+            const properties = feature.get('properties')
+            if (properties && typeof properties === 'object') {
+              for (const i in properties) {
+                if (Object.prototype.hasOwnProperty.call(properties, i)) {
+                  feature.set(i, properties[i])
+                }
               }
             }
-          }
-          return feature
-        }))
+            return feature
+          }))
+        }
         this.$emit('precompose')
       })
       // 绑定事件
@@ -275,18 +281,21 @@ export default {
         type: 'FeatureCollection',
         features: cluster
       }
-      this.layer.getSource().clear()
-      this.layer.getSource().addFeatures(new GeoJSON().readFeatures(features).map(feature => {
-        const properties = feature.get('properties')
-        if (properties && typeof properties === 'object') {
-          for (const i in properties) {
-            if (Object.prototype.hasOwnProperty.call(properties, i)) {
-              feature.set(i, properties[i])
+      const source = this.layer.getSource()
+      if (source) {
+        source.clear()
+        source.addFeatures(new GeoJSON().readFeatures(features).map(feature => {
+          const properties = feature.get('properties')
+          if (properties && typeof properties === 'object') {
+            for (const i in properties) {
+              if (Object.prototype.hasOwnProperty.call(properties, i)) {
+                feature.set(i, properties[i])
+              }
             }
           }
-        }
-        return feature
-      }))
+          return feature
+        }))
+      }
       this.$emit('moveend')
       // this.$emit('changeZoom', evt, this.map)
       evt.map.once('moveend', (evt) => {
@@ -295,7 +304,7 @@ export default {
     },
     getFeatureAtPixel (pixel) {
       return this.map.forEachFeatureAtPixel(pixel, (feature, layer) => {
-        if (layer.get('id') === this.layer.get('id')) return feature
+        if (layer?.get('id') === this.layer?.get('id')) return feature
       }, {})
     },
     eventHandler (listenerKey, evt) {
@@ -311,7 +320,10 @@ export default {
       this.eventRender.forEach(listenerKey => {
         unByKey(listenerKey)
       })
-      this.layer.getSource().clear()
+      const source = this.layer.getSource()
+      if (source) {
+        source.clear()
+      }
       this.map.removeLayer(this.layer)
     }
   }

@@ -1,7 +1,7 @@
 {
   "name": "v-ol-map",
   "private": false,
-  "version": "1.12.7",
+  "version": "1.12.9",
   "main": "lib/ol-map.umd.js",
   "files": [
     "lib"
@@ -48,6 +48,7 @@
     "supercluster": "^8.0.1",
     "throttle-debounce": "^5.0.0",
     "vue": "^2.7.8",
+    "vue-router": "^3.2.0",
     "vue-template-compiler": "^2.7.8"
   }
 }

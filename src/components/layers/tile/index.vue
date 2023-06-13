@@ -1,7 +1,7 @@
 <script>
 import BaseLayer from '@/components/layers/BaseLayer.vue'
 import { nanoid } from 'nanoid'
-import { setFeature, validObjKey } from '@/utils/index.js'
+import { AMapMercatorProj, setFeature, validObjKey } from '@/utils/index.js'
 import TileGrid from 'ol/tilegrid/TileGrid'
 import { OSM, TileArcGISRest, TileWMS, XYZ } from 'ol/source'
 import TileLayer from 'ol/layer/Tile'
@@ -529,7 +529,7 @@ export default {
         ...xyz,
         ...{
           url: url || 'https://wprd0{1-4}.is.autonavi.com/appmaptile?x={x}&y={y}&z={z}&lang=zh_cn&size=1&scl=1&style=7',
-          projection: 'GCJ02',
+          projection: AMapMercatorProj,
           crossOrigin: 'anonymous'
         }
       }

@@ -109,7 +109,7 @@ export default {
     },
     getFeatureAtPixel (pixel) {
       return this.map.forEachFeatureAtPixel(pixel, (feature, layer) => {
-        if (layer.get('id') === this.trafficLayer.layer.get('id')) return feature
+        if (layer?.get('id') === this.trafficLayer?.layer?.get('id')) return feature
       }, {})
     },
     eventHandler (listenerKey, evt) {
