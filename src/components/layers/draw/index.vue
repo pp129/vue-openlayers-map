@@ -265,7 +265,7 @@ export default {
         if (this.drawOnce) {
           this.draw.setActive(false)
         }
-        if (this.endRight) {
+        if (this.endRight && this.type) {
           this.map.on('contextmenu', evt => {
             console.log('end draw')
             this.draw.setActive(false)
@@ -398,13 +398,18 @@ export default {
       this.map.removeInteraction(this.draw)
       this.map.removeInteraction(this.select)
       this.map.removeInteraction(this.modify)
-      this.map.removeLayer(this.layer)
+      this.layer.getSource().clear()
     },
     finish () {
       this.draw.finishDrawing()
     },
     remove () {
-      this.map.removeInteraction(this.draw)
+      if (this.draw) {
+        this.map.removeInteraction(this.draw)
+        this.layer.getSource().clear()
+        this.map.removeInteraction(this.select)
+        this.map.removeInteraction(this.modify)
+      }
     },
     setActive (value) {
       this.draw.setActive(value)

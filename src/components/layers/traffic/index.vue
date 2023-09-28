@@ -31,6 +31,16 @@ export default {
     clearCache: {
       type: Boolean,
       default: true
+    },
+    colors: {
+      type: Array,
+      default () {
+        return [
+          'rgba(0,192,73,0.99609375)',
+          'rgba(242,48,48,0.99609375)',
+          'rgba(255,159,25,0.99609375)'
+        ]
+      }
     }
   },
   data () {
@@ -78,6 +88,13 @@ export default {
       },
       immediate: false,
       deep: true
+    },
+    colors: {
+      handler (value) {
+        this.trafficLayer.setColors(value)
+      },
+      immediate: false,
+      deep: true
     }
   },
   methods: {
@@ -85,7 +102,8 @@ export default {
       this.trafficLayer = new TrafficLayer({
         map: this.map,
         trafficURL: this.url,
-        tileType: this.tileType
+        tileType: this.tileType,
+        colors: this.colors
       })
       this.trafficLayer.layer.set('id', this.layerId)
       this.trafficLayer.layer.set('type', 'traffic')

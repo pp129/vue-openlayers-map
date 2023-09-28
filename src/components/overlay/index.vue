@@ -44,7 +44,7 @@ export default {
       default: false
     },
     className: {
-      type: String
+      type: [String, Array]
     },
     data: {
       type: Array

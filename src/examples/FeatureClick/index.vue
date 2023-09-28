@@ -1,7 +1,7 @@
 <template>
   <v-map :view="view">
     <v-tile tile-type="BD"></v-tile>
-    <v-vector :features="features" @singleclick="onClickFeature"></v-vector>
+    <v-vector :features="features" @singleclick="onClickFeature" @pointermove="pointermove"></v-vector>
     <v-vector :features="markers" @singleclick="onClickMarker"></v-vector>
   </v-map>
 </template>
@@ -59,6 +59,18 @@ export default {
     },
     onClickMarker (evt, marker) {
       console.log('marker', marker)
+    },
+    pointermove (evt, feature) {
+      // console.log('feature', feature)
+      this.features.forEach(e => {
+        e.style.icon.src = new URL('../../assets/img/point_4.png', import.meta.url).href
+        if (feature) {
+          const id = feature.get('id')
+          if (id === e.id) {
+            e.style.icon.src = new URL('../../assets/img/point_1.png', import.meta.url).href
+          }
+        }
+      })
     }
   }
 }

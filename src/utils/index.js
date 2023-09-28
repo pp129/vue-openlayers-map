@@ -6,7 +6,7 @@ import { getCenterByCity } from '@/utils/cityMap.js'
 import projzh from '@/utils/projConvert'
 import { addCoordinateTransforms, addProjection, Projection, transform } from 'ol/proj'
 import { applyTransform, containsCoordinate, containsExtent, getHeight, getWidth, getCenter } from 'ol/extent'
-import { distance, point } from '@turf/turf'
+import { distance, point, polygon, centroid } from '@turf/turf'
 import coordtransform, { gcj02towgs84 } from '@/utils/coordtransform'
 import { Circle, LineString, MultiPolygon, Point, Polygon } from 'ol/geom'
 import { Fill, Icon, RegularShape, Stroke, Style, Text } from 'ol/style'
@@ -16,7 +16,6 @@ import VectorSource from 'ol/source/Vector'
 import VectorLayer from 'ol/layer/Vector'
 import ImageCanvasSource from 'ol/source/ImageCanvas'
 import { getArea, getLength } from 'ol/sphere'
-
 /**
  * Map扩展
  */
@@ -388,14 +387,19 @@ export const setFeature = (option, map, hasStyle = false) => {
     const type = option.type
     switch (type) {
       case 'point':
+      case 'Point':
         return setPointFeature(option, map, hasStyle)
       case 'polygon':
+      case 'Polygon':
         return setPolygon(option)
       case 'MultiPolygon':
         return setMultiPolygon(option)
       case 'polyline':
+      case 'Polyline':
+      case 'LineString':
         return setPolyline(option)
       case 'circle':
+      case 'Circle':
         return setCircle(option, map)
       default:
         return setPointFeature(option, map, hasStyle)
@@ -870,6 +874,17 @@ export const calculateCenter = (geometry) => {
     minRadius,
     sqDistances
   }
+}
+
+/**
+ * @计算一组多边形的质心
+ * @param coordinates
+ * @returns {Feature<Point, Properties>}
+ */
+export const getCentroid = coordinates => {
+  // 注意：polygon首尾坐标要一致
+  const geometry = polygon(coordinates)
+  return centroid(geometry)
 }
 
 export const setControl = (map, control, options, controlOptions) => {

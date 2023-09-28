@@ -37,6 +37,7 @@ export default {
         'BD_DARK',
         'BD_BLUE',
         'GD',
+        'GD_IMG',
         'OSM',
         'WMS',
         'ARCGIS_BLUE',
@@ -227,6 +228,9 @@ export default {
           break
         case 'GD':
           this.initGD()
+          break
+        case 'GD_IMG':
+          this.initAMapImage()
           break
         case 'OSM':
           this.initTileOSM()
@@ -514,7 +518,21 @@ export default {
       return [layer]
     },
     initGD () {
-      this.layers = this.getAMap(this.xyz, this.$props, this.gdUrl)
+      this.layers = [this.getAMap(this.xyz, this.$props, this.gdUrl)]
+      if (!this.addForOverview) {
+        this.layers.forEach(layer => {
+          if (this.mask && Object.keys(this.mask).length > 0) {
+            this.addMask(layer, this.mask)
+          }
+          this.map.addLayer(layer)
+        })
+      }
+    },
+    initAMapImage () {
+      this.layers = [
+        this.getAMap(this.xyz, this.$props, 'https://wprd0{1-4}.is.autonavi.com/appmaptile?x={x}&y={y}&z={z}&lang=zh_cn&size=1&scl=1&style=6'),
+        this.getAMap(this.xyz, this.$props, 'https://wprd0{1-4}.is.autonavi.com/appmaptile?x={x}&y={y}&z={z}&lang=zh_cn&size=1&scl=1&style=8')
+      ]
       if (!this.addForOverview) {
         this.layers.forEach(layer => {
           if (this.mask && Object.keys(this.mask).length > 0) {
@@ -542,7 +560,7 @@ export default {
       if (this.zIndex) {
         layer.setZIndex(this.zIndex)
       }
-      return [layer]
+      return layer
     },
     initTileOSM () {
       const source = new OSM()

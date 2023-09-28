@@ -184,7 +184,7 @@ export default {
         if (res === 'success') {
           console.log('map load')
           // 绑定事件
-          const events = ['singleclick', 'click', 'dblclick', 'pointerdrag', 'contextmenu', 'postrender', 'loadend', 'loadstart', 'moveend', 'movestart']
+          const events = ['singleclick', 'click', 'dblclick', 'pointerdrag', 'contextmenu', 'precompose', 'postrender', 'loadend', 'loadstart', 'moveend', 'movestart']
           // 层级变化
           this.map.getView().once('change:resolution', () => {
             this.map.once('moveend', (evt) => {

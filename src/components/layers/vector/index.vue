@@ -132,13 +132,13 @@ export default {
         // source.clear()
         if (this.cluster) {
           this.clusterObj.getSource().clear()
-          const features = setFeatures(value, this.map, this.FeatureStyle && Object.keys(this.FeatureStyle).length > 0)
+          const features = setFeatures(value, this.map, this.FeatureStyle && Object.keys(this.FeatureStyle)?.length > 0)
           this.clusterObj.getSource().addFeatures(features)
           this.$emit('change', features)
         } else {
           const source = this.layer.getSource()
           source.clear()
-          const features = setFeatures(value, this.map, this.FeatureStyle && Object.keys(this.FeatureStyle).length > 0)
+          const features = setFeatures(value, this.map, this.FeatureStyle && Object.keys(this.FeatureStyle)?.length > 0)
           features.forEach(feature => {
             if (feature.type === 'polyline' && validObjKey(feature, 'arrow')) {
               arrowLine({
@@ -274,7 +274,7 @@ export default {
       this.map.addLayer(this.layer)
       console.log(this.layer.getSource().getFeatures())
       this.features.forEach(feature => {
-        if (feature.type === 'polyline' && validObjKey(feature, 'arrow')) {
+        if ((feature.type === 'polyline' || feature.type === 'Polyline' || feature.type === 'LineString') && validObjKey(feature, 'arrow')) {
           arrowLine({
             coordinates: feature.coordinates,
             map: this.map,

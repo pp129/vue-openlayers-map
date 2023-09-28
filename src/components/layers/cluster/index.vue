@@ -10,7 +10,7 @@ import VectorSource from 'ol/source/Vector'
 import GeoJSON from 'ol/format/GeoJSON'
 import { Fill, Style, Text } from 'ol/style'
 import Supercluster from 'supercluster'
-import { setStyle, validObjKey } from '@/utils'
+import { convertCoordinate, setStyle, validObjKey } from '@/utils'
 import CircleStyle from 'ol/style/Circle'
 import { unByKey } from 'ol/Observable'
 // import { throttle } from 'throttle-debounce'
@@ -158,11 +158,12 @@ export default {
   methods: {
     getGeoFeatures () {
       return this.features.map(feature => {
+        const coordinates = convertCoordinate(feature.coordinates, feature.convert)
         return {
           type: 'Feature',
           geometry: {
             type: 'Point',
-            coordinates: feature.coordinates
+            coordinates
           },
           properties: feature
         }

@@ -69,7 +69,7 @@
       <v-tile ref="wms" tile-type="WMS" :wms="wms" :z-index="2"></v-tile>
       <!-- 图片图层 -->
       <v-image :source="imageSource2" :geo-image="imageSource2.geoImage" :opacity="imageOpacity" :z-index="9" :visible="imageVisible"></v-image>
-      <v-overview :tile-type="tile" :rotateWithView="rotateWithView" collapsible></v-overview>
+<!--      <v-overview :tile-type="tile" :rotateWithView="rotateWithView" collapsible></v-overview>-->
       <!-- 路况图层 -->
       <v-tile ref="trafficLayer" :visible="trafficLayer.visible" :xyz="trafficLayer.xyz" :z-index="1" layer-id="traffic" tile-type="XYZ"></v-tile>
       <!-- 海量点聚合 -->
@@ -104,7 +104,7 @@
           :z-index="4"
           @select="onselect" @modifystart="modifystart" @modifyend="modifyend" @modifychange="modifychange"></v-vector>
       <!-- 绘制图层 -->
-      <v-draw ref="drawLayer" :type="drawType" :arrow="arrow" :feature-style="drawFeatureStyle" :end-right="true" :clear="true" draw-once editable @drawend="drawend"></v-draw>
+      <v-draw ref="drawLayer" :type="drawType" :arrow="arrow" :feature-style="drawFeatureStyle" :end-right="true" :clear="true" draw-once editable @drawend="drawend" :z-index="99"></v-draw>
       <!-- 测量图层 -->
       <v-measure ref="measureLayer" :type="measureType" :feature-style="measureStyle" :label-style="measureLabelStyle" :tip-style="measureTipStyle" :modify-style="measureModifyStyle" :modifiable="true"></v-measure>
       <v-overlay class="overlay" :position="positionRadius">半径：{{radius}} 米</v-overlay>
@@ -126,7 +126,7 @@
           <li @click="controls.ScaleLine = !controls.ScaleLine">{{ controls.ScaleLine?'关闭':'显示' }}比例尺</li>
           <li @click="controls.FullScreen = !controls.FullScreen">{{ controls.FullScreen?'关闭':'显示' }}全屏按钮</li>
           <li class="group">draw-绘制</li>
-          <li v-if="drawType" @click="drawType = ''">清除</li>
+          <li v-if="drawType" @click="removeDraw">清除</li>
           <li @click="drawHandler('Polygon')">多边形</li>
           <li @click="drawHandler('LineString')">线</li>
           <li @click="drawHandler('Circle')">圆</li>
@@ -148,6 +148,7 @@
 
 <script>
 import axios from 'axios'
+import { getCentroid } from '@/utils'
 
 export default {
   name: 'HomePage',
@@ -229,6 +230,10 @@ export default {
           value: 'GD'
         },
         {
+          name: '高德卫星',
+          value: 'GD_IMG'
+        },
+        {
           name: 'OSM',
           value: 'OSM'
         },
@@ -304,7 +309,7 @@ export default {
           }
         },
         {
-          type: 'polyline',
+          type: 'LineString',
           style: {
             stroke: {
               // color: 'rgba(220,171,119,1)',
@@ -334,6 +339,13 @@ export default {
               text: '圆形'
             }
           }
+        },
+        {
+          type: 'polygon',
+          coordinates: [
+            [118.23048075355373, 24.587052571002776], [118.25051461705989, 24.592192894082423],
+            [118.257872, 24.573517], [118.24383041710121, 24.561810933485354], [118.23048075355373, 24.587052571002776]
+          ]
         }
       ],
       arrow: {
@@ -1061,6 +1073,10 @@ export default {
     closeOverlays () {
       this.$refs.map.closeOverlays()
     },
+    removeDraw () {
+      this.drawType = ''
+      // this.$refs.drawLayer.remove()
+    },
     drawHandler (type) {
       this.positionMenu = undefined
       if (this.drawType && this.drawType === type) {
@@ -1420,11 +1436,21 @@ export default {
           this.clusterOverlay.position = feature.get('coordinates') || evt.coordinate
         }
       }
+    },
+    getCentroid () {
+      const coordinates = [
+        [118.23048075355373, 24.587052571002776], [118.25051461705989, 24.592192894082423],
+        [118.257872, 24.573517], [118.24383041710121, 24.561810933485354], [118.23048075355373, 24.587052571002776]
+      ]
+      const feature = getCentroid([coordinates])
+      console.log(feature)
+      this.features2.push(feature.geometry)
     }
   },
   mounted () {
     this.echarts.options = this.setEchartsOptions()
     this.getHeatmapData()
+    this.getCentroid()
   }
 }
 </script>

@@ -15,6 +15,7 @@ import VTrack from '@/components/track/index'
 import VPath from '@/components/path/index'
 import VSuperCluster from '@/components/layers/cluster/index'
 import VTraffic from '@/components/layers/traffic/index'
+import * as utils from '@/utils'
 
 const components = [VMap, VOverview, VOverlay, VTile, VVector, VImage, VRoute, VHeatmap, VGraphic, VDraw, VMeasure, VTrack, VPath, VEcharts, VSuperCluster, VTraffic]
 
@@ -50,5 +51,5 @@ export {
   VTrack,
   VEcharts,
   VSuperCluster,
-  VTraffic, VPath
+  VTraffic, VPath, utils
 }

@@ -28,6 +28,12 @@ export const constantRouterMap = [
     name: 'FeatureClick',
     component: () =>
       import(/* webpackChunkName: "FeatureClick" */ '../examples/FeatureClick/index.vue')
+  },
+  {
+    path: '/Points',
+    name: 'Points',
+    component: () =>
+      import(/* webpackChunkName: "Points" */ '../examples/Points/index.vue')
   }
 ]
 
