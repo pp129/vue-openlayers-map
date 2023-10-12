@@ -1,7 +1,9 @@
 let offscreen, ctx
-// let drawTask = []
+let drawCount = 0
+let tileCount = 0
 const offscreenTemp = new OffscreenCanvas(256, 256)
 const ctxTemp = offscreenTemp.getContext('2d')
+
 // 监听主线程发的信息
 self.onmessage = function (e) {
   // 监听通行内容
@@ -12,6 +14,7 @@ self.onmessage = function (e) {
     BdRouteDraw(result.json, result.col, result.row, result.traffic, result.zoom)
   } else if (e.data.msg === 'updateCanvas') {
     ctx.clearRect(0, 0, offscreen.width, offscreen.height)
+    drawCount = 0
     e.data.updateInfo && BdRouteUpdate(e.data.updateInfo)
   }
 }
@@ -126,19 +129,23 @@ function BdRouteDraw (json, col, row, trafficLayer, zoom) {
   // ctxTemp.restore()
 
   ctx.drawImage(offscreenTemp, posX, posY)
+  ++drawCount
 
-  const imageBitmap = offscreen.transferToImageBitmap()
-  // const imageBitmap = offscreenTemp.transferToImageBitmap()
-  // 传送给主线程
-  postMessage({
-    imageBitmap,
-    msg: 'initTile',
-    canvasPoint: [posX, posY],
-    zoom,
-    x: col,
-    y: row
-  })
-  // console.timeEnd('initTime');
+  if (drawCount === tileCount) {
+    drawCount = 0
+    tileCount = 0
+    const imageBitmap = offscreen.transferToImageBitmap()
+
+    // 传送给主线程
+    postMessage({
+      imageBitmap,
+      msg: 'initTile',
+      canvasPoint: [posX, posY],
+      zoom,
+      x: col,
+      y: row
+    })
+  }
 }
 
 /**
@@ -227,12 +234,14 @@ function BdRouteUpdate (trafficUpdate) {
     }
   }
 
+  tileCount = tilesOrder.length
+
   // *****进行全副画布绘制，若进行瓦片的绘制可以不考虑*****
-  // const pixelRatio = trafficUpdate.devicePixelRatio // window.devicePixelRatio === undefined ? devicePixelRatio : 1
-  // ctx.translate(size[0] * pixelRatio * (1 - diffRatio) / 2, size[1] * pixelRatio * (1 - diffRatio) / 2)
+  const pixelRatio = trafficUpdate.devicePixelRatio // window.devicePixelRatio === undefined ? devicePixelRatio : 1
+  ctx.translate(size[0] * pixelRatio * (1 - diffRatio) / 2, size[1] * pixelRatio * (1 - diffRatio) / 2)
 
   // 根据屏幕分辨率修改坐标
-  // ctx.scale(trafficUpdate.ratio * diffRatio, trafficUpdate.ratio * diffRatio)
+  ctx.scale(trafficUpdate.ratio * diffRatio, trafficUpdate.ratio * diffRatio)
 
   // 传送给主线程
   postMessage({
@@ -240,8 +249,6 @@ function BdRouteUpdate (trafficUpdate) {
     zoomUnits,
     msg: 'updateCanvas'
   })
-  // this.tilesOrder = tilesOrder;
-  // this._loadCount = {};
 }
 
 /**
