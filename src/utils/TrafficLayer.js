@@ -52,6 +52,7 @@ function TrafficLayer(options) {
     if (options.needWorker) {
         this.worker = new Worker(new URL('./bd.worker.js', import.meta.url));
         let tempCanvas = document.createElement('canvas');
+        let initCount = 0
 		this.worker.onmessage = (e) => {
             if (e.data.msg === 'initTile') {
                 initCount++
