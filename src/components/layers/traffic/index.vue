@@ -41,6 +41,10 @@ export default {
           'rgba(255,159,25,0.99609375)'
         ]
       }
+    },
+    needWorker: {
+      type: Boolean,
+      default: false
     }
   },
   data () {
@@ -103,7 +107,8 @@ export default {
         map: this.map,
         trafficURL: this.url,
         tileType: this.tileType,
-        colors: this.colors
+        colors: this.colors,
+        needWorker: this.needWorker
       })
       this.trafficLayer.layer.set('id', this.layerId)
       this.trafficLayer.layer.set('type', 'traffic')
@@ -147,6 +152,8 @@ export default {
       if (this.trafficLayer) {
         this.trafficLayer.layer.getSource().clear()
         this.map.removeLayer(this.trafficLayer.layer)
+        // 销毁woker任务
+        this.trafficLayer.workerTerminate()
       }
     }
   },

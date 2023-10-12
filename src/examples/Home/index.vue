@@ -820,9 +820,9 @@ export default {
       },
       // https://its.map.baidu.com/traffic/?qt=vtraffic&z=12&x=791&y=296&udt=20230510&fn=BMapGL.cbkBMAP_CUSTOM_LAYER_0_default_791_296_12_12&v=gl
       // https://its.map.baidu.com/traffic/v1/traffic?&ApiAuthorization=eYSfK7oo7MVRcD6bbhAOZQRglX3c3H5K
-      // trafficUrl: 'https://its.map.baidu.com/traffic/v1/traffic?&ApiAuthorization=eYSfK7oo7MVRcD6bbhAOZQRglX3c3H5K',
-      trafficUrl: '',
-      showTraffic: false
+      trafficUrl: 'http://its.map.baidu.com:8002/traffic/?qt=vtraffic',
+      // trafficUrl: '',
+      showTraffic: true
     }
   },
   methods: {
