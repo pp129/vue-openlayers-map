@@ -9,6 +9,7 @@ import ImageCanvasSource from "ol/source/ImageCanvas";
 function TrafficLayer(options) {
     options = options || {};
     this.options = options;
+    this.needWorker = options.needWorker !== undefined ? options.needWorker : false;
     options.colors = options.colors || [
         'rgba(0,192,73,0.99609375)',
         'rgba(242,48,48,0.99609375)',
@@ -31,7 +32,7 @@ function TrafficLayer(options) {
     });
     this.layer = layer;
 
-    this.map.on('precompose', ()=> {
+    this.map.once(['precompose', 'moveend'], ()=> {
         var size = this.map.getSize();
         var extent = this.map.getView().calculateExtent(size);
         layer.setExtent(extent);
@@ -39,12 +40,60 @@ function TrafficLayer(options) {
 
     this.parseColors(colors);
     this.tileSize = 256;
+    // 确实参数声明
+    const devicePixelRatio = 1;
     this.ratio = devicePixelRatio;
     this.drawTogether = false;
     this.cache = {};
     this._loadCount = {};
     if (options.getTileUrl) {
         this.getTileUrl = options.getTileUrl;
+    }
+    if (options.needWorker) {
+        this.worker = new Worker(new URL('./bd.worker.js', import.meta.url));
+        let tempCanvas = document.createElement('canvas');
+		this.worker.onmessage = (e) => {
+            if (e.data.msg === 'initTile') {
+                initCount++
+                // 方式二采用双缓存
+                let tempSize = this.map.getSize()
+                tempCanvas.width = tempSize[0]
+                tempCanvas.height = tempSize[1]
+                
+                tempCanvas.getContext('2d').drawImage(e.data.imageBitmap, 0, 0);
+
+				const ctx = this.canvaslayer.canvas.getContext('2d');
+                // this.tilesOrder.length === initCount && 
+                ctx.drawImage(tempCanvas, 0, 0);
+			} else if (e.data.msg === 'updateCanvas') {
+                initCount = 0
+				let orders = e.data.tilesOrder;
+				this.zoomUnits = e.data.zoomUnits
+				this.tilesOrder = e.data.tilesOrder;
+				this._loadCount = {};
+				
+                // 方式2 - 构建绘制的Promise任务，使用all进行并行绘制的请求
+                const ctx = this.canvaslayer.canvas.getContext('2d');
+                ctx.clearRect(0, 0, this.canvaslayer.canvas.width, this.canvaslayer.canvas.height);
+
+                const promises = [];
+                orders.forEach(ele => {
+                    const x = ele[0];
+					const y = ele[1];
+					const z = Math.round(options.map.getView().getZoom());
+					this._loadCount[x + '_' + y + '_' + z] = false;
+                    promises.push(new Promise((resolve, reject) => {
+                        this.showTile(x, y, z)
+                        resolve(e.data.x + '_' + e.data.y + '_' + e.data.zoom)
+                    }));
+                });
+                // 获取并行执行结果
+                Promise.all(promises).then(res => {})
+			}
+        }
+        this.worker.onerror = e => {
+            console.error('路况绘制worker异常！', e)
+        }
     }
 }
 
@@ -63,10 +112,10 @@ TrafficLayer.prototype.canvasFunction = function(extent, resolution, pixelRatio,
         resolution: resolution,
         canvas: canvas
     });
-
-    var ctx = canvas.getContext('2d');
-
-    var radius = 30;
+    
+    const ctx = canvas.getContext('2d');
+    
+    const radius = 30;
     /*
     var pixel = map.getPixelFromCoordinate(ol.proj.transform([116.403497,39.914779], 'EPSG:4326', 'EPSG:3857'));
     ctx.fillStyle = 'rgba(0, 0, 250, 0.5)';
@@ -164,118 +213,127 @@ TrafficLayer.prototype.clear = function () {
 };
 
 TrafficLayer.prototype.update = function (canvaslayer) {
-    var map = this.map;
+    const map = this.map;
     if (canvaslayer) {
         this.canvaslayer = canvaslayer;
     } else {
         canvaslayer = this.canvaslayer;
     }
 
-    var canvas = canvaslayer.canvas;
-    var ctx = canvas.getContext('2d');
+    const canvas = canvaslayer.canvas;
+    const ctx = canvas.getContext('2d');
 
     if (!this.drawTogether) {
         this.clear();
     }
 
-
-    var zoom;
-    var levelUnits;
-
-    // 获取当前地图的米/像素单位比例
-
-    if (this.tileType == 'bd09') {
-        zoom = Math.round(map.getView().getZoom() + 1);
-        this.zoomUnits = Math.pow(2, (18 - zoom));
-        levelUnits = this.zoomUnits * 256;
-    } else if (this.tileType == 'WGS84') {
-        zoom = Math.round(map.getView().getZoom());
-        this.zoomUnits = 2 * Math.PI * 6378137 / 256 / Math.pow(2, zoom);
-        levelUnits = this.zoomUnits * 256;
-    } else {
-        zoom = Math.round(map.getView().getZoom());
-        this.zoomUnits = Math.pow(2.0, 2 - zoom) * 0.3515625;
-        levelUnits = 256 * this.zoomUnits;
-    }
-
-    var center = map.getView().getCenter();
-
-    var centerPoint = {
-        x: center[0],
-        y: center[1]
-    };
-    var row, column, fromRow, fromColumn, toRow, toColumn;
-
-    var zoomUnits = this.zoomUnits;
-    var diffRatio = zoomUnits / this.canvaslayer.resolution;
-
-    var width = map.getSize()[0] / diffRatio;
-    var height = map.getSize()[1] / diffRatio;
-    if (this.tileType == 'bd09') {
-        row = Math.ceil(centerPoint.x / levelUnits);
-        column = Math.ceil(centerPoint.y / levelUnits);
-
-        var cell = [
-            row, column, (centerPoint.x - row * levelUnits) / levelUnits * this.tileSize,
-            (centerPoint.y - column * levelUnits) / levelUnits * this.tileSize
-        ];
-        fromRow = cell[0] - Math.ceil((width / 2 - cell[2]) / this.tileSize);
-        fromColumn = cell[1] - Math.ceil((height / 2 - cell[3]) / this.tileSize);
-        toRow = cell[0] + Math.ceil((width / 2 + cell[2]) / this.tileSize);
-        toColumn = cell[1] + Math.ceil((height / 2 + cell[3]) / this.tileSize);
-    } else if (this.tileType == 'WGS84') {
-        width = map.getSize()[0];
-        height = map.getSize()[1];
-        row = Math.ceil(Math.round((centerPoint.x + 20037508.34) / levelUnits));
-        column = Math.ceil(Math.round((20037508.34 - centerPoint.y) / levelUnits));
-        fromRow = row - Math.ceil(width / 2 / this.tileSize);
-        toRow = row + Math.ceil(width / 2 / this.tileSize);
-        fromColumn = column - Math.ceil(height / 2 / this.tileSize);
-        toColumn = column + Math.ceil(height / 2 / this.tileSize);
-    } else {
-        width = map.getSize()[0];
-        height = map.getSize()[1];
-        row = Math.ceil(Math.round((centerPoint.x + 180.0) / levelUnits));
-        column = Math.ceil(Math.round((90.0 - centerPoint.y) / levelUnits));
-        fromRow = row - Math.ceil(width / 2 / this.tileSize);
-        toRow = row + Math.ceil(width / 2 / this.tileSize);
-        fromColumn = column - Math.ceil(height / 2 / this.tileSize);
-        toColumn = column + Math.ceil(height / 2 / this.tileSize);
-    }
-
-
-    var tilesOrder = [];
-    for (var i = fromRow; i <= toRow; i++) {
-        for (var j = fromColumn; j <= toColumn; j++) {
-            tilesOrder.push([i, j]);
+    const tilesOrder = [];
+	if (this.needWorker) {
+        const size = this.map.getSize()
+        const updateInfo = {
+			mapZoom: Math.round(map.getView().getZoom()),
+			tileType: this.tileType,
+			zoomUnits: this.zoomUnits,
+            center: this.map.getView().getCenter(),
+			resolution: this.canvaslayer.resolution,
+            tileSize: this.tileSize,
+            size: size,
+			devicePixelRatio: this.ratio,
+			ratio: this.ratio
         }
-    }
+        this.worker.postMessage({
+			msg: 'updateCanvas',
+            width: size[0], 
+            height: size[1],
+			updateInfo: updateInfo
+		});
+	} else {
+		let zoom;
+		let levelUnits;
 
-    this.tilesOrder = tilesOrder;
-    this._loadCount = {};
+		// 获取当前地图的米/像素单位比例
+		if (this.tileType == 'bd09') {
+			zoom = Math.round(map.getView().getZoom() + 1);
+			this.zoomUnits = Math.pow(2, (18 - zoom));
+			levelUnits = this.zoomUnits * 256;
+		} else if (this.tileType == 'WGS84') {
+			zoom = Math.round(map.getView().getZoom());
+			this.zoomUnits = 2 * Math.PI * 6378137 / 256 / Math.pow(2, zoom);
+			levelUnits = this.zoomUnits * 256;
+		} else {
+			zoom = Math.round(map.getView().getZoom());
+			this.zoomUnits = Math.pow(2.0, 2 - zoom) * 0.3515625;
+			levelUnits = 256 * this.zoomUnits;
+		}
 
-    var size = map.getSize();
-    ctx.translate(size[0] * devicePixelRatio * (1 - diffRatio) / 2, size[1] * devicePixelRatio * (1 - diffRatio) / 2);
+		let center = map.getView().getCenter();
 
-    //根据屏幕分辨率修改坐标
-    ctx.scale(this.ratio * diffRatio, this.ratio * diffRatio);
+		let centerPoint = {
+			x: center[0],
+			y: center[1]
+		};
+		let row, column, fromRow, fromColumn, toRow, toColumn;
 
-    /*
-    var point = [12957658.47,4829891.26];
-    ctx.fillStyle = 'blue';
-    var size = map.getSize();
-    var px = (point[0] - center[0]) / zoomUnits + size[0] / 2;
-    var py = size[1] / 2 - (point[1] - center[1]) / zoomUnits;
-    ctx.fillRect(px - 5, py - 5, 10, 10);
-    */
+		let zoomUnits = this.zoomUnits;
+		let diffRatio = zoomUnits / this.canvaslayer.resolution;
+		
+		let width = map.getSize()[0] / diffRatio;
+		let height = map.getSize()[1] / diffRatio;
+		if (this.tileType == 'bd09') {
+			row = Math.ceil(centerPoint.x / levelUnits);
+			column = Math.ceil(centerPoint.y / levelUnits);
 
-    for (var i = 0; i < tilesOrder.length; i++) {
-        var x = tilesOrder[i][0];
-        var y = tilesOrder[i][1];
-        var z = zoom;
-        this._loadCount[x + '_' + y + '_' + z] = false;
-        this.showTile(x, y, z);
-    }
+			let cell = [
+				row, column, (centerPoint.x - row * levelUnits) / levelUnits * this.tileSize,
+				(centerPoint.y - column * levelUnits) / levelUnits * this.tileSize
+			];
+			fromRow = cell[0] - Math.ceil((width / 2 - cell[2]) / this.tileSize);
+			fromColumn = cell[1] - Math.ceil((height / 2 - cell[3]) / this.tileSize);
+			toRow = cell[0] + Math.ceil((width / 2 + cell[2]) / this.tileSize);
+			toColumn = cell[1] + Math.ceil((height / 2 + cell[3]) / this.tileSize);
+		} else if (this.tileType == 'WGS84') {
+			width = map.getSize()[0];
+			height = map.getSize()[1];
+			row = Math.ceil(Math.round((centerPoint.x + 20037508.34) / levelUnits));
+			column = Math.ceil(Math.round((20037508.34 - centerPoint.y) / levelUnits));
+			fromRow = row - Math.ceil(width / 2 / this.tileSize);
+			toRow = row + Math.ceil(width / 2 / this.tileSize);
+			fromColumn = column - Math.ceil(height / 2 / this.tileSize);
+			toColumn = column + Math.ceil(height / 2 / this.tileSize);
+		} else {
+			width = map.getSize()[0];
+			height = map.getSize()[1];
+			row = Math.ceil(Math.round((centerPoint.x + 180.0) / levelUnits));
+			column = Math.ceil(Math.round((90.0 - centerPoint.y) / levelUnits));
+			fromRow = row - Math.ceil(width / 2 / this.tileSize);
+			toRow = row + Math.ceil(width / 2 / this.tileSize);
+			fromColumn = column - Math.ceil(height / 2 / this.tileSize);
+			toColumn = column + Math.ceil(height / 2 / this.tileSize);
+		}
+
+		for (let i = fromRow; i <= toRow; i++) {
+			for (let j = fromColumn; j <= toColumn; j++) {
+				tilesOrder.push([i, j]);
+			}
+		}
+
+		this.tilesOrder = tilesOrder;
+		this._loadCount = {};
+
+		let size = map.getSize();
+		ctx.translate(size[0] * devicePixelRatio * (1 - diffRatio) / 2, size[1] * devicePixelRatio * (1 - diffRatio) / 2);
+
+		//根据屏幕分辨率修改坐标
+		ctx.scale(this.ratio * diffRatio, this.ratio * diffRatio);
+
+		for (let i = 0; i < tilesOrder.length; i++) {
+			let x = tilesOrder[i][0];
+			let y = tilesOrder[i][1];
+			let z = zoom;
+			this._loadCount[x + '_' + y + '_' + z] = false;
+			this.showTile(x, y, z);
+		}
+	}
 };
 TrafficLayer.prototype.lngLatToMerc = function(point){
     if (point === null || point === undefined) {
@@ -311,18 +369,20 @@ TrafficLayer.prototype.showTile = function (x, y, z) {
 
 TrafficLayer.prototype.drawCurrentData = function () {
     this.clear();
-    var z;
+    let z;
     if (this.tileType == 'bd09') {
         z = Math.round(this.map.getZoom() + 1);
     } else if (this.tileType == 'WGS84') {
         z = Math.round(this.map.getZoom());
-    }
-    for (var i = 0; i < this.tilesOrder.length; i++) {
-        var x = this.tilesOrder[i][0];
-        var y = this.tilesOrder[i][1];
-        var cacheData = this.cache[this.getCacheKey(x, y, z)];
+    } else {
+		z = Math.round(this.map.getView().getZoom());
+	}
+    for (let i = 0; i < this.tilesOrder.length; i++) {
+        let x = this.tilesOrder[i][0];
+        let y = this.tilesOrder[i][1];
+        let cacheData = this.cache[this.getCacheKey(x, y, z)];
         if (cacheData) {
-            this._drawFeatures(cacheData, x, y);
+            this._drawFeatures(cacheData, x, y, z);
         }
     }
     this.drawTogether = false;
@@ -377,13 +437,13 @@ TrafficLayer.prototype._parseDataAndDraw = function (x, y, z) {
         if (me.drawTogether) {
             me.isAllLoaded() && me.drawCurrentData();
         } else {
-            me._drawFeatures(me.cache[cacheKey], x, y);
+            me._drawFeatures(me.cache[cacheKey], x, y, z);
         }
 
         delete BMap[cbkName];
     }
 
-    if (me.cache[cacheKey] !== undefined) {
+    if (me.cache[cacheKey] !== undefined && me.cache[cacheKey] !== null) {
         me._loadCount[x + '_' + y + '_' + z] = true;
         if (me.drawTogether) {
             me.isAllLoaded() && me.drawCurrentData();
@@ -416,92 +476,104 @@ TrafficLayer.prototype.getTileUrl = function (x, y, z, cbkName) {
  * row: 列号
  */
 TrafficLayer.prototype._drawFeatures = function (json, col, row, z) {
-    var canvas = this.canvaslayer.canvas;
-    var ctx = canvas.getContext('2d'),
-        getRgba = this.getRGBA,
-        getLineCap = this.getLineCap,
-        getLineJoin = this.getLineJoin,
-        p = 10; //精度
-
-    var centerPoint = this.map.getView().getCenter();
-
-    var zoomUnits = this.zoomUnits;
-    var diffRatio = zoomUnits / this.canvaslayer.resolution;
-
-    var centerPixX = -centerPoint[0] / zoomUnits,
-        centerPixY = centerPoint[1] / zoomUnits,
-        centerPosition = [centerPixX, centerPixY];
-
-    if (this.tileType == 'bd09') {
-        var posX = col * this.tileSize + centerPosition[0];
-        var posY = (-1 - row) * this.tileSize + centerPosition[1];
-        posX = this.map.getSize()[0] / 2 + posX;
-        posY = this.map.getSize()[1] / 2 + posY;
-    } else if (this.tileType == 'WGS84') {
-        var halfSize = Math.PI * 6378137;
-        var posX = (col * this.tileSize * zoomUnits - halfSize) / zoomUnits + centerPosition[0];
-        var posY = centerPosition[1] - (halfSize - row * this.tileSize * zoomUnits) / zoomUnits;
-        posX = this.map.getSize()[0] / 2 + posX;
-        posY = this.map.getSize()[1] / 2 + posY;
-    } else {
-        var xHalfSize = 180;
-        var yHalfSize = 90;
-        var posX = (col * this.tileSize * zoomUnits - xHalfSize) / zoomUnits + centerPosition[0];
-        var posY = centerPosition[1] - (yHalfSize - row * this.tileSize * zoomUnits) / zoomUnits;
-        posX = this.map.getSize()[0] / 2 + posX;
-        posY = this.map.getSize()[1] / 2 + posY;
-    }
-
-
-    ctx.save();
-
-    ctx.translate(posX, posY);
-
-    if (json && json.traffic) {
-        var precision = json.precision || 1;
-        p = p * precision;
-
-        var data = json.traffic;
-
-        for (var i = 0, l = data.length; i < l; i++){
-            var item = data[i],
-                scrPts = item[1],
-                style0 = this.arrFeatureStyles[item[3]],
-                style1 = this.arrFeatureStyles[item[4]],
-                x = scrPts[0] / p,
-                y = scrPts[1] / p;
-
-            ctx.beginPath();
-            ctx.moveTo(x, y);
-            for (var j = 2, ll = scrPts.length; j < ll; j += 2) {
-                x += scrPts[j] / p;
-                y += scrPts[j + 1] / p;
-                ctx.lineTo(x, y); // 画线
-            }
-
-            //绘制背景色
-            ctx.strokeStyle = style0[1];
-            if (item[3] >= 15 && item[3] <= 19) {
-                ctx.strokeStyle = 'rgba(186, 0, 0, 1)';
-            }
-            ctx.lineWidth = style0[2];
-            ctx.lineCap = getLineCap(style0[3]);
-            ctx.lineJoin = getLineJoin(style0[4]);
-            ctx.stroke();
-            //绘制前景色
-            /*
-            ctx.strokeStyle = getRgba(style1[1]);
-            ctx.lineWidth = style1[2] ;
-            ctx.lineCap = getLineCap(style1[3]);
-            ctx.lineJoin = getLineJoin(style1[4]);
-            ctx.stroke();
-            */
-
+    if (this.needWorker) {
+        const size = this.map.getSize()
+        const drawInfo = {
+            center: this.map.getView().getCenter(),
+            zoomUnits: this.zoomUnits,
+            tileType: this.tileType,
+            tileSize: this.tileSize,
+            size: size,
+            arrFeatureStyles: this.arrFeatureStyles
         }
+        this.worker.postMessage({
+            msg:'initTile',
+            json: json,
+            col: col,
+            row: row,
+            width: size[0], 
+            height: size[1],
+            traffic: drawInfo,
+			zoom: z
+        });
+    } else {
+		var canvas = this.canvaslayer.canvas;
+		var ctx = canvas.getContext('2d'),
+			getRgba = this.getRGBA,
+			getLineCap = this.getLineCap,
+			getLineJoin = this.getLineJoin,
+			p = 10; //精度
 
-    }
+		var centerPoint = map.getView().getCenter();
 
-    ctx.restore();
+		var zoomUnits = this.zoomUnits;
+		var diffRatio = zoomUnits / this.canvaslayer.resolution;
+
+		var centerPixX = -centerPoint[0] / zoomUnits,
+			centerPixY = centerPoint[1] / zoomUnits,
+			centerPosition = [centerPixX, centerPixY];
+
+		if (this.tileType == 'bd09') {
+			var posX = col * this.tileSize + centerPosition[0];
+			var posY = (-1 - row) * this.tileSize + centerPosition[1];
+			posX = map.getSize()[0] / 2 + posX;
+			posY = map.getSize()[1] / 2 + posY;
+		} else if (this.tileType == 'WGS84') {
+			var halfSize = Math.PI * 6378137;
+			var posX = (col * this.tileSize * zoomUnits - halfSize) / zoomUnits + centerPosition[0];
+			var posY = centerPosition[1] - (halfSize - row * this.tileSize * zoomUnits) / zoomUnits;
+			posX = map.getSize()[0] / 2 + posX;
+			posY = map.getSize()[1] / 2 + posY;
+		} else {
+			var xHalfSize = 180;
+			var yHalfSize = 90;
+			var posX = (col * this.tileSize * zoomUnits - xHalfSize) / zoomUnits + centerPosition[0];
+			var posY = centerPosition[1] - (yHalfSize - row * this.tileSize * zoomUnits) / zoomUnits;
+			posX = map.getSize()[0] / 2 + posX;
+			posY = map.getSize()[1] / 2 + posY;
+		}
+
+
+		ctx.save();
+
+		ctx.translate(posX, posY);
+
+		if (json && json.traffic) {
+			var precision = json.precision || 1;
+			p = p * precision;
+			
+			var data = json.traffic;
+
+			for (var i = 0, l = data.length; i < l; i++){
+				var item = data[i],
+					scrPts = item[1],
+					style0 = this.arrFeatureStyles[item[3]],
+					style1 = this.arrFeatureStyles[item[4]],
+					x = scrPts[0] / p,
+					y = scrPts[1] / p;
+
+				ctx.beginPath();
+				ctx.moveTo(x, y);
+				for (var j = 2, ll = scrPts.length; j < ll; j += 2) {
+					x += scrPts[j] / p;
+					y += scrPts[j + 1] / p;
+					ctx.lineTo(x, y); // 画线               
+				}
+
+				//绘制背景色
+				ctx.strokeStyle = style0[1];
+				if (item[3] >= 15 && item[3] <= 19) {
+					ctx.strokeStyle = 'rgba(186, 0, 0, 1)';
+				}
+				ctx.lineWidth = style0[2];
+				ctx.lineCap = getLineCap(style0[3]);
+				ctx.lineJoin = getLineJoin(style0[4]);
+				ctx.stroke();
+			}
+
+		}
+		ctx.restore();
+	}
 };
 
 TrafficLayer.prototype.request = function (url, cbk) {
@@ -570,6 +642,13 @@ TrafficLayer.prototype.getLineCap = function (n) {
  */
 TrafficLayer.prototype.getLineJoin = function (n) {
     return ['miter', 'bevel', 'round'][n];
+};
+
+/**
+ * 不需要进行图层加载时，请对worker进行销毁
+ */
+TrafficLayer.prototype.workerTerminate = function () {
+    this.worker && this.worker.terminate();
 };
 
 export default TrafficLayer;
