@@ -228,11 +228,11 @@ function BdRouteUpdate (trafficUpdate) {
   }
 
   // *****进行全副画布绘制，若进行瓦片的绘制可以不考虑*****
-  const pixelRatio = trafficUpdate.devicePixelRatio // window.devicePixelRatio === undefined ? devicePixelRatio : 1
-  ctx.translate(size[0] * pixelRatio * (1 - diffRatio) / 2, size[1] * pixelRatio * (1 - diffRatio) / 2)
+  // const pixelRatio = trafficUpdate.devicePixelRatio // window.devicePixelRatio === undefined ? devicePixelRatio : 1
+  // ctx.translate(size[0] * pixelRatio * (1 - diffRatio) / 2, size[1] * pixelRatio * (1 - diffRatio) / 2)
 
   // 根据屏幕分辨率修改坐标
-  ctx.scale(trafficUpdate.ratio * diffRatio, trafficUpdate.ratio * diffRatio)
+  // ctx.scale(trafficUpdate.ratio * diffRatio, trafficUpdate.ratio * diffRatio)
 
   // 传送给主线程
   postMessage({
@@ -263,10 +263,10 @@ function getLineJoin (n) {
 /**
  * 清除瓦片处理
  */
-function clearCanvas () {
-  const ctx = offscreen.getContext('2d')
-  const w = ctx.canvas.width
-  const h = ctx.canvas.height
-  ctx.canvas.width = w
-  ctx.canvas.height = h
-};
+// function clearCanvas () {
+//   const ctx = offscreen.getContext('2d')
+//   const w = ctx.canvas.width
+//   const h = ctx.canvas.height
+//   ctx.canvas.width = w
+//   ctx.canvas.height = h
+// };

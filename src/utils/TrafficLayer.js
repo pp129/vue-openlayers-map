@@ -1,6 +1,7 @@
 /* eslint-disable */
 import ImageLayer from "ol/layer/Image";
 import ImageCanvasSource from "ol/source/ImageCanvas";
+import Worker from '../utils/bd.worker.js?worker&inline';
 
 /**
  * @openlayers叠加百度路况矢量瓦片
@@ -50,7 +51,7 @@ function TrafficLayer(options) {
         this.getTileUrl = options.getTileUrl;
     }
     if (options.needWorker) {
-        this.worker = new Worker(new URL('./bd.worker.js', import.meta.url));
+        this.worker = new Worker();
         let tempCanvas = document.createElement('canvas');
         let initCount = 0
 		this.worker.onmessage = (e) => {
