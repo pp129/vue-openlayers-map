@@ -33,9 +33,9 @@ function TrafficLayer(options) {
     });
     this.layer = layer;
 
-    this.map.once(['precompose'], ()=> {
-        var size = this.map.getSize();
-        var extent = this.map.getView().calculateExtent(size);
+    this.map.on(['precompose'], (e)=> {
+        var size = e.target.getSize();
+        var extent = e.target.getView().calculateExtent(size);
         layer.setExtent(extent);
     }, false);
 
