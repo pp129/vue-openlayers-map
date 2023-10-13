@@ -3,7 +3,6 @@ import ImageLayer from "ol/layer/Image";
 import ImageCanvasSource from "ol/source/ImageCanvas";
 import Worker from '../utils/bd.worker.js?worker&inline';
 
-
 /**
  * @openlayers叠加百度路况矢量瓦片
  */
@@ -34,7 +33,7 @@ function TrafficLayer(options) {
     });
     this.layer = layer;
 
-    this.map.once(['precompose', 'moveend'], ()=> {
+    this.map.once(['precompose'], ()=> {
         var size = this.map.getSize();
         var extent = this.map.getView().calculateExtent(size);
         layer.setExtent(extent);
@@ -53,45 +52,26 @@ function TrafficLayer(options) {
     }
     if (options.needWorker) {
         this.worker = new Worker();
-        let tempCanvas = document.createElement('canvas');
-        let initCount = 0
         this.worker.onmessage = (e) => {
             if (e.data.msg === 'initTile') {
-                initCount++
                 // 方式二采用双缓存
-                let tempSize = this.map.getSize()
-                tempCanvas.width = tempSize[0]
-                tempCanvas.height = tempSize[1]
-
-                tempCanvas.getContext('2d').drawImage(e.data.imageBitmap, 0, 0);
-
                 const ctx = this.canvaslayer.canvas.getContext('2d');
-                // this.tilesOrder.length === initCount &&
-                ctx.drawImage(tempCanvas, 0, 0);
+                ctx.drawImage(e.data.imageBitmap, 0, 0);
             } else if (e.data.msg === 'updateCanvas') {
-                initCount = 0
                 let orders = e.data.tilesOrder;
                 this.zoomUnits = e.data.zoomUnits
                 this.tilesOrder = e.data.tilesOrder;
                 this._loadCount = {};
 
-                // 方式2 - 构建绘制的Promise任务，使用all进行并行绘制的请求
-                const ctx = this.canvaslayer.canvas.getContext('2d');
-                ctx.clearRect(0, 0, this.canvaslayer.canvas.width, this.canvaslayer.canvas.height);
-
-                const promises = [];
-                orders.forEach(ele => {
-                    const x = ele[0];
-                    const y = ele[1];
+                // 方式1 - 进行绘制的for循环动作
+                this.canvaslayer.canvas.getContext('2d').clearRect(0, 0, this.canvaslayer.canvas.width, this.canvaslayer.canvas.height);
+                for (let i = 0; i < orders.length; i++) {
+                    const x = orders[i][0];
+                    const y = orders[i][1];
                     const z = Math.round(options.map.getView().getZoom());
                     this._loadCount[x + '_' + y + '_' + z] = false;
-                    promises.push(new Promise((resolve, reject) => {
-                        this.showTile(x, y, z)
-                        resolve(e.data.x + '_' + e.data.y + '_' + e.data.zoom)
-                    }));
-                });
-                // 获取并行执行结果
-                Promise.all(promises).then(res => {})
+                    this.showTile(x, y, z);
+                }
             }
         }
         this.worker.onerror = e => {
@@ -454,7 +434,7 @@ TrafficLayer.prototype._parseDataAndDraw = function (x, y, z) {
             me._drawFeatures(me.cache[cacheKey], x, y, z);
         }
     } else {
-        this.request(url);
+        typeof BMap[cbkName] === 'function' && this.request(url);
     }
 
 };
