@@ -639,6 +639,8 @@ TrafficLayer.prototype.request = function (url, cbk) {
       const t = window.event.srcElement
       if (t && (t.readyState === 'loaded' || t.readyState === 'complete')) {
         t.parentNode.removeChild(t)
+        // 增加刷新机制时，对原有对象的强制内存释放
+        window.BMap && (window.BMap = null)
       }
     })
   }
