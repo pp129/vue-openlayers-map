@@ -168,11 +168,11 @@ function BdRouteUpdate (trafficUpdate) {
   const size = trafficUpdate.size
 
   // 获取当前地图的米/像素单位比例
-  if (trafficUpdate.tileType == 'bd09') {
+  if (trafficUpdate.tileType === 'bd09') {
     zoom = Math.round(trafficUpdate.mapZoom + 1)
     trafficUpdate.zoomUnits = Math.pow(2, (18 - zoom))
     levelUnits = trafficUpdate.zoomUnits * 256
-  } else if (trafficUpdate.tileType == 'WGS84') {
+  } else if (trafficUpdate.tileType === 'WGS84') {
     zoom = Math.round(trafficUpdate.mapZoom)
     trafficUpdate.zoomUnits = 2 * Math.PI * 6378137 / 256 / Math.pow(2, zoom)
     levelUnits = trafficUpdate.zoomUnits * 256
@@ -207,7 +207,7 @@ function BdRouteUpdate (trafficUpdate) {
     fromColumn = cell[1] - Math.ceil((height / 2 - cell[3]) / trafficUpdate.tileSize)
     toRow = cell[0] + Math.ceil((width / 2 + cell[2]) / trafficUpdate.tileSize)
     toColumn = cell[1] + Math.ceil((height / 2 + cell[3]) / trafficUpdate.tileSize)
-  } else if (trafficUpdate.tileType == 'WGS84') {
+  } else if (trafficUpdate.tileType === 'WGS84') {
     width = size[0]
     height = size[1]
     row = Math.ceil(Math.round((centerPoint.x + 20037508.34) / levelUnits))
