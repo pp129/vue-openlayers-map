@@ -111,7 +111,7 @@ export default {
         needWorker: this.needWorker
       }
       // eslint-disable-next-line no-undef
-      this.trafficLayer = typeof BDTrafficLayer === 'undefined' ? new TrafficLayer(layerOpts) : new TrafficLayer(layerOpts)
+      this.trafficLayer = typeof BDTrafficLayer === 'undefined' ? new TrafficLayer(layerOpts) : new BDTrafficLayer(layerOpts)
       this.trafficLayer.layer.set('id', this.layerId)
       this.trafficLayer.layer.set('type', 'traffic')
       this.trafficLayer.layer.set('users', true)
