@@ -120,7 +120,7 @@ export default {
       this.map.addLayer(this.trafficLayer.layer)
       if (this.timeout) {
         this.timer = setInterval(() => {
-          this.trafficLayer.draw({
+          this.trafficLayer.layer && this.trafficLayer.layer.getVisible() && this.trafficLayer.draw({
             clearCache: this.clearCache
           })
         }, this.timeout)
