@@ -57,6 +57,8 @@ function TrafficLayer (options) {
         // 方式二采用双缓存
         const ctx = this.canvaslayer.canvas.getContext('2d')
         ctx.drawImage(e.data.imageBitmap, 0, 0)
+        // 增加刷新机制时，对原有对象的强制内存释放
+        window.BMap && (window.BMap = null)
       } else if (e.data.msg === 'updateCanvas') {
         const orders = e.data.tilesOrder
         this.zoomUnits = e.data.zoomUnits
@@ -633,16 +635,12 @@ TrafficLayer.prototype.request = function (url, cbk) {
     script.addEventListener('load', function (e) {
       const t = e.target
       t.parentNode.removeChild(t)
-      // 增加刷新机制时，对原有对象的强制内存释放
-      window.BMap && (window.BMap = null)
     }, false)
   } else if (script.attachEvent) {
     script.attachEvent('onreadystatechange', function (e) {
       const t = window.event.srcElement
       if (t && (t.readyState === 'loaded' || t.readyState === 'complete')) {
         t.parentNode.removeChild(t)
-        // 增加刷新机制时，对原有对象的强制内存释放
-        window.BMap && (window.BMap = null)
       }
     })
   }
