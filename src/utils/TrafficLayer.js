@@ -65,13 +65,13 @@ function TrafficLayer (options) {
 
         // 方式1 - 进行绘制的for循环动作
         this.canvaslayer.canvas
-            .getContext('2d')
-            .clearRect(
-                0,
-                0,
-                this.canvaslayer.canvas.width,
-                this.canvaslayer.canvas.height
-            )
+          .getContext('2d')
+          .clearRect(
+            0,
+            0,
+            this.canvaslayer.canvas.width,
+            this.canvaslayer.canvas.height
+          )
         for (let i = 0; i < orders.length; i++) {
           const x = orders[i][0]
           const y = orders[i][1]
@@ -291,7 +291,7 @@ TrafficLayer.prototype.update = function (canvaslayer) {
       height = map.getSize()[1]
       row = Math.ceil(Math.round((centerPoint.x + 20037508.34) / levelUnits))
       column = Math.ceil(
-          Math.round((20037508.34 - centerPoint.y) / levelUnits)
+        Math.round((20037508.34 - centerPoint.y) / levelUnits)
       )
       fromRow = row - Math.ceil(width / 2 / this.tileSize)
       toRow = row + Math.ceil(width / 2 / this.tileSize)
@@ -319,8 +319,8 @@ TrafficLayer.prototype.update = function (canvaslayer) {
 
     const size = map.getSize()
     ctx.translate(
-        (size[0] * devicePixelRatio * (1 - diffRatio)) / 2,
-        (size[1] * devicePixelRatio * (1 - diffRatio)) / 2
+      (size[0] * devicePixelRatio * (1 - diffRatio)) / 2,
+      (size[1] * devicePixelRatio * (1 - diffRatio)) / 2
     )
 
     // 根据屏幕分辨率修改坐标
