@@ -103,13 +103,15 @@ export default {
   },
   methods: {
     init () {
-      this.trafficLayer = new TrafficLayer({
+      const layerOpts = {
         map: this.map,
         trafficURL: this.url,
         tileType: this.tileType,
         colors: this.colors,
         needWorker: this.needWorker
-      })
+      }
+      // eslint-disable-next-line no-undef
+      this.trafficLayer = typeof BDTrafficLayer === 'undefined' ? new TrafficLayer(layerOpts) : new BDTrafficLayer(layerOpts)
       this.trafficLayer.layer.set('id', this.layerId)
       this.trafficLayer.layer.set('type', 'traffic')
       this.trafficLayer.layer.set('users', true)
