@@ -37,7 +37,7 @@
     "axios": "^0.27.2",
     "echarts": "^4.9.0",
     "gifler": "^0.1.0",
-    "gyeonghwon": "^0.1.1",
+    "Gyeonghwon": "^0.1.1",
     "lodash": "^4.17.21",
     "nanoid": "^4.0.0",
     "ol": "^7.3.0",

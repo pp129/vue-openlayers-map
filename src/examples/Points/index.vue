@@ -50,13 +50,12 @@ export default {
       // this.removeFeatures()
       for (let i = 0; i < 5; i++) {
         this.features.push({
-          animate: true,
           coordinates: [117.6 + Math.random(), 24.1 + Math.random()],
           style: {
             icon: {
               animate: true,
               scale: 1.5,
-              src: new URL('../../assets/img/purple-animated.png', import.meta.url).href
+              src: new URL('../../assets/img/animate-p.png', import.meta.url).href
             }
           }
         })
