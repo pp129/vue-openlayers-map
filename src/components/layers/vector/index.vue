@@ -21,13 +21,15 @@ import { Collection } from 'ol'
 import { unByKey } from 'ol/Observable'
 import { getVectorContext } from 'ol/render'
 import { easeOut } from 'ol/easing'
-import { Stroke, Style } from 'ol/style'
+import { Stroke, Style, Icon } from 'ol/style'
 import CircleStyle from 'ol/style/Circle'
 import { asArray } from 'ol/color'
 import { Cluster } from 'ol/source'
 import { arrowLine } from '@/utils/arrowLine'
 import { Point } from 'ol/geom'
 import Zoom from 'ol-ext/featureanimation/Zoom'
+
+import Gyeonghwon from 'Gyeonghwon'
 
 export default {
   name: 'v-vector',
@@ -92,7 +94,8 @@ export default {
       flashInterval: null,
       styleCache: {},
       eventRender: [],
-      eventList: ['singleclick', 'pointermove']
+      eventList: ['singleclick', 'pointermove'],
+      gh: null // canvas控制对象
     }
   },
   computed: {
@@ -139,7 +142,8 @@ export default {
           const source = this.layer.getSource()
           source.clear()
           const features = setFeatures(value, this.map, this.FeatureStyle && Object.keys(this.FeatureStyle)?.length > 0)
-          features.forEach(feature => {
+          features.forEach(async (feature) => {
+            const prop = feature.getProperties()
             if (feature.type === 'polyline' && validObjKey(feature, 'arrow')) {
               arrowLine({
                 coordinates: feature.coordinates,
@@ -147,6 +151,34 @@ export default {
                 source,
                 ...feature.arrow
               })
+            } else if (feature.getGeometry().getType() === 'Point' && prop.style.icon) {
+              // 动画内容初始化
+              if (prop.style.icon.animate !== undefined && prop.style.icon.animate) {
+                const oldStyle = feature.getStyle()
+                // canvas构造对象初始化
+                if (this.gh === null) {
+                  const gh = new Gyeonghwon({
+                    ignoreSingle: false,
+                    forceLoop: false,
+                    waitingMilliSec: 10000
+                  })
+                  this.gh = gh
+
+                  gh.addEventListener('need_render', (e) => {
+                    // console.log('render opera', e)
+                    this.map.render()
+                    return false
+                  })
+                }
+                const anim = await this.gh.animateNewContext(oldStyle.getImage().getSrc())
+                oldStyle.setImage(new Icon({
+                  anchor: [0.5, 1],
+                  anchorXUnits: 'fraction', // IconAnchorUnits.FRACTION,
+                  anchorYUnits: 'fraction', // IconAnchorUnits.FRACTION,
+                  img: anim.latestContext().canvas,
+                  imgSize: [anim.width, anim.height]
+                }))
+              }
             }
           })
           source.addFeatures(features)
@@ -526,6 +558,7 @@ export default {
   },
   beforeDestroy () {
     this.dispose()
+    this.gh !== null && (this.gh = null)
   }
 }
 </script>

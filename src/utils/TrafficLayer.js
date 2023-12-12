@@ -479,10 +479,10 @@ TrafficLayer.prototype.getTileUrl = function (x, y, z, cbkName) {
   const trafficURL = this.options.trafficURL || 'http://its.map.baidu.com:8002/traffic/?qt=vtraffic'
 
   const url = trafficURL +
-      '&x=' + x +
-      '&y=' + y +
-      '&z=' + z +
-      '&fn=' + cbkName + (this.analysis === 'private' ? '&t=' + new Date().getTime() : '') // '&udt='+ new Date().getTime()
+    '&x=' + x +
+    '&y=' + y +
+    '&z=' + z +
+    '&fn=' + cbkName + (this.analysis === 'private' ? '&t=' + new Date().getTime() : '') // '&udt='+ new Date().getTime()
 
   return url
 }

@@ -54,8 +54,24 @@ export default {
       if ((paths && paths.length > 0) || (this.path && this.path.length > 0)) {
         const option = { ...this.$props, ...{ mapObj: this.map, path: paths || this.path, options: this.options } }
         // console.log(this.$props)
-        this.pathObj = new VzPath(option)
-        // console.log(this.pathObj)
+        const path = new VzPath(option)
+
+        // 样式内容设置展示
+        path.setTraceLineStyle({
+          lineColor: option.options?.lineColor || 'rgba(0, 0, 255, 0.6)',
+          lineWidth: option.options?.lineWidth || 10
+        })
+        path.setPassLineStyle({
+          lineColor: option.options?.passlineColor || 'red',
+          lineWidth: option.options?.passlineWidth || 2
+        })
+        path.setTraceNodeStyle({
+          lineColor: option.options?.nodeStrokeColor || '#3399CC',
+          lineWidth: option.options?.nodeStrokeWidth || 1.25,
+          fillColor: option.options?.nodeFillColor || 'rgba(255,255,255,0.4)'
+        })
+
+        this.pathObj = path
         this.pathObj.getEvents().forEach(event => {
           this.pathObj.on(event, e => {
             this.$emit(event, e)
