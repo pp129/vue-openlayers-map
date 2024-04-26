@@ -9,7 +9,7 @@ import { nanoid } from 'nanoid'
 import {
   addClusterLayer,
   addVectorSource,
-  FeatureExt,
+  FeatureExt, formatArea, formatLength,
   setFeatures,
   setFeatureStyle,
   setStyle,
@@ -472,6 +472,13 @@ export default {
         })
       })
       this.modifyObj.on('modifyend', evt => {
+        const geometry = evt.features.getArray()[0].getGeometry()
+        const type = evt.features.getArray()[0].getType().toLowerCase()
+        if (type === 'linestring' || type === 'polyline') {
+          evt.measure = formatLength(geometry)
+        } else if (type === 'polygon') {
+          evt.measure = formatArea(geometry)
+        }
         const params = { ...evt, ...{ select: this.selectObj } }
         this.$emit('modifyend', params, this.map)
       })
