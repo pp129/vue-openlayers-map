@@ -473,7 +473,7 @@ export default {
       })
       this.modifyObj.on('modifyend', evt => {
         const geometry = evt.features.getArray()[0].getGeometry()
-        const type = evt.features.getArray()[0].getType().toLowerCase()
+        const type = evt.features.getArray()[0].get('type').toLowerCase()
         if (type === 'linestring' || type === 'polyline') {
           evt.measure = formatLength(geometry)
         } else if (type === 'polygon') {
