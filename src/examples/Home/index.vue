@@ -1042,15 +1042,22 @@ export default {
     },
     onselect (evt, map) {
       console.log('on select: ', evt, map)
+      const feature = evt.selected[0]
+      console.log(feature)
+      // const geometry = feature.getGeometry()
+      // console.log(geometry.getCoordinates())
     },
     modifystart (evt, map) {
       console.log('modify start: ', evt, map)
     },
     modifyend (evt, map) {
       console.log('modify end: ', evt, map)
+      const feature = evt.features.getArray()[0]
+      const geometry = feature.getGeometry()
+      console.log(geometry.getCoordinates())
     },
     modifychange (evt, map, feature) {
-      console.log('modify change: ', evt, map, feature)
+      // console.log('modify change: ', evt, map, feature)
       if (feature.getId() === 'add') {
         const Geometry = feature.getGeometry()
         const center = this.$refs.map.calculateCenter(Geometry)

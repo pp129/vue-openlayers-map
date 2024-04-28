@@ -151,7 +151,7 @@ export default {
                 source,
                 ...feature.arrow
               })
-            } else if (feature.getGeometry().getType() === 'Point' && prop.style.icon) {
+            } else if (feature.getGeometry().getType() === 'Point' && prop.style?.icon) {
               // 动画内容初始化
               if (prop.style.icon.animate !== undefined && prop.style.icon.animate) {
                 const oldStyle = feature.getStyle()
@@ -251,9 +251,7 @@ export default {
   methods: {
     init (change) {
       const source = addVectorSource(this.source, this.map)
-      console.log(source.getProjection())
       if (this.features.length > 0) {
-        console.log('has props features')
         source.clear()
         const features = setFeatures(this.features, this.map, this.FeatureStyle && Object.keys(this.FeatureStyle).length > 0)
         source.addFeatures(features)
@@ -274,7 +272,6 @@ export default {
       } else {
         this.layerOpt = { ...this.$props, ...{ source } }
         this.layer = new VectorLayer(this.layerOpt)
-        console.log(this.layer.getSource().getProjection())
         this.layer.setStyle((feature) => {
           if (feature.get('style')) {
             return setFeatureStyle(feature, feature.get('style'), this.map)
@@ -302,9 +299,7 @@ export default {
       if (this.zIndex) {
         this.layer.setZIndex(this.zIndex)
       }
-      // console.log(this.layer.getSource().getFeatures())
       this.map.addLayer(this.layer)
-      console.log(this.layer.getSource().getFeatures())
       this.features.forEach(feature => {
         if ((feature.type === 'polyline' || feature.type === 'Polyline' || feature.type === 'LineString') && validObjKey(feature, 'arrow')) {
           arrowLine({
@@ -472,8 +467,10 @@ export default {
         })
       })
       this.modifyObj.on('modifyend', evt => {
-        const geometry = evt.features.getArray()[0].getGeometry()
-        const type = evt.features.getArray()[0].get('type').toLowerCase()
+        const feature = evt.features.getArray()[0]
+        const geometry = feature.getGeometry()
+        // console.log(geometry.getCoordinates())
+        const type = feature.get('type').toLowerCase()
         if (type === 'linestring' || type === 'polyline') {
           evt.measure = formatLength(geometry)
         } else if (type === 'polygon') {

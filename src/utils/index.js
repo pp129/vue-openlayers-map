@@ -8,7 +8,7 @@ import { addCoordinateTransforms, addProjection, Projection, transform } from 'o
 import { applyTransform, containsCoordinate, containsExtent, getHeight, getWidth, getCenter } from 'ol/extent'
 import { distance, point, polygon, centroid } from '@turf/turf'
 import coordtransform, { gcj02towgs84 } from '@/utils/coordtransform'
-import { Circle, LineString, MultiPolygon, Point, Polygon } from 'ol/geom'
+import { Circle, LineString, MultiPoint, MultiPolygon, Point, Polygon } from 'ol/geom'
 import { Fill, Icon, RegularShape, Stroke, Style, Text } from 'ol/style'
 import CircleStyle from 'ol/style/Circle'
 import { nanoid } from 'nanoid'
@@ -389,6 +389,8 @@ export const setFeature = (option, map, hasStyle = false) => {
       case 'point':
       case 'Point':
         return setPointFeature(option, map, hasStyle)
+      case 'MultiPoint':
+        return setMultiPoint(option, map, hasStyle)
       case 'polygon':
       case 'Polygon':
         return setPolygon(option)
@@ -449,6 +451,47 @@ export const setPointFeature = (option, map, hasStyle = false) => {
   }
   if (validObjKey(option, 'coordinates') && validObjKey(option, 'convert')) {
     feature.set('coordinates', coordinates)
+  }
+  return feature
+}
+
+export const setMultiPoint = (option,map, hasStyle = false) => {
+  let coordinates = []
+  if (validObjKey(option, 'convert') && option.convert) {
+    option.coordinates.forEach(coordinate => {
+      coordinates.push(convertCoordinate(coordinate, option.convert))
+    })
+  } else {
+    coordinates = option.coordinates
+  }
+  const feature = new FeatureExt({
+    geometry: new MultiPoint(coordinates)
+  })
+  if (validObjKey(option, 'style')) {
+    setFeatureStyle(feature, option.style, map)
+  } else if (!hasStyle) {
+    feature.setStyle(new Style({
+      zIndex: 1,
+      image: new CircleStyle({
+        radius: 4,
+        fill: new Fill({
+          color: 'blue'
+        })
+      })
+    }))
+  }
+  if (validObjKey(option, 'id')) {
+    feature.setId(option.id)
+  } else {
+    feature.setId(`feature-${nanoid()}`)
+  }
+  feature.setId(option.id || `MultiPoint-${nanoid()}`)
+  if (typeof option === 'object') {
+    for (const i in option) {
+      if (Object.prototype.hasOwnProperty.call(option, i)) {
+        feature.set(i, option[i])
+      }
+    }
   }
   return feature
 }
@@ -577,7 +620,6 @@ export const addVectorSource = (option, map) => {
     }
   }
   const source = { ...option, ...{ features: setFeatures(features, map) } }
-  console.log(source)
   return new VectorSource(source)
 }
 

@@ -34,6 +34,12 @@ export const constantRouterMap = [
     name: 'Points',
     component: () =>
       import(/* webpackChunkName: "Points" */ '../examples/Points/index.vue')
+  },
+  {
+    path: '/ModifyLine',
+    name: 'ModifyLine',
+    component: () =>
+      import(/* webpackChunkName: "ModifyLine" */ '../examples/ModifyLine/index.vue')
   }
 ]
 
