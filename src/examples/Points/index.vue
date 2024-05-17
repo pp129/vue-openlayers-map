@@ -16,17 +16,18 @@
 </template>
 
 <script>
-import Gyeonghwon from 'Gyeonghwon'
-import iconWebp from '@/assets/img/purple-animated.png'
+import Gyeonghwon from "gyeonghwon";
+import iconWebp from "@/assets/img/purple-animated.png";
+
 export default {
-  name: 'points-page',
-  data () {
+  name: "points-page",
+  data() {
     return {
       view: {
-        city: '厦门',
-        zoom: 12
+        city: "厦门",
+        zoom: 12,
       },
-      features: []
+      features: [],
       // style: {
       //   zIndex: 1,
       //   icon: {
@@ -35,18 +36,18 @@ export default {
       //     src: new URL('../../assets/img/point_4.png', import.meta.url).href
       //   }
       // }
-    }
+    };
   },
   methods: {
-    addFeatures () {
+    addFeatures() {
       // this.removeFeatures()
       for (let i = 0; i < 5; i++) {
         this.features.push({
-          coordinates: [117.6 + Math.random(), 24.1 + Math.random()]
-        })
+          coordinates: [117.6 + Math.random(), 24.1 + Math.random()],
+        });
       }
     },
-    addFeatures2 () {
+    addFeatures2() {
       // this.removeFeatures()
       for (let i = 0; i < 5; i++) {
         this.features.push({
@@ -55,43 +56,63 @@ export default {
             icon: {
               animate: true,
               scale: 1.5,
-              src: new URL('../../assets/img/animate-p.png', import.meta.url).href
-            }
-          }
-        })
+              src: new URL("../../assets/img/animate-p.png", import.meta.url).href,
+            },
+          },
+        });
       }
     },
-    async addFeatures3 () {
+    async addFeatures3() {
       // 直接进行引用创建
       const gh = new Gyeonghwon({
         ignoreSingle: false,
         forceLoop: false,
-        waitingMilliSec: 10000
-      })
-      const anim = await gh.animateNewContext(iconWebp)
+        waitingMilliSec: 10000,
+      });
+      const anim = await gh.animateNewContext(iconWebp);
       this.style.icon = {
         anchor: [0.5, 1],
-        anchorXUnits: 'fraction', // IconAnchorUnits.FRACTION,
-        anchorYUnits: 'fraction', // IconAnchorUnits.FRACTION,
+        anchorXUnits: "fraction", // IconAnchorUnits.FRACTION,
+        anchorYUnits: "fraction", // IconAnchorUnits.FRACTION,
         img: anim.latestContext().canvas,
-        imgSize: [anim.width, anim.height]
-      }
+        imgSize: [anim.width, anim.height],
+      };
       for (let i = 0; i < 5; i++) {
         this.features.push({
-          coordinates: [117.6 + Math.random(), 24.1 + Math.random()]
-        })
+          coordinates: [117.6 + Math.random(), 24.1 + Math.random()],
+        });
       }
-      gh.addEventListener('need_render', (e) => {
+      gh.addEventListener("need_render", (e) => {
         // console.log('render opera', e)
-        this.$refs.map.map.render()
-        return false
-      })
+        this.$refs.map.map.render();
+        return false;
+      });
     },
-    removeFeatures () {
-      this.features = []
-    }
-  }
-}
+    removeFeatures() {
+      this.features = [];
+    },
+    initFeatures() {
+      fetch("/file1.json").then((res) => {
+        res.json().then((data) => {
+          console.log(data);
+          const features = data.map((x) => {
+            const { longitude, latitude } = x;
+            if (longitude && latitude && longitude !== "0" && latitude !== "0") {
+              return {
+                coordinates: [longitude, latitude],
+              };
+            }
+          });
+          this.features = [...features].filter((x) => x !== undefined);
+          console.log(this.features.length);
+        });
+      });
+    },
+  },
+  created() {
+    this.initFeatures();
+  },
+};
 </script>
 
 <style scoped>
@@ -100,7 +121,7 @@ export default {
   left: 0;
   top: 0;
 }
-.tool{
+.tool {
   width: 10%;
   z-index: 2;
   position: absolute;
@@ -111,9 +132,9 @@ export default {
   align-items: start;
   padding-left: 10px;
   flex-direction: column;
-//background: #ffffff;
+  /**background: #ffffff;*/
 }
-.item{
+.item {
   margin-top: 10px;
   display: flex;
   flex-direction: row;
@@ -122,7 +143,7 @@ export default {
   border: 1px solid #666;
   border-radius: 6px;
   padding: 10px;
-  background: rgba(0,0,0,0.2);
+  background: rgba(0, 0, 0, 0.2);
 }
 .label {
   width: 100%;

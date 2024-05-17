@@ -3,83 +3,85 @@
 </template>
 
 <script>
-import BaseLayer from '@/components/layers/BaseLayer.vue'
-import { nanoid } from 'nanoid'
+import BaseLayer from "@/components/layers/BaseLayer.vue";
+import { nanoid } from "nanoid";
 
 import {
   addClusterLayer,
   addVectorSource,
-  FeatureExt, formatArea, formatLength,
+  FeatureExt,
+  formatArea,
+  formatLength,
   setFeatures,
   setFeatureStyle,
   setStyle,
-  validObjKey
-} from '@/utils'
-import VectorLayer from 'ol/layer/Vector'
-import { Modify, Select } from 'ol/interaction'
-import { Collection } from 'ol'
-import { unByKey } from 'ol/Observable'
-import { getVectorContext } from 'ol/render'
-import { easeOut } from 'ol/easing'
-import { Stroke, Style, Icon } from 'ol/style'
-import CircleStyle from 'ol/style/Circle'
-import { asArray } from 'ol/color'
-import { Cluster } from 'ol/source'
-import { arrowLine } from '@/utils/arrowLine'
-import { Point } from 'ol/geom'
-import Zoom from 'ol-ext/featureanimation/Zoom'
+  validObjKey,
+} from "@/utils";
+import VectorLayer from "ol/layer/Vector";
+import { Modify, Select } from "ol/interaction";
+import { Collection } from "ol";
+import { unByKey } from "ol/Observable";
+import { getVectorContext } from "ol/render";
+import { easeOut } from "ol/easing";
+import { Stroke, Style, Icon } from "ol/style";
+import CircleStyle from "ol/style/Circle";
+import { asArray } from "ol/color";
+import { Cluster } from "ol/source";
+import { arrowLine } from "@/utils/arrowLine";
+import { Point } from "ol/geom";
+import Zoom from "ol-ext/featureanimation/Zoom";
 
-import Gyeonghwon from 'Gyeonghwon'
+import Gyeonghwon from "gyeonghwon";
 
 export default {
-  name: 'v-vector',
+  name: "v-vector",
   extends: BaseLayer,
-  inject: ['VMap'],
+  inject: ["VMap"],
   props: {
     layerId: {
       type: String,
-      default () {
-        return `vector-layer-${nanoid()}`
-      }
+      default() {
+        return `vector-layer-${nanoid()}`;
+      },
     },
     source: {
       type: Object,
-      default () {
-        return { features: [] }
-      }
+      default() {
+        return { features: [] };
+      },
     },
     features: {
       type: Array,
-      default () {
-        return []
-      }
+      default() {
+        return [];
+      },
     },
     FeatureStyle: {
       type: [Object, Boolean],
-      default () {
-        return false
-      }
+      default() {
+        return false;
+      },
     },
     modify: {
       type: [Object, Boolean],
-      default: false
+      default: false,
     },
     select: {
       type: [Object, Boolean],
-      default: false
+      default: false,
     },
     cluster: {
       type: [Object, Boolean],
-      default: false
+      default: false,
     },
     flashTime: {
-      type: Number
+      type: Number,
     },
     overlay: {
-      type: Object
-    }
+      type: Object,
+    },
   },
-  data () {
+  data() {
     return {
       layer: null,
       ani: null,
@@ -89,448 +91,462 @@ export default {
       clusterObj: null,
       clusterDefault: {
         distance: 20,
-        minDistance: 0
+        minDistance: 0,
       },
       flashInterval: null,
       styleCache: {},
       eventRender: [],
-      eventList: ['singleclick', 'pointermove'],
-      gh: null // canvas控制对象
-    }
+      eventList: ["singleclick", "pointermove"],
+      gh: null, // canvas控制对象
+    };
   },
   computed: {
-    map () {
-      return this.VMap.map
-    }
+    map() {
+      return this.VMap.map;
+    },
   },
   watch: {
     // 只监听是否聚合和聚合距离
     cluster: {
-      handler (value) {
-        console.log('watch cluster', value)
+      handler(value) {
+        console.log("watch cluster", value);
         if (value === null || value === false) {
-          this.dispose()
-          this.init(true)
+          this.dispose();
+          this.init(true);
         } else {
           if (this.clusterObj) {
-            const { distance } = value
-            if (distance || distance === 0) this.clusterObj.setDistance(distance)
+            const { distance } = value;
+            if (distance || distance === 0) this.clusterObj.setDistance(distance);
           } else {
-            this.dispose()
-            this.init(true)
+            this.dispose();
+            this.init(true);
           }
         }
       },
       immediate: false,
-      deep: true
+      deep: true,
     },
     features: {
-      handler (value) {
+      handler(value) {
         // console.log('layer features change', value)
         if (this.flashInterval) {
-          clearInterval(this.flashInterval)
-          this.flashInterval = null
+          clearInterval(this.flashInterval);
+          this.flashInterval = null;
         }
         // const source = this.layer.getSource()
         // source.clear()
         if (this.cluster) {
-          this.clusterObj.getSource().clear()
-          const features = setFeatures(value, this.map, this.FeatureStyle && Object.keys(this.FeatureStyle)?.length > 0)
-          this.clusterObj.getSource().addFeatures(features)
-          this.$emit('change', features)
+          this.clusterObj.getSource().clear();
+          const features = setFeatures(value, this.map, this.FeatureStyle && Object.keys(this.FeatureStyle)?.length > 0);
+          this.clusterObj.getSource().addFeatures(features);
+          this.$emit("change", features);
         } else {
-          const source = this.layer.getSource()
-          source.clear()
-          const features = setFeatures(value, this.map, this.FeatureStyle && Object.keys(this.FeatureStyle)?.length > 0)
+          const source = this.layer.getSource();
+          source.clear();
+          const features = setFeatures(value, this.map, this.FeatureStyle && Object.keys(this.FeatureStyle)?.length > 0);
           features.forEach(async (feature) => {
-            const prop = feature.getProperties()
-            if (feature.type === 'polyline' && validObjKey(feature, 'arrow')) {
+            const prop = feature.getProperties();
+            if (feature.type === "polyline" && validObjKey(feature, "arrow")) {
               arrowLine({
                 coordinates: feature.coordinates,
                 map: this.map,
                 source,
-                ...feature.arrow
-              })
-            } else if (feature.getGeometry().getType() === 'Point' && prop.style?.icon) {
+                ...feature.arrow,
+              });
+            } else if (feature.getGeometry().getType() === "Point" && prop.style?.icon) {
               // 动画内容初始化
               if (prop.style.icon.animate !== undefined && prop.style.icon.animate) {
-                const oldStyle = feature.getStyle()
+                const oldStyle = feature.getStyle();
                 // canvas构造对象初始化
                 if (this.gh === null) {
                   const gh = new Gyeonghwon({
                     ignoreSingle: false,
                     forceLoop: false,
-                    waitingMilliSec: 10000
-                  })
-                  this.gh = gh
+                    waitingMilliSec: 10000,
+                  });
+                  this.gh = gh;
 
-                  gh.addEventListener('need_render', (e) => {
+                  gh.addEventListener("need_render", (e) => {
                     // console.log('render opera', e)
-                    this.map.render()
-                    return false
-                  })
+                    this.map.render();
+                    return false;
+                  });
                 }
-                const anim = await this.gh.animateNewContext(oldStyle.getImage().getSrc())
-                oldStyle.setImage(new Icon({
-                  anchor: [0.5, 1],
-                  anchorXUnits: 'fraction', // IconAnchorUnits.FRACTION,
-                  anchorYUnits: 'fraction', // IconAnchorUnits.FRACTION,
-                  img: anim.latestContext().canvas,
-                  imgSize: [anim.width, anim.height]
-                }))
+                const anim = await this.gh.animateNewContext(oldStyle.getImage().getSrc());
+                oldStyle.setImage(
+                  new Icon({
+                    anchor: [0.5, 1],
+                    anchorXUnits: "fraction", // IconAnchorUnits.FRACTION,
+                    anchorYUnits: "fraction", // IconAnchorUnits.FRACTION,
+                    img: anim.latestContext().canvas,
+                    imgSize: [anim.width, anim.height],
+                  }),
+                );
               }
             }
-          })
-          source.addFeatures(features)
-          this.$emit('change', features)
+          });
+          source.addFeatures(features);
+          this.$emit("change", features);
         }
         if (this.modify) {
-          this.setModify()
+          this.setModify();
         }
         // 闪光点
-        this.setFlashAnimate()
+        this.setFlashAnimate();
         if (this.flashTime) {
           this.flashInterval = setInterval(() => {
-            this.setFlashAnimate()
-          }, this.flashTime)
+            this.setFlashAnimate();
+          }, this.flashTime);
         }
       },
       immediate: false,
-      deep: true
+      deep: true,
     },
     visible: {
-      handler (value) {
-        console.log('layer visible change', value)
-        this.layer.setVisible(value)
-      },
-      immediate: false
-    },
-    zIndex: {
-      handler (value) {
-        this.layer.setZIndex(value)
-      },
-      immediate: false
-    },
-    maxZoom: {
-      handler (value) {
-        this.layer.setMaxZoom(value)
-      },
-      immediate: false
-    },
-    minZoom: {
-      handler (value) {
-        this.layer.setMinZoom(value)
-      },
-      immediate: false
-    },
-    extent: {
-      handler (value) {
-        this.layer.setExtent(value)
+      handler(value) {
+        console.log("layer visible change", value);
+        this.layer.setVisible(value);
       },
       immediate: false,
-      deep: true
+    },
+    zIndex: {
+      handler(value) {
+        this.layer.setZIndex(value);
+      },
+      immediate: false,
+    },
+    maxZoom: {
+      handler(value) {
+        this.layer.setMaxZoom(value);
+      },
+      immediate: false,
+    },
+    minZoom: {
+      handler(value) {
+        this.layer.setMinZoom(value);
+      },
+      immediate: false,
+    },
+    extent: {
+      handler(value) {
+        this.layer.setExtent(value);
+      },
+      immediate: false,
+      deep: true,
     },
     modify: {
-      handler (value) {
+      handler(value) {
         if (value) {
-          this.setModify()
+          this.setModify();
         } else {
           if (this.selectObj) {
-            this.map.removeInteraction(this.selectObj)
-            this.selectObj = null
+            this.map.removeInteraction(this.selectObj);
+            this.selectObj = null;
           }
           if (this.modifyObj) {
-            this.map.removeInteraction(this.modifyObj)
-            this.modifyObj = null
+            this.map.removeInteraction(this.modifyObj);
+            this.modifyObj = null;
           }
         }
       },
-      immediate: false
-    }
+      immediate: false,
+    },
   },
   methods: {
-    init (change) {
-      const source = addVectorSource(this.source, this.map)
+    init(change) {
+      const source = addVectorSource(this.source, this.map);
       if (this.features.length > 0) {
-        source.clear()
-        const features = setFeatures(this.features, this.map, this.FeatureStyle && Object.keys(this.FeatureStyle).length > 0)
-        source.addFeatures(features)
+        source.clear();
+        const features = setFeatures(this.features, this.map, this.FeatureStyle && Object.keys(this.FeatureStyle).length > 0);
+        source.addFeatures(features);
       }
       if (this.cluster) {
-        let defaultOptions = {}
-        if (typeof (this.cluster) === 'boolean' && this.cluster) {
-          defaultOptions = { ...defaultOptions, ...this.clusterDefault }
+        let defaultOptions = {};
+        if (typeof this.cluster === "boolean" && this.cluster) {
+          defaultOptions = { ...defaultOptions, ...this.clusterDefault };
         } else {
-          defaultOptions = this.cluster
+          defaultOptions = this.cluster;
         }
-        const clusterOption = { ...defaultOptions, ...{ source } }
-        this.clusterObj = new Cluster(clusterOption)
-        this.layerOpt = { ...this.$props, ...{ source: this.clusterObj, style: clusterOption.style } }
-        this.layer = addClusterLayer(this.layerOpt, this.map)
-        this.layer.set('cluster', true)
-        this.layer.set('overlay', this.overlay)
+        const clusterOption = { ...defaultOptions, ...{ source } };
+        this.clusterObj = new Cluster(clusterOption);
+        this.layerOpt = { ...this.$props, ...{ source: this.clusterObj, style: clusterOption.style } };
+        this.layer = addClusterLayer(this.layerOpt, this.map);
+        this.layer.set("cluster", true);
+        this.layer.set("overlay", this.overlay);
       } else {
-        this.layerOpt = { ...this.$props, ...{ source } }
-        this.layer = new VectorLayer(this.layerOpt)
+        this.layerOpt = { ...this.$props, ...{ source } };
+        this.layer = new VectorLayer(this.layerOpt);
         this.layer.setStyle((feature) => {
-          if (feature.get('style')) {
-            return setFeatureStyle(feature, feature.get('style'), this.map)
+          if (feature.get("style")) {
+            return setFeatureStyle(feature, feature.get("style"), this.map);
           } else {
             if (this.FeatureStyle && Object.keys(this.FeatureStyle).length > 0) {
-              return setStyle(this.FeatureStyle)
+              return setStyle(this.FeatureStyle);
             } else {
               return setStyle({
                 fill: {
-                  color: 'rgba(67,126,255,0.15)'
+                  color: "rgba(67,126,255,0.15)",
                 },
                 stroke: {
-                  color: 'rgba(67,126,255,1)',
-                  width: 1
+                  color: "rgba(67,126,255,1)",
+                  width: 1,
                   // lineDash: [20, 10, 20, 10]
-                }
-              })
+                },
+              });
             }
           }
-        })
+        });
       }
-      this.layer.set('id', this.layerId)
-      this.layer.set('type', 'vector')
-      this.layer.set('users', true)
+      this.layer.set("id", this.layerId);
+      this.layer.set("type", "vector");
+      this.layer.set("users", true);
       if (this.zIndex) {
-        this.layer.setZIndex(this.zIndex)
+        this.layer.setZIndex(this.zIndex);
       }
-      this.map.addLayer(this.layer)
-      this.features.forEach(feature => {
-        if ((feature.type === 'polyline' || feature.type === 'Polyline' || feature.type === 'LineString') && validObjKey(feature, 'arrow')) {
+      this.map.addLayer(this.layer);
+      this.features.forEach((feature) => {
+        if (
+          (feature.type === "polyline" || feature.type === "Polyline" || feature.type === "LineString") &&
+          validObjKey(feature, "arrow")
+        ) {
           arrowLine({
             coordinates: feature.coordinates,
             map: this.map,
             source,
-            ...feature.arrow
-          })
+            ...feature.arrow,
+          });
         }
-      })
+      });
       // 线加箭头
-      this.map.getView().on('change:resolution', () => {
-        const zoom = this.map.getView().getZoom()
-        source.getFeatures().forEach(feature => {
-          if (feature.get('isArrow')) {
-            this.layer.getSource().removeFeature(feature)
+      this.map.getView().on("change:resolution", () => {
+        const zoom = this.map.getView().getZoom();
+        source.getFeatures().forEach((feature) => {
+          if (feature.get("isArrow")) {
+            this.layer.getSource().removeFeature(feature);
           }
-        })
+        });
         if (Math.round(zoom) === zoom) {
-          this.features.forEach(feature => {
-            if (feature.type === 'polyline' && validObjKey(feature, 'arrow')) {
+          this.features.forEach((feature) => {
+            if (feature.type === "polyline" && validObjKey(feature, "arrow")) {
               arrowLine({
                 coordinates: feature.coordinates,
                 map: this.map,
                 source,
-                ...feature.arrow
-              })
+                ...feature.arrow,
+              });
             }
-          })
+          });
         }
-      })
+      });
       // 闪光点
-      this.setFlashAnimate()
+      this.setFlashAnimate();
       if (this.flashTime) {
         this.flashInterval = setInterval(() => {
-          this.setFlashAnimate()
-        }, this.flashTime)
+          this.setFlashAnimate();
+        }, this.flashTime);
       }
-      this.$emit('load', this.layer, this.map)
+      this.$emit("load", this.layer, this.map);
       if (this.modify) {
-        this.setModify()
+        this.setModify();
       }
       if (change) {
-        this.$emit('change', source.getFeatures())
+        this.$emit("change", source.getFeatures());
       }
       // 绑定事件
-      this.eventList.forEach(listenerKey => {
-        this.eventRender.push(this.map.on(listenerKey, (evt) => this.eventHandler(listenerKey, evt)))
-      })
+      this.eventList.forEach((listenerKey) => {
+        this.eventRender.push(this.map.on(listenerKey, (evt) => this.eventHandler(listenerKey, evt)));
+      });
     },
-    getFeatureAtPixel (pixel) {
-      return this.map.forEachFeatureAtPixel(pixel, (feature, layer) => {
-        if (layer?.get('id') === this.layer?.get('id')) return feature
-      }, {})
+    getFeatureAtPixel(pixel) {
+      return this.map.forEachFeatureAtPixel(
+        pixel,
+        (feature, layer) => {
+          if (layer?.get("id") === this.layer?.get("id")) return feature;
+        },
+        {},
+      );
     },
-    eventHandler (listenerKey, evt) {
-      const { pixel } = evt
-      const feature = this.getFeatureAtPixel(pixel)
-      this.$emit(listenerKey, evt, feature)
+    eventHandler(listenerKey, evt) {
+      const { pixel } = evt;
+      const feature = this.getFeatureAtPixel(pixel);
+      this.$emit(listenerKey, evt, feature);
     },
-    setFlashAnimate () {
+    setFlashAnimate() {
       if (this.cluster) {
-        const features = this.clusterObj?.getFeatures() || []
+        const features = this.clusterObj?.getFeatures() || [];
         if (features.length > 0) {
-          features.forEach(cluster => {
-            const clusters = cluster.get('features')
+          features.forEach((cluster) => {
+            const clusters = cluster.get("features");
             if (clusters.length === 1) {
-              clusters.forEach(feature => {
-                if (feature.get('flash')) {
-                  this.pulseFeature(feature)
+              clusters.forEach((feature) => {
+                if (feature.get("flash")) {
+                  this.pulseFeature(feature);
                 }
-              })
+              });
             }
-          })
+          });
         }
       } else {
         // console.log(this.layer.getSource().getFeatures())
-        const source = this.layer.getSource()
+        const source = this.layer.getSource();
         if (source) {
-          source.getFeatures().forEach(feature => {
-            if (feature.get('flash')) {
-              this.pulseFeature(feature)
+          source.getFeatures().forEach((feature) => {
+            if (feature.get("flash")) {
+              this.pulseFeature(feature);
             }
-          })
+          });
         }
       }
     },
-    dispose () {
+    dispose() {
       // 移除事件
-      this.eventRender.forEach(listenerKey => {
-        unByKey(listenerKey)
-      })
+      this.eventRender.forEach((listenerKey) => {
+        unByKey(listenerKey);
+      });
       if (this.clusterObj) {
-        this.clusterObj.getSource().clear()
-        this.clusterObj = null
+        this.clusterObj.getSource().clear();
+        this.clusterObj = null;
       }
-      this.map.removeLayer(this.layer)
+      this.map.removeLayer(this.layer);
       // this.layer = null
-      this.map.removeInteraction(this.selectObj)
-      this.map.removeInteraction(this.modifyObj)
+      this.map.removeInteraction(this.selectObj);
+      this.map.removeInteraction(this.modifyObj);
     },
-    getFeatureById (id) {
-      const features = this.layer.getSource().getFeatures()
-      let target
-      features.forEach(feature => {
-        if (feature.get('id') === id || feature.getId() === id) {
-          target = feature
+    getFeatureById(id) {
+      const features = this.layer.getSource().getFeatures();
+      let target;
+      features.forEach((feature) => {
+        if (feature.get("id") === id || feature.getId() === id) {
+          target = feature;
         }
-      })
-      return target
+      });
+      return target;
     },
-    updateFeatureById (featureId, update) {
-      const features = this.layer.getSource().getFeatures()
-      console.log(features)
-      features.forEach(feature => {
-        if (feature.get('id') === featureId) {
-          if (typeof update === 'object') {
+    updateFeatureById(featureId, update) {
+      const features = this.layer.getSource().getFeatures();
+      console.log(features);
+      features.forEach((feature) => {
+        if (feature.get("id") === featureId) {
+          if (typeof update === "object") {
             for (const i in update) {
               if (Object.prototype.hasOwnProperty.call(update, i)) {
-                feature.update(i, update[i])
+                feature.update(i, update[i]);
               }
             }
           }
         }
-      })
+      });
     },
-    getFeatures () {
-      return this.layer.getSource().getFeatures()
+    getFeatures() {
+      return this.layer.getSource().getFeatures();
     },
-    setModify () {
-      let features = []
+    setModify() {
+      let features = [];
       if (this.select) {
-        let selectStyle
-        if (validObjKey(this.select, 'style')) {
-          selectStyle = setStyle(this.select.style)
+        let selectStyle;
+        if (validObjKey(this.select, "style")) {
+          selectStyle = setStyle(this.select.style);
         }
         this.selectObj = new Select({
           style: selectStyle,
-          layers: [this.layer]
-        })
-        this.map.addInteraction(this.selectObj)
-        this.selectObj.on('select', evt => {
+          layers: [this.layer],
+        });
+        this.map.addInteraction(this.selectObj);
+        this.selectObj.on("select", (evt) => {
           // const params = { ...evt, ...{ select: this.select } }
-          this.$emit('select', evt, this.map)
-        })
-        features = this.selectObj.getFeatures()
+          this.$emit("select", evt, this.map);
+        });
+        features = this.selectObj.getFeatures();
       } else {
-        features = new Collection(this.layer.getSource().getFeatures())
+        features = new Collection(this.layer.getSource().getFeatures());
       }
-      let modifyStyle
-      if (validObjKey(this.modify, 'style')) {
-        modifyStyle = setStyle(this.modify.style)
+      let modifyStyle;
+      if (validObjKey(this.modify, "style")) {
+        modifyStyle = setStyle(this.modify.style);
       }
       this.modifyObj = new Modify({
         features,
-        style: modifyStyle
-      })
-      this.map.addInteraction(this.modifyObj)
-      this.modifyObj.on('modifystart', evt => {
-        this.$emit('modifystart', evt, this.map)
-        features.getArray().forEach(feature => {
-          feature.getGeometry().on('change', evt => {
-            this.$emit('modifychange', evt, this.map, feature)
-          })
-        })
-      })
-      this.modifyObj.on('modifyend', evt => {
-        const feature = evt.features.getArray()[0]
-        const geometry = feature.getGeometry()
+        style: modifyStyle,
+      });
+      this.map.addInteraction(this.modifyObj);
+      this.modifyObj.on("modifystart", (evt) => {
+        this.$emit("modifystart", evt, this.map);
+        features.getArray().forEach((feature) => {
+          feature.getGeometry().on("change", (evt) => {
+            this.$emit("modifychange", evt, this.map, feature);
+          });
+        });
+      });
+      this.modifyObj.on("modifyend", (evt) => {
+        const feature = evt.features.getArray()[0];
+        const geometry = feature.getGeometry();
         // console.log(geometry.getCoordinates())
-        const type = feature.get('type').toLowerCase()
-        if (type === 'linestring' || type === 'polyline') {
-          evt.measure = formatLength(geometry)
-        } else if (type === 'polygon') {
-          evt.measure = formatArea(geometry)
+        const type = feature.get("type").toLowerCase();
+        if (type === "linestring" || type === "polyline") {
+          evt.measure = formatLength(geometry);
+        } else if (type === "polygon") {
+          evt.measure = formatArea(geometry);
         }
-        const params = { ...evt, ...{ select: this.selectObj } }
-        this.$emit('modifyend', params, this.map)
-      })
+        const params = { ...evt, ...{ select: this.selectObj } };
+        this.$emit("modifyend", params, this.map);
+      });
     },
-    pulseFeature (feature) {
-      const coordinates = feature.get('coordinates')
-      const f = new FeatureExt(new Point(coordinates))
-      const flash = feature.get('flash')
-      const { radius, color, duration, width } = flash
-      f.setStyle(new Style({
-        image: new CircleStyle({
-          radius: radius || 30,
-          // points: 4,
-          stroke: new Stroke({ color, width })
-        })
-      }))
-      this.layer.animateFeature(f, new Zoom({
-        fade: easeOut,
-        duration,
-        easing: easeOut
-      }))
+    pulseFeature(feature) {
+      const coordinates = feature.get("coordinates");
+      const f = new FeatureExt(new Point(coordinates));
+      const flash = feature.get("flash");
+      const { radius, color, duration, width } = flash;
+      f.setStyle(
+        new Style({
+          image: new CircleStyle({
+            radius: radius || 30,
+            // points: 4,
+            stroke: new Stroke({ color, width }),
+          }),
+        }),
+      );
+      this.layer.animateFeature(
+        f,
+        new Zoom({
+          fade: easeOut,
+          duration,
+          easing: easeOut,
+        }),
+      );
     },
-    flash (feature) {
-      const flash = feature.get('flash')
-      const { radius, timeout } = flash
-      const duration = Number(flash.rate) * 1000 || 3000
-      const start = Date.now()
-      const flashGeom = feature.getGeometry().clone()
-      const listenerKey = this.layer.on('postrender', animate)
-      const map = this.map
-      let timer = feature.get('timer')
+    flash(feature) {
+      const flash = feature.get("flash");
+      const { radius, timeout } = flash;
+      const duration = Number(flash.rate) * 1000 || 3000;
+      const start = Date.now();
+      const flashGeom = feature.getGeometry().clone();
+      const listenerKey = this.layer.on("postrender", animate);
+      const map = this.map;
+      let timer = feature.get("timer");
       if (timer) {
-        unByKey(listenerKey)
-        clearTimeout(timer)
-        feature.set('timer', null)
+        unByKey(listenerKey);
+        clearTimeout(timer);
+        feature.set("timer", null);
       }
       if (timeout && timeout > 0) {
         timer = setTimeout(() => {
-          this.flash(feature)
-        }, timeout)
+          this.flash(feature);
+        }, timeout);
       }
-      function animate (event) {
-        const frameState = event.frameState
-        const elapsed = frameState.time - start
+      function animate(event) {
+        const frameState = event.frameState;
+        const elapsed = frameState.time - start;
         if (elapsed >= duration) {
-          unByKey(listenerKey)
-          return
+          unByKey(listenerKey);
+          return;
         }
-        const vectorContext = getVectorContext(event)
-        const elapsedRatio = elapsed / duration
+        const vectorContext = getVectorContext(event);
+        const elapsedRatio = elapsed / duration;
         // radius will be 5 at start and {{flash.radius}} || 30 at end.
-        const circleRadius = easeOut(elapsedRatio) * ((radius > 10 ? radius : 25) || 25)
-        const color = asArray(flash.color || 'rgba(255, 0, 0, 1)')
-        color.slice()
-        const opacity = easeOut(1 - elapsedRatio)
+        const circleRadius = easeOut(elapsedRatio) * ((radius > 10 ? radius : 25) || 25);
+        const color = asArray(flash.color || "rgba(255, 0, 0, 1)");
+        color.slice();
+        const opacity = easeOut(1 - elapsedRatio);
 
         const style = new Style({
           zIndex: 0,
@@ -539,34 +555,32 @@ export default {
             stroke: new Stroke({
               // color: 'rgba(255, 0, 0, ' + opacity + ')',
               color: `rgba(${color[0]},${color[1]},${color[2]},${opacity})`,
-              width: opacity
-            })
-          })
-        })
+              width: opacity,
+            }),
+          }),
+        });
 
-        vectorContext.setStyle(style)
-        vectorContext.drawGeometry(flashGeom)
+        vectorContext.setStyle(style);
+        vectorContext.drawGeometry(flashGeom);
         // tell OpenLayers to continue postrender animation
-        map.render()
+        map.render();
       }
     },
-    overlayClose () {
-      this.overlay.close()
+    overlayClose() {
+      this.overlay.close();
     },
-    getClosestFeatureToCoordinate (coordinates, filter) {
-      return this.layer.getSource().getClosestFeatureToCoordinate(coordinates, filter)
-    }
+    getClosestFeatureToCoordinate(coordinates, filter) {
+      return this.layer.getSource().getClosestFeatureToCoordinate(coordinates, filter);
+    },
   },
-  mounted () {
-    this.init()
+  mounted() {
+    this.init();
   },
-  beforeDestroy () {
-    this.dispose()
-    this.gh !== null && (this.gh = null)
-  }
-}
+  beforeDestroy() {
+    this.dispose();
+    this.gh !== null && (this.gh = null);
+  },
+};
 </script>
 
-<style scoped>
-
-</style>
+<style scoped></style>
