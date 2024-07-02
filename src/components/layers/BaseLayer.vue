@@ -1,59 +1,57 @@
 <script>
 export default {
-  render (createElement, context) {
-    return null
+  render(createElement, context) {
+    return null;
   },
   props: {
     className: {
       type: String,
-      default: 'ol-layer'
+      default: "ol-layer",
     },
     opacity: {
       type: Number,
-      default: 1
+      default: 1,
     },
     visible: {
       type: Boolean,
-      default: true
+      default: true,
     },
     extent: {
-      type: Array
+      type: Array,
     },
     zIndex: {
-      type: Number
+      type: Number,
     },
     minResolution: {
-      type: Number
+      type: Number,
     },
     maxResolution: {
-      type: Number
+      type: Number,
     },
     minZoom: {
-      type: Number
+      type: Number,
     },
     maxZoom: {
-      type: Number
+      type: Number,
     },
     title: {
-      type: String
+      type: String,
     },
     name: {
-      type: String
+      type: String,
     },
     preview: {
-      type: String
+      type: String,
     },
     baseLayer: {
-      type: Boolean
+      type: Boolean,
     },
     properties: {
       type: Object,
-      default: () => { }
-    }
-  }
-}
+      default: () => {},
+    },
+  },
+};
 </script>
 
-<style scoped>
-
-</style>
+<style scoped></style>

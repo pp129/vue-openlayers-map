@@ -1,5 +1,7 @@
-import VGraphic from '@/components/layers/graphic/index.vue'
+import VGraphic from "@/components/layers/graphic/index.vue";
 
-VGraphic.install = Vue => { Vue.component(VGraphic.name, VGraphic) }
+VGraphic.install = (Vue) => {
+  Vue.component(VGraphic.name, VGraphic);
+};
 
-export default VGraphic
+export default VGraphic;

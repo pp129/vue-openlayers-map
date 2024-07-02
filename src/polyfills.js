@@ -1,4 +1,4 @@
 // polyfills
-if (typeof window.global === 'undefined') {
-  window.global = window
+if (typeof window.global === "undefined") {
+  window.global = window;
 }

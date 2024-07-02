@@ -1,5 +1,7 @@
-import VOverlay from '@/components/overlay/index.vue'
+import VOverlay from "@/components/overlay/index.vue";
 
-VOverlay.install = Vue => { Vue.component(VOverlay.name, VOverlay) }
+VOverlay.install = (Vue) => {
+  Vue.component(VOverlay.name, VOverlay);
+};
 
-export default VOverlay
+export default VOverlay;

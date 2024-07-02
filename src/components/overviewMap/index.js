@@ -1,5 +1,7 @@
-import VOverview from '@/components/overviewMap/index.vue'
+import VOverview from "@/components/overviewMap/index.vue";
 
-VOverview.install = Vue => { Vue.component(VOverview.name, VOverview) }
+VOverview.install = (Vue) => {
+  Vue.component(VOverview.name, VOverview);
+};
 
-export default VOverview
+export default VOverview;

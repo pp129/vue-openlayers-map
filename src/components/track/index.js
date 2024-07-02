@@ -1,5 +1,7 @@
-import VTrack from '@/components/track/index.vue'
+import VTrack from "@/components/track/index.vue";
 
-VTrack.install = Vue => { Vue.component(VTrack.name, VTrack) }
+VTrack.install = (Vue) => {
+  Vue.component(VTrack.name, VTrack);
+};
 
-export default VTrack
+export default VTrack;

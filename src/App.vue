@@ -5,7 +5,8 @@
 </template>
 
 <style>
-html,body {
+html,
+body {
   width: 100%;
   height: 100%;
   margin: 0;
@@ -17,12 +18,13 @@ html,body {
   overflow: hidden;
   position: relative;
 }
-ul,li{
+ul,
+li {
   list-style: none;
   margin: 0;
   padding: 0;
 }
-li{
+li {
   border-bottom: 1px solid #ccc;
   cursor: pointer;
 }

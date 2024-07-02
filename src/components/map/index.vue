@@ -1,324 +1,347 @@
 <template>
-  <div :id="target" :style="{'width':mapWidth,'height':mapHeight}">
+  <div :id="target" :style="{ width: mapWidth, height: mapHeight }">
     <a :id="downLoadId" :download="downloadName"></a>
     <slot v-if="load"></slot>
   </div>
 </template>
 
 <script>
-import { nanoid } from 'nanoid'
-import { OlMap, setStyle } from '@/utils/index.js'
-import { getCenter, boundingExtent } from 'ol/extent'
+import { nanoid } from "nanoid";
+import { OlMap, setStyle } from "@/utils/index.js";
+import { getCenter, boundingExtent } from "ol/extent";
+import * as olEasing from "ol/easing";
 
 export default {
-  name: 'v-map',
-  provide () {
+  name: "v-map",
+  provide() {
     return {
-      VMap: this
-    }
+      VMap: this,
+    };
   },
   props: {
     // 地图容器宽度
     width: {
       type: [String, Number],
-      default () {
-        return '100%'
-      }
+      default() {
+        return "100%";
+      },
     },
     // 地图容器高度
     height: {
       type: [String, Number],
-      default () {
-        return '100%'
-      }
+      default() {
+        return "100%";
+      },
     },
     // 地图容器Id
     target: {
       type: String,
-      default: `map-${nanoid()}`
+      default: `map-${nanoid()}`,
     },
     // 视窗属性
     view: {
-      type: Object
+      type: Object,
     },
     // 控制属性
     controls: {
-      type: Object
+      type: Object,
     },
     // 交互属性
     interactions: {
-      type: Object
-    }
+      type: Object,
+    },
   },
   computed: {
-    mapOption () {
+    mapOption() {
       return {
         target: this.target,
         view: this.view,
         controls: this.controls,
-        interactions: this.interactions
-      }
+        interactions: this.interactions,
+      };
     },
-    map () {
-      return OlMap.map.map
+    map() {
+      return OlMap.map.map;
     },
-    mapWidth () {
-      return typeof this.width === 'string' ? this.width : this.width.toString() + 'px'
+    mapWidth() {
+      return typeof this.width === "string" ? this.width : this.width.toString() + "px";
     },
-    mapHeight () {
-      return typeof this.height === 'string' ? this.height : this.height.toString() + 'px'
-    }
+    mapHeight() {
+      return typeof this.height === "string" ? this.height : this.height.toString() + "px";
+    },
   },
   watch: {
-    'view.center': {
-      handler (value) {
+    "view.center": {
+      handler(value) {
         if (value) {
-          this.setCenter(value)
+          this.setCenter(value);
         }
       },
       immediate: false,
-      deep: true
+      deep: true,
     },
-    'view.zoom': {
-      handler (value) {
+    "view.zoom": {
+      handler(value) {
         if (value) {
-          this.setZoom(value)
+          this.setZoom(value);
         }
       },
       immediate: false,
-      deep: true
+      deep: true,
     },
-    'view.constrainRotation': {
-      handler (value) {
+    "view.constrainRotation": {
+      handler(value) {
         if (value) {
-          this.setConstrainResolution(value)
+          this.setConstrainResolution(value);
         }
       },
       immediate: false,
-      deep: true
+      deep: true,
     },
-    'view.maxZoom': {
-      handler (value) {
+    "view.maxZoom": {
+      handler(value) {
         if (value) {
-          this.setMaxZoom(value)
+          this.setMaxZoom(value);
         }
       },
       immediate: false,
-      deep: true
+      deep: true,
     },
-    'view.minZoom': {
-      handler (value) {
+    "view.minZoom": {
+      handler(value) {
         if (value) {
-          this.setMinZoom(value)
+          this.setMinZoom(value);
         }
       },
       immediate: false,
-      deep: true
+      deep: true,
     },
-    'controls.zoom': {
-      handler (value) {
-        const zoom = OlMap.map.mapControlsZoom
+    "controls.zoom": {
+      handler(value) {
+        const zoom = OlMap.map.mapControlsZoom;
         if (zoom) {
-          OlMap.setControl('zoom', value, this.controls.zoomOptions)
+          OlMap.setControl("zoom", value, this.controls.zoomOptions);
         }
       },
       immediate: false,
-      deep: true
+      deep: true,
     },
-    'controls.rotate': {
-      handler (value) {
-        const rotate = OlMap.map.mapControlsRotate
+    "controls.rotate": {
+      handler(value) {
+        const rotate = OlMap.map.mapControlsRotate;
         if (rotate) {
-          OlMap.setControl('rotate', value, this.controls.rotateOptions)
+          OlMap.setControl("rotate", value, this.controls.rotateOptions);
         }
       },
       immediate: false,
-      deep: true
+      deep: true,
     },
-    'controls.attribution': {
-      handler (value) {
-        const rotate = OlMap.map.mapControlsAttribution
+    "controls.attribution": {
+      handler(value) {
+        const rotate = OlMap.map.mapControlsAttribution;
         if (rotate) {
-          OlMap.setControl('attribution', value, this.controls.attributionOptions)
+          OlMap.setControl("attribution", value, this.controls.attributionOptions);
         }
       },
       immediate: false,
-      deep: true
+      deep: true,
     },
-    'controls.FullScreen': {
-      handler (value) {
-        const FullScreen = OlMap.map.mapControlsFullScreen
+    "controls.FullScreen": {
+      handler(value) {
+        const FullScreen = OlMap.map.mapControlsFullScreen;
         if (FullScreen) {
-          OlMap.setControl('FullScreen', value)
+          OlMap.setControl("FullScreen", value);
         }
       },
       immediate: false,
-      deep: true
+      deep: true,
     },
-    'controls.ScaleLine': {
-      handler (value) {
-        const ScaleLine = OlMap.map.mapControlsScaleLine
+    "controls.ScaleLine": {
+      handler(value) {
+        const ScaleLine = OlMap.map.mapControlsScaleLine;
         if (ScaleLine) {
-          OlMap.setControl('ScaleLine', value)
+          OlMap.setControl("ScaleLine", value);
         }
       },
       immediate: false,
-      deep: true
-    }
+      deep: true,
+    },
   },
-  data () {
+  data() {
     return {
       vMap: null,
       load: false,
       downLoadId: `download-${nanoid()}`,
-      downloadName: 'map.png',
+      downloadName: "map.png",
       noBase: true,
       properties: {
-        isDefault: true
-      }
-    }
+        isDefault: true,
+      },
+    };
   },
   methods: {
-    initMap () {
-      this.init().then(res => {
-        if (res === 'success') {
-          console.log('map load')
+    initMap() {
+      this.init().then((res) => {
+        if (res === "success") {
+          console.log("map load");
           // 绑定事件
-          const events = ['singleclick', 'click', 'dblclick', 'pointerdrag', 'contextmenu', 'precompose', 'postrender', 'loadend', 'loadstart', 'moveend', 'movestart']
+          const events = [
+            "singleclick",
+            "click",
+            "dblclick",
+            "pointerdrag",
+            "contextmenu",
+            "precompose",
+            "postrender",
+            "loadend",
+            "loadstart",
+            "moveend",
+            "movestart",
+          ];
           // 层级变化
-          this.map.getView().once('change:resolution', () => {
-            this.map.once('moveend', (evt) => {
-              this.zoomEnd(evt)
-            })
-          })
+          this.map.getView().once("change:resolution", () => {
+            this.map.once("moveend", (evt) => {
+              this.zoomEnd(evt);
+            });
+          });
           // 鼠标悬浮
-          this.map.on('pointermove', evt => {
-            const pixel = this.map.getEventPixel(evt.originalEvent)
-            const hit = this.map.hasFeatureAtPixel(pixel)
-            this.map.getTargetElement().style.cursor = hit ? 'pointer' : ''
-            this.map.getLayers().getArray().forEach(layer => {
-              if (layer.get('type') === 'graphic' || layer.get('type') === 'wms') {
-                // console.log(layer)
-                const data = layer.getData(evt.pixel)
-                // console.log(data)
-                const hitImage = data && data[3] > 0 // transparent pixels have zero for data[3]
-                this.map.getTargetElement().style.cursor = hitImage || hit ? 'pointer' : ''
-              }
-            })
-            this.$emit('pointermove', evt, this.map)
-          })
-          events.forEach(event => {
-            this.map.on(event, evt => {
-              this.$emit(event, evt, this.map)
-            })
-          })
-          this.$emit('load', this.map)
-          this.load = true
+          this.map.on("pointermove", (evt) => {
+            const pixel = this.map.getEventPixel(evt.originalEvent);
+            const hit = this.map.hasFeatureAtPixel(pixel);
+            this.map.getTargetElement().style.cursor = hit ? "pointer" : "";
+            this.map
+              .getLayers()
+              .getArray()
+              .forEach((layer) => {
+                if (layer.get("type") === "graphic" || layer.get("type") === "wms") {
+                  // console.log(layer)
+                  const data = layer.getData(evt.pixel);
+                  // console.log(data)
+                  const hitImage = data && data[3] > 0; // transparent pixels have zero for data[3]
+                  this.map.getTargetElement().style.cursor = hitImage || hit ? "pointer" : "";
+                }
+              });
+            this.$emit("pointermove", evt, this.map);
+          });
+          events.forEach((event) => {
+            this.map.on(event, (evt) => {
+              this.$emit(event, evt, this.map);
+            });
+          });
+          this.$emit("load", this.map);
+          this.load = true;
         }
-      })
+      });
     },
-    init () {
+    init() {
       return new Promise((resolve, reject) => {
-        OlMap.map = new OlMap(this.mapOption)
+        OlMap.map = new OlMap(this.mapOption);
         if (OlMap.map.map) {
-          resolve('success')
+          resolve("success");
         } else {
-          reject(new Error('fail'))
+          reject(new Error("fail"));
         }
-      })
+      });
     },
-    dispose () {
-      if (!this.map) return
-      const layers = [...this.map.getLayers().getArray()]
-      layers.forEach(layer => {
+    dispose() {
+      if (!this.map) return;
+      const layers = [...this.map.getLayers().getArray()];
+      layers.forEach((layer) => {
         if (layer) {
-          const layerTitle = layer.get('users')
+          const layerTitle = layer.get("users");
           if (layerTitle) {
-            layer.getSource().clear()
-            layer.getRenderer().dispose()
-            layer.setSource(undefined)
-            this.map.removeLayer(layer)
+            layer.getSource().clear();
+            layer.getRenderer().dispose();
+            layer.setSource(undefined);
+            this.map.removeLayer(layer);
           }
         }
-      })
-      this.map.disposeInternal()
+      });
+      this.map.disposeInternal();
     },
-    zoomEnd (evt) {
-      this.$emit('changeZoom', evt, this.map)
-      evt.map.once('moveend', (evt) => {
-        this.zoomEnd(evt)
-      })
+    zoomEnd(evt) {
+      this.$emit("changeZoom", evt, this.map);
+      evt.map.once("moveend", (evt) => {
+        this.zoomEnd(evt);
+      });
     },
-    setCenter (center) {
-      OlMap.setCenter(center)
+    setCenter(center) {
+      OlMap.setCenter(center);
     },
-    setZoom (zoom) {
-      OlMap.setZoom(zoom)
+    setZoom(zoom) {
+      OlMap.setZoom(zoom);
     },
-    setConstrainResolution (enabled) {
-      OlMap.setConstrainResolution(enabled)
+    setConstrainResolution(enabled) {
+      OlMap.setConstrainResolution(enabled);
     },
-    setMaxZoom (zoom) {
-      OlMap.setMaxZoom(zoom)
+    setMaxZoom(zoom) {
+      OlMap.setMaxZoom(zoom);
     },
-    setMinZoom (zoom) {
-      OlMap.setMinZoom(zoom)
+    setMinZoom(zoom) {
+      OlMap.setMinZoom(zoom);
     },
-    setControl (controls, options) {
-      OlMap.setControl(controls, options)
+    setControl(controls, options) {
+      OlMap.setControl(controls, options);
     },
-    panTo (param) {
-      OlMap.panTo(param)
+    panTo(param) {
+      OlMap.panTo(param);
     },
-    flyTo (param) {
-      OlMap.flyTo(param)
+    flyTo(param) {
+      OlMap.flyTo(param);
     },
-    getCenterByExtent (extent) {
-      return getCenter(extent)
+    fit(geometryOrExtent, options) {
+      let easing = olEasing.inAndOut;
+      if (Object.prototype.hasOwnProperty.call(options, "easing")) {
+        if (olEasing[options.easing] && typeof olEasing[options.easing] === "function") {
+          easing = olEasing[options.easing];
+        }
+      }
+      this.map.getView().fit(geometryOrExtent, { ...options, easing });
     },
-    boundingExtent (coordinates) {
-      return boundingExtent(coordinates)
+    getCenterByExtent(extent) {
+      return getCenter(extent);
     },
-    calculateCenter (geometry) {
-      return OlMap.calculateCenter(geometry)
+    boundingExtent(coordinates) {
+      return boundingExtent(coordinates);
     },
-    exportPNG (downloadName) {
+    calculateCenter(geometry) {
+      return OlMap.calculateCenter(geometry);
+    },
+    exportPNG(downloadName) {
       if (downloadName) {
-        if (downloadName.indexOf('.png') > -1) {
-          this.downloadName = downloadName
+        if (downloadName.indexOf(".png") > -1) {
+          this.downloadName = downloadName;
         } else {
-          this.downloadName = downloadName + '.png'
+          this.downloadName = downloadName + ".png";
         }
       } else {
-        this.downloadName = `map-export-${nanoid()}.png`
+        this.downloadName = `map-export-${nanoid()}.png`;
       }
-      OlMap.exportPNG(this.downLoadId)
+      OlMap.exportPNG(this.downLoadId);
     },
-    getDistancePoint (from, to, units) {
-      return OlMap.getDistancePoint(from, to, units)
+    getDistancePoint(from, to, units) {
+      return OlMap.getDistancePoint(from, to, units);
     },
-    closeOverlays () {
-      this.map.getOverlays().forEach(overlay => {
-        overlay.setPosition(undefined)
-        const onClose = overlay.get('close')
-        if (onClose) onClose()
-      })
+    closeOverlays() {
+      this.map.getOverlays().forEach((overlay) => {
+        overlay.setPosition(undefined);
+        const onClose = overlay.get("close");
+        if (onClose) onClose();
+      });
     },
-    updateFeature (feature, type, param) {
-      if (type === 'style') {
-        feature.setStyle(setStyle(param))
+    updateFeature(feature, type, param) {
+      if (type === "style") {
+        feature.setStyle(setStyle(param));
       }
-    }
+    },
   },
-  mounted () {
-    this.initMap()
+  mounted() {
+    this.initMap();
   },
-  beforeDestroy () {
-    this.dispose()
-  }
-}
+  beforeDestroy() {
+    this.dispose();
+  },
+};
 </script>
 
-<style scoped>
-
-</style>
+<style scoped></style>

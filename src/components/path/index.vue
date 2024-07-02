@@ -1,114 +1,112 @@
 <script>
-import { nanoid } from 'nanoid'
-import VzPath from '@/utils/path'
+import { nanoid } from "nanoid";
+import VzPath from "@/utils/path";
 
 export default {
-  name: 'v-path',
-  render () {
-    return null
+  name: "v-path",
+  render() {
+    return null;
   },
-  inject: ['VMap'],
+  inject: ["VMap"],
   props: {
     id: {
       type: String,
-      default () {
-        return `track-${nanoid()}`
-      }
+      default() {
+        return `track-${nanoid()}`;
+      },
     },
     // 事件触发是否穿透
     bubble: {
       type: Boolean,
-      default: true
+      default: true,
     },
     // 是否显示路径轨迹点
     showTracePoint: {
       type: Boolean,
-      default: true
+      default: true,
     },
     tracePointsModePlay: {
-      type: String
+      type: String,
     },
     path: {
-      type: Array
+      type: Array,
     },
     options: {
-      type: Object
+      type: Object,
     },
     autoPlay: {
       type: Boolean,
-      default: false
-    }
+      default: false,
+    },
   },
-  data () {
+  data() {
     return {
-      pathObj: null
-    }
+      pathObj: null,
+    };
   },
   computed: {
-    map () {
-      return this.VMap.map
-    }
+    map() {
+      return this.VMap.map;
+    },
   },
   methods: {
-    init (paths) {
+    init(paths) {
       if ((paths && paths.length > 0) || (this.path && this.path.length > 0)) {
-        const option = { ...this.$props, ...{ mapObj: this.map, path: paths || this.path, options: this.options } }
+        const option = { ...this.$props, ...{ mapObj: this.map, path: paths || this.path, options: this.options } };
         // console.log(this.$props)
-        const path = new VzPath(option)
+        const path = new VzPath(option);
 
         // 样式内容设置展示
         path.setTraceLineStyle({
-          lineColor: option.options?.lineColor || 'rgba(0, 0, 255, 0.6)',
-          lineWidth: option.options?.lineWidth || 10
-        })
+          lineColor: option.options?.lineColor || "rgba(0, 0, 255, 0.6)",
+          lineWidth: option.options?.lineWidth || 10,
+        });
         path.setPassLineStyle({
-          lineColor: option.options?.passlineColor || 'red',
-          lineWidth: option.options?.passlineWidth || 2
-        })
+          lineColor: option.options?.passlineColor || "red",
+          lineWidth: option.options?.passlineWidth || 2,
+        });
         path.setTraceNodeStyle({
-          lineColor: option.options?.nodeStrokeColor || '#3399CC',
+          lineColor: option.options?.nodeStrokeColor || "#3399CC",
           lineWidth: option.options?.nodeStrokeWidth || 1.25,
-          fillColor: option.options?.nodeFillColor || 'rgba(255,255,255,0.4)'
-        })
+          fillColor: option.options?.nodeFillColor || "rgba(255,255,255,0.4)",
+        });
 
-        this.pathObj = path
-        this.pathObj.getEvents().forEach(event => {
-          this.pathObj.on(event, e => {
-            this.$emit(event, e)
-          })
-        })
-        this.$emit('load', this.pathObj)
+        this.pathObj = path;
+        this.pathObj.getEvents().forEach((event) => {
+          this.pathObj.on(event, (e) => {
+            this.$emit(event, e);
+          });
+        });
+        this.$emit("load", this.pathObj);
         if (this.autoPlay) {
-          this.start()
+          this.start();
         }
       }
     },
-    start (moveIdx) {
-      this.pathObj.start(moveIdx)
+    start(moveIdx) {
+      this.pathObj.start(moveIdx);
     },
-    pause () {
-      this.pathObj.pause()
+    pause() {
+      this.pathObj.pause();
     },
-    resume () {
-      this.pathObj.resume()
+    resume() {
+      this.pathObj.resume();
     },
-    stop (ended) {
-      this.pathObj.stop(ended)
+    stop(ended) {
+      this.pathObj.stop(ended);
     },
-    destroy () {
-      this.pathObj.destroy()
-    }
+    destroy() {
+      this.pathObj.destroy();
+    },
   },
-  mounted () {
-    this.init()
+  mounted() {
+    this.init();
   },
-  beforeDestroy () {
-    this.pathObj.destroy()
-    this.pathObj = null
-  }
-}
+  beforeDestroy() {
+    this.pathObj.destroy();
+    this.pathObj = null;
+  },
+};
 </script>
 
-<style scoped>
-
-</style>
+<style scoped></style>

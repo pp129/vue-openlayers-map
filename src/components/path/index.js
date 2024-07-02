@@ -1,5 +1,7 @@
-import VPath from '@/components/path/index.vue'
+import VPath from "@/components/path/index.vue";
 
-VPath.install = Vue => { Vue.component(VPath.name, VPath) }
+VPath.install = (Vue) => {
+  Vue.component(VPath.name, VPath);
+};
 
-export default VPath
+export default VPath;

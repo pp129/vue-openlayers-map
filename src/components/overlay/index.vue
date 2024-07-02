@@ -5,111 +5,109 @@
 </template>
 
 <script>
-import { nanoid } from 'nanoid'
-import { Overlay } from 'ol'
+import { nanoid } from "nanoid";
+import { Overlay } from "ol";
 
 export default {
-  name: 'v-overlay',
-  inject: ['VMap'],
+  name: "v-overlay",
+  inject: ["VMap"],
   props: {
     overlayId: {
       type: String,
-      default () {
-        return `overlay-id-${nanoid()}`
-      }
+      default() {
+        return `overlay-id-${nanoid()}`;
+      },
     },
     element: {
       type: String,
-      default () {
-        return `overlay-el-${nanoid()}`
-      }
+      default() {
+        return `overlay-el-${nanoid()}`;
+      },
     },
     position: {
       type: [Array, undefined],
-      default () {
-        return undefined
-      }
+      default() {
+        return undefined;
+      },
     },
     positioning: {
-      type: String
+      type: String,
     },
     offset: {
       type: Array,
-      default () {
-        return [0, 0]
-      }
+      default() {
+        return [0, 0];
+      },
     },
     autoPan: {
       type: Boolean,
-      default: false
+      default: false,
     },
     className: {
-      type: [String, Array]
+      type: [String, Array],
     },
     data: {
-      type: Array
+      type: Array,
     },
     close: {
-      type: Function
-    }
+      type: Function,
+    },
   },
-  data () {
+  data() {
     return {
-      overlay: null
-    }
+      overlay: null,
+    };
   },
   computed: {
-    map () {
-      return this.VMap.map
-    }
+    map() {
+      return this.VMap.map;
+    },
   },
   watch: {
     position: {
-      handler (value) {
-        this.overlay.setPosition(value)
+      handler(value) {
+        this.overlay.setPosition(value);
       },
-      immediate: false
+      immediate: false,
     },
     positioning: {
-      handler (value) {
-        this.overlay.setPositioning(value)
+      handler(value) {
+        this.overlay.setPositioning(value);
       },
-      immediate: false
+      immediate: false,
     },
     offset: {
-      handler (value) {
-        this.overlay.setOffset(value)
+      handler(value) {
+        this.overlay.setOffset(value);
       },
-      immediate: false
-    }
+      immediate: false,
+    },
   },
   methods: {
-    setPosition (coordinates) {
-      this.overlay.setPosition(coordinates)
-    }
+    setPosition(coordinates) {
+      this.overlay.setPosition(coordinates);
+    },
   },
-  mounted () {
+  mounted() {
     // const ele =
-    let overlayEl
-    if (typeof this.element === 'string') {
-      overlayEl = document.getElementById(this.element.toString())
+    let overlayEl;
+    if (typeof this.element === "string") {
+      overlayEl = document.getElementById(this.element.toString());
     }
-    const overlayOption = { ...this.$props, ...{ id: this.overlayId, element: overlayEl } }
-    this.overlay = new Overlay(overlayOption)
+    const overlayOption = { ...this.$props, ...{ id: this.overlayId, element: overlayEl } };
+    this.overlay = new Overlay(overlayOption);
     for (const i in overlayOption) {
       if (Object.prototype.hasOwnProperty.call(overlayOption, i)) {
-        this.overlay.set(i, overlayOption[i])
+        this.overlay.set(i, overlayOption[i]);
       }
     }
-    this.map.addOverlay(this.overlay)
-    this.$emit('load', this.overlay, this.map)
+    this.map.addOverlay(this.overlay);
+    this.$emit("load", this.overlay, this.map);
   },
-  beforeDestroy () {
-    this.map.removeOverlay(this.overlay)
-  }
-}
+  beforeDestroy() {
+    this.map.removeOverlay(this.overlay);
+  },
+};
 </script>
 
-<style scoped>
-
-</style>
+<style scoped></style>

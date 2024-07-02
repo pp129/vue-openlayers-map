@@ -1,153 +1,146 @@
 <script>
-import BaseLayer from '@/components/layers/BaseLayer.vue'
-import { nanoid } from 'nanoid'
-import { addVectorSource, setFeatures } from '@/utils'
-import { Heatmap } from 'ol/layer'
+import BaseLayer from "@/components/layers/BaseLayer.vue";
+import { nanoid } from "nanoid";
+import { addVectorSource, setFeatures } from "@/utils";
+import { Heatmap } from "ol/layer";
 
 export default {
-  name: 'v-heatmap',
-  render (createElement, context) {
-    return null
+  name: "v-heatmap",
+  render(createElement, context) {
+    return null;
   },
   extends: BaseLayer,
-  inject: ['VMap'],
-  data () {
+  inject: ["VMap"],
+  data() {
     return {
-      layer: null
-    }
+      layer: null,
+    };
   },
   props: {
     layerId: {
       type: String,
-      default () {
-        return `heatmap-layer-${nanoid()}`
-      }
+      default() {
+        return `heatmap-layer-${nanoid()}`;
+      },
     },
     source: {
       type: [Object, undefined],
-      default () {
-        return { features: [] }
-      }
+      default() {
+        return { features: [] };
+      },
     },
     features: {
       type: Array,
-      default () {
-        return []
-      }
+      default() {
+        return [];
+      },
     },
     blur: {
       type: Number,
-      default: 15
+      default: 15,
     },
     radius: {
       type: Number,
-      default: 8
+      default: 8,
     },
     weight: {
       type: String,
-      default: 'weight'
+      default: "weight",
     },
     gradient: {
       type: Array,
-      default () {
-        return [
-          '#00f',
-          '#0ff',
-          '#0f0',
-          '#ff0',
-          '#f00']
-      }
-    }
+      default() {
+        return ["#00f", "#0ff", "#0f0", "#ff0", "#f00"];
+      },
+    },
   },
   watch: {
     features: {
-      handler (value) {
-        this.layer.getSource().clear()
+      handler(value) {
+        this.layer.getSource().clear();
         if (value && value.length > 0) {
-          const features = setFeatures(value, this.map)
-          this.layer.getSource().addFeatures(features)
+          const features = setFeatures(value, this.map);
+          this.layer.getSource().addFeatures(features);
         }
       },
-      immediate: false
+      immediate: false,
     },
     blur: {
-      handler (value) {
-        this.layer.setBlur(value)
-      },
-      immediate: false
-    },
-    radius: {
-      handler (value) {
-        this.layer.setRadius(value)
-      },
-      immediate: false
-    },
-    gradient: {
-      handler (value) {
-        this.layer.setGradient(value)
+      handler(value) {
+        this.layer.setBlur(value);
       },
       immediate: false,
-      deep: true
+    },
+    radius: {
+      handler(value) {
+        this.layer.setRadius(value);
+      },
+      immediate: false,
+    },
+    gradient: {
+      handler(value) {
+        this.layer.setGradient(value);
+      },
+      immediate: false,
+      deep: true,
     },
     visible: {
-      handler (value) {
-        this.layer.setVisible(value)
+      handler(value) {
+        this.layer.setVisible(value);
       },
-      immediate: false
+      immediate: false,
     },
     zIndex: {
-      handler (value) {
-        this.layer.setZIndex(value)
+      handler(value) {
+        this.layer.setZIndex(value);
       },
-      immediate: false
+      immediate: false,
     },
     maxZoom: {
-      handler (value) {
-        this.layer.setMaxZoom(value)
+      handler(value) {
+        this.layer.setMaxZoom(value);
       },
-      immediate: false
+      immediate: false,
     },
     minZoom: {
-      handler (value) {
-        this.layer.setMinZoom(value)
+      handler(value) {
+        this.layer.setMinZoom(value);
       },
-      immediate: false
+      immediate: false,
     },
     extent: {
-      handler (value) {
-        this.layer.setExtent(value)
+      handler(value) {
+        this.layer.setExtent(value);
       },
-      immediate: false
-    }
+      immediate: false,
+    },
   },
   computed: {
-    map () {
-      return this.VMap.map
-    }
+    map() {
+      return this.VMap.map;
+    },
   },
-  mounted () {
-    const source = addVectorSource(this.source, this.map)
+  mounted() {
+    const source = addVectorSource(this.source, this.map);
     if (this.source.features.length <= 0 && this.features.length > 0) {
-      const features = setFeatures(this.features, this.map)
-      source.addFeatures(features)
+      const features = setFeatures(this.features, this.map);
+      source.addFeatures(features);
     }
-    const layerOpt = { ...this.$props, ...{ source } }
-    this.layer = new Heatmap(layerOpt)
-    this.layer.set('id', this.layerId)
-    this.layer.set('type', 'heatmap')
-    this.layer.set('users', true)
+    const layerOpt = { ...this.$props, ...{ source } };
+    this.layer = new Heatmap(layerOpt);
+    this.layer.set("id", this.layerId);
+    this.layer.set("type", "heatmap");
+    this.layer.set("users", true);
     if (this.zIndex) {
-      this.layer.setZIndex(this.zIndex)
+      this.layer.setZIndex(this.zIndex);
     }
-    this.map.addLayer(this.layer)
+    this.map.addLayer(this.layer);
   },
-  beforeDestroy () {
+  beforeDestroy() {
     // this.layer.getSource().clear()
-    this.map.removeLayer(this.layer)
-  }
-}
+    this.map.removeLayer(this.layer);
+  },
+};
 </script>
 
-<style scoped>
-
-</style>
+<style scoped></style>

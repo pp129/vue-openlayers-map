@@ -1,23 +1,23 @@
 <script>
-import PathSimplifier from './track.js'
-import { nanoid } from 'nanoid'
+import PathSimplifier from "./track.js";
+import { nanoid } from "nanoid";
 
 export default {
-  name: 'v-track',
-  render (createElement, context) {
-    return null
+  name: "v-track",
+  render(createElement, context) {
+    return null;
   },
-  inject: ['VMap'],
+  inject: ["VMap"],
   props: {
     id: {
       type: String,
-      default () {
-        return `track-${nanoid()}`
-      }
+      default() {
+        return `track-${nanoid()}`;
+      },
     },
     paths: {
       type: Array,
-      default () {
+      default() {
         return [
           /* {
             longitude: 118.15450000867712,
@@ -26,52 +26,52 @@ export default {
             info: '起点',
             time: '2018-08-20 08:21:00'
           } */
-        ]
-      }
+        ];
+      },
     },
     // skip 跳动模式，默认 animation 动画模式
     tracePointsModePlay: {
       type: String,
-      default: 'animation'
+      default: "animation",
     },
     // 轨迹抽稀模式，”distance”和”track”
     smokeMode: {
       type: String,
-      default: 'distance'
+      default: "distance",
     },
     // 是否抽稀
     vacuate: {
       type: Boolean,
-      default: false
+      default: false,
     },
     // 抽稀距离，单位像素
     vacuateDistance: {
       type: [Number, undefined],
-      default: 10
+      default: 10,
     },
     // 是否显示轨迹点信息标签
     labelShow: {
       type: Boolean,
-      default: false
+      default: false,
     },
     // 是否显示轨迹点，默认显
     showTracePoint: {
       type: Boolean,
-      default: true
+      default: true,
     },
     // 小车自动旋转角度
     changeCarRotate: {
       type: Boolean,
-      default: false
+      default: false,
     },
     // 视图是否跟随小车
     centerAtCar: {
       type: Boolean,
-      default: false
+      default: false,
     },
     options: {
       type: Object,
-      default () {
+      default() {
         return {
           // startIcon: {
           //   src: '',
@@ -91,72 +91,70 @@ export default {
           // lineWidth: 5, // 轨迹线宽度，单位为像素
           // lineColor: 'red', // 轨迹线颜色
           // passlineColor: 'lightgreen' // 通过动画轨迹线颜色
-        }
-      }
+        };
+      },
     },
     autoPlay: {
       type: Boolean,
-      default: false
+      default: false,
     },
     labelStyle: {
       type: String,
-      default: 'timeContentClass'
-    }
+      default: "timeContentClass",
+    },
   },
-  data () {
+  data() {
     return {
-      track: null
-    }
+      track: null,
+    };
   },
   computed: {
-    map () {
-      return this.VMap.map
-    }
+    map() {
+      return this.VMap.map;
+    },
   },
   watch: {
     paths: {
-      handler (value) {
-        this.init(value)
+      handler(value) {
+        this.init(value);
       },
       immediate: false,
-      deep: true
-    }
+      deep: true,
+    },
   },
-  mounted () {
-    this.init()
+  mounted() {
+    this.init();
   },
-  beforeDestroy () {
-    this.track.dispose()
-    this.track = null
+  beforeDestroy() {
+    this.track.dispose();
+    this.track = null;
   },
   methods: {
-    init (paths) {
+    init(paths) {
       if ((paths && paths.length > 0) || (this.paths && this.paths.length > 0)) {
-        const option = { ...this.$props, ...{ map: this.map, paths: paths || this.paths, opts: this.options } }
+        const option = { ...this.$props, ...{ map: this.map, paths: paths || this.paths, opts: this.options } };
         // console.log(this.$props)
-        this.track = PathSimplifier(option)
-        this.$emit('onLoad', this.track)
+        this.track = PathSimplifier(option);
+        this.$emit("onLoad", this.track);
         if (this.autoPlay) {
-          this.start()
+          this.start();
         }
       }
     },
-    start () {
-      this.track.start()
+    start() {
+      this.track.start();
     },
-    pause () {
-      this.track.pause()
+    pause() {
+      this.track.pause();
     },
-    stop () {
-      this.track.stop()
+    stop() {
+      this.track.stop();
     },
-    dispose () {
-      this.track.dispose()
-    }
-  }
-}
+    dispose() {
+      this.track.dispose();
+    },
+  },
+};
 </script>
 
-<style scoped>
-
-</style>
+<style scoped></style>

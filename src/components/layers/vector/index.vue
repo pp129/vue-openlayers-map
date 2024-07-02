@@ -180,7 +180,7 @@ export default {
                     anchorYUnits: "fraction", // IconAnchorUnits.FRACTION,
                     img: anim.latestContext().canvas,
                     imgSize: [anim.width, anim.height],
-                  }),
+                  })
                 );
               }
             }
@@ -363,7 +363,7 @@ export default {
         (feature, layer) => {
           if (layer?.get("id") === this.layer?.get("id")) return feature;
         },
-        {},
+        {}
       );
     },
     eventHandler(listenerKey, evt) {
@@ -503,7 +503,7 @@ export default {
             // points: 4,
             stroke: new Stroke({ color, width }),
           }),
-        }),
+        })
       );
       this.layer.animateFeature(
         f,
@@ -511,7 +511,7 @@ export default {
           fade: easeOut,
           duration,
           easing: easeOut,
-        }),
+        })
       );
     },
     flash(feature) {

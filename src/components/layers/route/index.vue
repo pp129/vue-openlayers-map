@@ -1,242 +1,242 @@
 <script>
-import BaseLayer from '@/components/layers/BaseLayer.vue'
-import { nanoid } from 'nanoid'
-import axios from 'axios'
-import qs from 'qs'
-import { addVectorSource, setFeatures, setStyle } from '@/utils'
-import VectorLayer from 'ol/layer/Vector'
-import { arrowLine } from '@/utils/arrowLine'
+import BaseLayer from "@/components/layers/BaseLayer.vue";
+import { nanoid } from "nanoid";
+import axios from "axios";
+import qs from "qs";
+import { addVectorSource, setFeatures, setStyle } from "@/utils";
+import VectorLayer from "ol/layer/Vector";
+import { arrowLine } from "@/utils/arrowLine";
 
 export default {
-  name: 'v-route',
-  render (createElement, context) {
-    return null
+  name: "v-route",
+  render(createElement, context) {
+    return null;
   },
   extends: BaseLayer,
-  inject: ['VMap'],
+  inject: ["VMap"],
   props: {
     layerId: {
       type: String,
-      default () {
-        return `arcgis-route-layer-${nanoid()}`
-      }
+      default() {
+        return `arcgis-route-layer-${nanoid()}`;
+      },
     },
     serviceUrl: {
       type: String,
-      default () {
-        return ''
-      }
+      default() {
+        return "";
+      },
     },
     method: {
       type: String,
-      default: 'GET',
-      validator (value) {
-        return ['GET', 'POST', 'get', 'post'].includes(value)
-      }
+      default: "GET",
+      validator(value) {
+        return ["GET", "POST", "get", "post"].includes(value);
+      },
     },
     stops: {
       type: Array,
-      default () {
-        return []
-      }
+      default() {
+        return [];
+      },
     },
     routeType: {
       type: String,
       require: true,
-      validator (value) {
-        return ['arcgis', 'graphhopper'].includes(value)
-      }
+      validator(value) {
+        return ["arcgis", "graphhopper"].includes(value);
+      },
     },
     showStart: {
       type: Boolean,
-      default: true
+      default: true,
     },
     showPass: {
       type: Boolean,
-      default: true
+      default: true,
     },
     showEnd: {
       type: Boolean,
-      default: true
+      default: true,
     },
     routeStyle: {
       type: Object,
-      default: undefined
+      default: undefined,
     },
     arrow: {
       type: [Object, Boolean],
-      default () {
-        return false
-      }
+      default() {
+        return false;
+      },
     },
     // arcgis
     barriers: {
       type: String,
-      default: ''
+      default: "",
     },
     polylineBarriers: {
       type: String,
-      default: ''
+      default: "",
     },
     polygonBarriers: {
       type: String,
-      default: ''
+      default: "",
     },
     outSR: {
       type: String,
-      default: ''
+      default: "",
     },
     ignoreInvalidLocations: {
       type: Boolean,
-      default: true
+      default: true,
     },
     accumulateAttributeNames: {
       type: String,
-      default: ''
+      default: "",
     },
     impedanceAttributeName: {
-      type: String
+      type: String,
     },
     restrictionAttributeNames: {
       type: String,
-      default: ''
+      default: "",
     },
     attributeParameterValues: {
       type: String,
-      default: ''
+      default: "",
     },
     restrictUTurns: {
       type: String,
-      default: 'esriNFSBAllowBacktrack'
+      default: "esriNFSBAllowBacktrack",
     },
     useHierarchy: {
       type: Boolean,
-      default: false
+      default: false,
     },
     returnDirections: {
       type: Boolean,
-      default: false
+      default: false,
     },
     returnRoutes: {
       type: Boolean,
-      default: true
+      default: true,
     },
     returnStops: {
       type: Boolean,
-      default: true
+      default: true,
     },
     returnBarriers: {
       type: Boolean,
-      default: false
+      default: false,
     },
     returnPolygonBarriers: {
       type: Boolean,
-      default: false
+      default: false,
     },
     directionsLanguage: {
       type: String,
-      default: 'en'
+      default: "en",
     },
     directionsStyleName: {
       type: String,
-      default: ''
+      default: "",
     },
     outputLines: {
       type: String,
-      default: 'esriNAOutputLineTrueShape'
+      default: "esriNAOutputLineTrueShape",
     },
     findBestSequence: {
       type: Boolean,
-      default: false
+      default: false,
     },
     preserveFirstStop: {
       type: Boolean,
-      default: true
+      default: true,
     },
     preserveLastStop: {
       type: Boolean,
-      default: true
+      default: true,
     },
     useTimeWindows: {
       type: Boolean,
-      default: false
+      default: false,
     },
     startTime: {
       type: Number,
-      default: 0
+      default: 0,
     },
     startTimeIsUTC: {
       type: Boolean,
-      default: false
+      default: false,
     },
     outputGeometryPrecision: {
       type: String,
-      default: ''
+      default: "",
     },
     outputGeometryPrecisionUnits: {
       type: String,
-      default: 'esriDecimalDegrees'
+      default: "esriDecimalDegrees",
     },
     directionsOutputType: {
       type: String,
-      default: 'esriDOTComplete'
+      default: "esriDOTComplete",
     },
     directionsTimeAttributeName: {
       type: String,
-      default: ''
+      default: "",
     },
     directionsLengthUnits: {
       type: String,
-      default: 'esriNAUMiles'
+      default: "esriNAUMiles",
     },
     returnZ: {
       type: Boolean,
-      default: false
+      default: false,
     },
     travelMode: {
       type: String,
-      default: ''
+      default: "",
     },
     f: {
       type: String,
-      default: 'pjson'
+      default: "pjson",
     },
     // graphhopper
     type: {
       type: String,
-      default: 'json'
+      default: "json",
     },
     points_encoded: {
       type: Boolean,
-      default: false
+      default: false,
     },
     point_hint: {
       type: Array,
-      default () {
-        return []
-      }
+      default() {
+        return [];
+      },
     },
     locale: {
       type: String,
-      default: 'en'
+      default: "en",
     },
     vehicle: {
       type: String,
-      default: 'car'
+      default: "car",
     },
     weighting: {
       type: String,
-      default: 'fastest'
+      default: "fastest",
     },
     elevation: {
       type: Boolean,
-      default: false
+      default: false,
     },
     convert: {
-      type: String
-    }
+      type: String,
+    },
   },
-  data () {
+  data() {
     return {
       layer: null,
       source: null,
@@ -244,120 +244,120 @@ export default {
       defaultStyle: {
         line: {
           stroke: {
-            color: 'rgba(67,126,255,1)',
-            width: 4
-          }
+            color: "rgba(67,126,255,1)",
+            width: 4,
+          },
         },
         start: {
           circle: {
             radius: 15,
             fill: {
-              color: 'rgba(255,255,255,1)'
+              color: "rgba(255,255,255,1)",
             },
             stroke: {
-              color: 'rgba(67,126,255,1)',
-              width: 2
-            }
+              color: "rgba(67,126,255,1)",
+              width: 2,
+            },
           },
           text: {
-            text: '起',
+            text: "起",
             fill: {
-              color: '#3d73e8'
-            }
-          }
+              color: "#3d73e8",
+            },
+          },
         },
         end: {
           circle: {
             radius: 15,
             fill: {
-              color: 'rgba(255,255,255,1)'
+              color: "rgba(255,255,255,1)",
             },
             stroke: {
-              color: 'rgba(67,126,255,1)',
-              width: 2
-            }
+              color: "rgba(67,126,255,1)",
+              width: 2,
+            },
           },
           text: {
-            text: '终',
+            text: "终",
             fill: {
-              color: '#3d73e8'
-            }
-          }
+              color: "#3d73e8",
+            },
+          },
         },
         pass: {
           circle: {
             radius: 8,
             fill: {
-              color: 'rgba(255,255,255,1)'
+              color: "rgba(255,255,255,1)",
             },
             stroke: {
-              color: 'tomato',
-              width: 4
-            }
-          }
-        }
+              color: "tomato",
+              width: 4,
+            },
+          },
+        },
       },
-      routeData: null // Arcgis 或 Graphhopper接口的返回值
-    }
+      routeData: null, // Arcgis 或 Graphhopper接口的返回值
+    };
   },
   computed: {
-    map () {
-      return this.VMap.map
-    }
+    map() {
+      return this.VMap.map;
+    },
   },
   watch: {
     stops: {
-      handler () {
-        this.init()
+      handler() {
+        this.init();
       },
       immediate: false,
-      deep: true
+      deep: true,
     },
     visible: {
-      handler (value) {
-        this.layer.setVisible(value)
+      handler(value) {
+        this.layer.setVisible(value);
       },
-      immediate: false
+      immediate: false,
     },
     zIndex: {
-      handler (value) {
-        this.layer.setZIndex(value)
+      handler(value) {
+        this.layer.setZIndex(value);
       },
-      immediate: false
+      immediate: false,
     },
     maxZoom: {
-      handler (value) {
-        this.layer.setMaxZoom(value)
+      handler(value) {
+        this.layer.setMaxZoom(value);
       },
-      immediate: false
+      immediate: false,
     },
     minZoom: {
-      handler (value) {
-        this.layer.setMinZoom(value)
+      handler(value) {
+        this.layer.setMinZoom(value);
       },
-      immediate: false
+      immediate: false,
     },
     extent: {
-      handler (value) {
-        this.layer.setExtent(value)
+      handler(value) {
+        this.layer.setExtent(value);
       },
-      immediate: false
-    }
+      immediate: false,
+    },
   },
-  mounted () {
-    this.init()
+  mounted() {
+    this.init();
   },
-  beforeDestroy () {
+  beforeDestroy() {
     // this.layer.getSource().clear()
-    this.dispose()
+    this.dispose();
   },
   methods: {
     /**
      * 获取Arcgis路径规划接口数据
      * @returns {Promise<*[]|[]>}
      */
-    async getArcgisRouteData () {
-      let params = {}
+    async getArcgisRouteData() {
+      let params = {};
       const {
         barriers,
         polylineBarriers,
@@ -391,8 +391,8 @@ export default {
         directionsLengthUnits,
         returnZ,
         travelMode,
-        f
-      } = this.$props
+        f,
+      } = this.$props;
       if (this.stops.length > 0) {
         params = {
           barriers,
@@ -428,25 +428,25 @@ export default {
           returnZ,
           travelMode,
           f,
-          stops: this.stops.join(';')
-        }
-        if (this.method.toUpperCase() === 'POST') {
-          return axios.post(this.serviceUrl, qs.stringify(params)).then(res => {
+          stops: this.stops.join(";"),
+        };
+        if (this.method.toUpperCase() === "POST") {
+          return axios.post(this.serviceUrl, qs.stringify(params)).then((res) => {
             if (res.status === 200 && res.data) {
-              this.routeData = res.data
+              this.routeData = res.data;
             }
-            return this.getArcgisData(res)
-          })
+            return this.getArcgisData(res);
+          });
         } else {
-          return axios.get(this.serviceUrl, { params }).then(res => {
+          return axios.get(this.serviceUrl, { params }).then((res) => {
             if (res.status === 200 && res.data) {
-              this.routeData = res.data
+              this.routeData = res.data;
             }
-            return this.getArcgisData(res)
-          })
+            return this.getArcgisData(res);
+          });
         }
       } else {
-        return []
+        return [];
       }
     },
     /**
@@ -454,38 +454,38 @@ export default {
      * @param res
      * @returns {*[]}
      */
-    getArcgisData (res) {
+    getArcgisData(res) {
       if (res.status === 200 && res.data && res.data.routes.features.length > 0) {
-        const routes = res.data.routes
+        const routes = res.data.routes;
         // const stops = res.data.stops
         if (routes.features[0].geometry.paths.length > 0) {
-          const routesFeatures = []
+          const routesFeatures = [];
           if (this.showStart) {
             routesFeatures.push({
-              type: 'point',
+              type: "point",
               style: this.routeStyle ? this.routeStyle.start : this.defaultStyle.start,
               coordinates: routes.features[0].geometry.paths[0][0],
-              featureType: 'start',
-              convert: this.convert
-            })
+              featureType: "start",
+              convert: this.convert,
+            });
           }
           routesFeatures.push({
-            type: 'polyline',
+            type: "polyline",
             style: this.routeStyle ? this.routeStyle.line : this.defaultStyle.line,
             coordinates: routes.features[0].geometry.paths[0],
-            featureType: 'line',
-            convert: this.convert
-          })
+            featureType: "line",
+            convert: this.convert,
+          });
           if (this.showPass && this.stops.length > 1) {
             this.stops.slice(1, this.stops.length - 1).forEach((point, index) => {
               routesFeatures.push({
-                type: 'point',
+                type: "point",
                 style: this.routeStyle ? this.routeStyle.pass : this.defaultStyle.pass,
                 coordinates: point,
                 stopIndex: index,
-                featureType: 'stops'
-              })
-            })
+                featureType: "stops",
+              });
+            });
             // this.stops.slice(1, this.stops.length - 1).forEach((point, index) => {
             //   routesFeatures.push({
             //     type: 'point',
@@ -499,24 +499,24 @@ export default {
           }
           if (this.showEnd) {
             routesFeatures.push({
-              type: 'point',
+              type: "point",
               style: this.routeStyle ? this.routeStyle.end : this.defaultStyle.end,
               coordinates: routes.features[0].geometry.paths[0][routes.features[0].geometry.paths[0].length - 1],
-              featureType: 'end',
-              convert: this.convert
-            })
+              featureType: "end",
+              convert: this.convert,
+            });
           }
-          return setFeatures(routesFeatures, this.map)
+          return setFeatures(routesFeatures, this.map);
         }
       } else {
-        return []
+        return [];
       }
     },
     /**
      *  获取Graphhopper路径规划接口数据
      * @returns {Promise<*[]|[]>}
      */
-    async getGraphhopperRouteData () {
+    async getGraphhopperRouteData() {
       // const props = { ...this.$props, ...{ routeStyle: '' } }
       /* eslint-disable */
       const {

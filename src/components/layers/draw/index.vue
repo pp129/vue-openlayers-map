@@ -1,314 +1,314 @@
 <script>
-import BaseLayer from '@/components/layers/BaseLayer.vue'
-import { nanoid } from 'nanoid'
-import { addVectorSource, formatArea, formatLength, setFeatures, setStyle } from '@/utils'
-import VectorLayer from 'ol/layer/Vector'
-import Draw, { createBox, createRegularPolygon } from 'ol/interaction/Draw'
-import { Polygon } from 'ol/geom'
-import { Modify, Snap } from 'ol/interaction'
-import { arrowLine } from '@/utils/arrowLine'
+import BaseLayer from "@/components/layers/BaseLayer.vue";
+import { nanoid } from "nanoid";
+import { addVectorSource, formatArea, formatLength, setFeatures, setStyle } from "@/utils";
+import VectorLayer from "ol/layer/Vector";
+import Draw, { createBox, createRegularPolygon } from "ol/interaction/Draw";
+import { Polygon } from "ol/geom";
+import { Modify, Snap } from "ol/interaction";
+import { arrowLine } from "@/utils/arrowLine";
 
 export default {
-  name: 'v-draw',
+  name: "v-draw",
   extends: BaseLayer,
-  inject: ['VMap'],
-  render (createElement, context) {
-    return null
+  inject: ["VMap"],
+  render(createElement, context) {
+    return null;
   },
   props: {
     layerId: {
       type: String,
-      default () {
-        return `draw-layer-${nanoid()}`
-      }
+      default() {
+        return `draw-layer-${nanoid()}`;
+      },
     },
     features: {
       type: Array,
-      default () {
-        return []
-      }
+      default() {
+        return [];
+      },
     },
     source: {
       type: Object,
-      default () {
-        return { features: [] }
-      }
+      default() {
+        return { features: [] };
+      },
     },
     featureStyle: {
       type: [Object, Boolean],
-      default () {
-        return false
-      }
+      default() {
+        return false;
+      },
     },
     type: {
       type: String,
-      default: ''// 'Point', 'LineString', 'LinearRing', 'Polygon', 'MultiPoint', 'MultiLineString', 'MultiPolygon', 'GeometryCollection', 'Circle'
+      default: "", // 'Point', 'LineString', 'LinearRing', 'Polygon', 'MultiPoint', 'MultiLineString', 'MultiPolygon', 'GeometryCollection', 'Circle'
     },
     clickTolerance: {
       type: Number,
-      default: 6
+      default: 6,
     },
     dragVertexDelay: {
       type: Number,
-      default: 500
+      default: 500,
     },
     snapTolerance: {
       type: Number,
-      default: 12
+      default: 12,
     },
     stopClick: {
       type: Boolean,
-      default () {
-        return false
-      }
+      default() {
+        return false;
+      },
     },
     maxPoints: {
       type: Number,
-      default: undefined
+      default: undefined,
     },
     minPoints: {
       type: Number,
-      default: undefined
+      default: undefined,
     },
     drawOnce: {
       type: Boolean,
-      default () {
-        return false
-      }
+      default() {
+        return false;
+      },
     },
     endRight: {
       type: Boolean,
-      default () {
-        return false
-      }
+      default() {
+        return false;
+      },
     },
     endDblclick: {
       type: Boolean,
-      default () {
-        return false
-      }
+      default() {
+        return false;
+      },
     },
     editable: {
       type: Boolean,
-      default () {
-        return false
-      }
+      default() {
+        return false;
+      },
     },
     clear: {
       type: Boolean,
-      default () {
-        return false
-      }
+      default() {
+        return false;
+      },
     },
     wrapX: {
       type: Boolean,
-      default () {
-        return false
-      }
+      default() {
+        return false;
+      },
     },
     finishCondition: {
-      type: Object
+      type: Object,
     },
     geometryFunction: {
-      type: Function
+      type: Function,
     },
     geometryName: {
-      type: String
+      type: String,
     },
     condition: {
-      type: Object
+      type: Object,
     },
     freehand: {
       type: Boolean,
-      default () {
-        return false
-      }
+      default() {
+        return false;
+      },
     },
     freehandCondition: {
-      type: Object
+      type: Object,
     },
     drawStyle: {
       type: [Object, Boolean],
-      default () {
-        return false
-      }
+      default() {
+        return false;
+      },
     },
     arrow: {
       type: [Object, Boolean],
-      default () {
-        return false
-      }
-    }
+      default() {
+        return false;
+      },
+    },
   },
-  data () {
+  data() {
     return {
       layer: null,
       draw: null,
       modify: null,
-      select: null
-    }
+      select: null,
+    };
   },
   computed: {
-    map () {
-      return this.VMap.map
-    }
+    map() {
+      return this.VMap.map;
+    },
   },
   watch: {
     visible: {
-      handler (value) {
-        console.log('layer visible change', value)
-        this.layer.setVisible(value)
-      },
-      immediate: false
-    },
-    zIndex: {
-      handler (value) {
-        this.layer.setZIndex(value)
-      },
-      immediate: false
-    },
-    maxZoom: {
-      handler (value) {
-        this.layer.setMaxZoom(value)
-      },
-      immediate: false
-    },
-    minZoom: {
-      handler (value) {
-        this.layer.setMinZoom(value)
-      },
-      immediate: false
-    },
-    extent: {
-      handler (value) {
-        this.layer.setExtent(value)
+      handler(value) {
+        console.log("layer visible change", value);
+        this.layer.setVisible(value);
       },
       immediate: false,
-      deep: true
+    },
+    zIndex: {
+      handler(value) {
+        this.layer.setZIndex(value);
+      },
+      immediate: false,
+    },
+    maxZoom: {
+      handler(value) {
+        this.layer.setMaxZoom(value);
+      },
+      immediate: false,
+    },
+    minZoom: {
+      handler(value) {
+        this.layer.setMinZoom(value);
+      },
+      immediate: false,
+    },
+    extent: {
+      handler(value) {
+        this.layer.setExtent(value);
+      },
+      immediate: false,
+      deep: true,
     },
     type: {
-      handler (value) {
+      handler(value) {
         // this.dispose()
         if (value) {
-          this.initDraw()
+          this.initDraw();
         } else {
-          this.dispose()
+          this.dispose();
         }
       },
-      immediate: false
-    }
+      immediate: false,
+    },
   },
-  mounted () {
-    this.init()
+  mounted() {
+    this.init();
   },
-  beforeDestroy () {
-    this.dispose()
+  beforeDestroy() {
+    this.dispose();
   },
   methods: {
-    init () {
-      const source = addVectorSource(this.source, this.map)
+    init() {
+      const source = addVectorSource(this.source, this.map);
       if (this.source.features.length <= 0 && this.features.length > 0) {
-        const features = setFeatures(this.features, this.map)
-        source.addFeatures(features)
+        const features = setFeatures(this.features, this.map);
+        source.addFeatures(features);
       }
-      const layerOpt = { ...this.$props, ...{ source } }
-      this.layer = new VectorLayer(layerOpt)
+      const layerOpt = { ...this.$props, ...{ source } };
+      this.layer = new VectorLayer(layerOpt);
       this.layer.setStyle((feature) => {
-        if (feature.get('style')) {
-          return setStyle(feature.get('style'))
+        if (feature.get("style")) {
+          return setStyle(feature.get("style"));
         } else {
           if (this.featureStyle) {
-            return setStyle(this.featureStyle)
+            return setStyle(this.featureStyle);
           } else {
             return setStyle({
               fill: {
-                color: 'rgba(67,126,255,0.15)'
+                color: "rgba(67,126,255,0.15)",
               },
               stroke: {
-                color: 'rgba(67,126,255,1)',
-                width: 1
+                color: "rgba(67,126,255,1)",
+                width: 1,
                 // lineDash: [20, 10, 20, 10]
-              }
-            })
+              },
+            });
           }
         }
-      })
-      this.layer.set('id', this.layerId)
-      this.layer.set('type', 'draw')
-      this.layer.set('users', true)
+      });
+      this.layer.set("id", this.layerId);
+      this.layer.set("type", "draw");
+      this.layer.set("users", true);
       if (this.zIndex) {
-        this.layer.setZIndex(this.zIndex)
+        this.layer.setZIndex(this.zIndex);
       }
-      this.map.addLayer(this.layer)
+      this.map.addLayer(this.layer);
       if (this.type) {
-        this.initDraw()
+        this.initDraw();
       }
     },
-    initDraw () {
-      this.resetDraw()
-      this.draw.set('type', 'draw')
-      this.map.addInteraction(this.draw)
-      this.draw.on('drawstart', evt => {
-        this.$emit('drawstart', evt, this.map)
+    initDraw() {
+      this.resetDraw();
+      this.draw.set("type", "draw");
+      this.map.addInteraction(this.draw);
+      this.draw.on("drawstart", (evt) => {
+        this.$emit("drawstart", evt, this.map);
         if (this.clear) {
-          this.layer.getSource().clear()
+          this.layer.getSource().clear();
         }
-      })
-      this.draw.on('drawend', evt => {
-        const geometry = evt.feature.getGeometry()
-        if (this.type === 'LineString') {
-          evt.measure = formatLength(geometry)
-        } else if (this.type === 'Polygon') {
-          evt.measure = formatArea(geometry)
+      });
+      this.draw.on("drawend", (evt) => {
+        const geometry = evt.feature.getGeometry();
+        if (this.type === "LineString") {
+          evt.measure = formatLength(geometry);
+        } else if (this.type === "Polygon") {
+          evt.measure = formatArea(geometry);
         }
-        this.$emit('drawend', evt, this.map)
+        this.$emit("drawend", evt, this.map);
         if (this.drawOnce) {
-          this.draw.setActive(false)
+          this.draw.setActive(false);
         }
         if (this.endRight && this.type) {
-          this.map.on('contextmenu', evt => {
-            console.log('end draw')
-            this.draw.setActive(false)
+          this.map.on("contextmenu", (evt) => {
+            console.log("end draw");
+            this.draw.setActive(false);
             // this.draw.finishDrawing()
-          })
+          });
         }
         if (this.endDblclick) {
-          this.map.on('dblclick', evt => {
-            console.log('end draw')
-            this.draw.setActive(false)
+          this.map.on("dblclick", (evt) => {
+            console.log("end draw");
+            this.draw.setActive(false);
             // this.draw.finishDrawing()
-          })
+          });
         }
-      })
+      });
       if (this.editable) {
         // this.select = new Select()
-        this.select = new Snap({ source: this.layer.getSource() })
+        this.select = new Snap({ source: this.layer.getSource() });
         // this.select.set('type', 'select')
-        this.map.addInteraction(this.select)
+        this.map.addInteraction(this.select);
         this.modify = new Modify({
-          source: this.layer.getSource()
-        })
-        this.modify.set('type', 'modify')
-        this.map.addInteraction(this.modify)
-        this.modify.on('modifystart', evt => {
-          this.$emit('modifystart', evt, this.map)
-        })
-        this.modify.on('modifyend', evt => {
-          const geometry = evt.features.getArray()[0].getGeometry()
-          if (this.type === 'LineString') {
-            evt.measure = formatLength(geometry)
-          } else if (this.type === 'Polygon') {
-            evt.measure = formatArea(geometry)
+          source: this.layer.getSource(),
+        });
+        this.modify.set("type", "modify");
+        this.map.addInteraction(this.modify);
+        this.modify.on("modifystart", (evt) => {
+          this.$emit("modifystart", evt, this.map);
+        });
+        this.modify.on("modifyend", (evt) => {
+          const geometry = evt.features.getArray()[0].getGeometry();
+          if (this.type === "LineString") {
+            evt.measure = formatLength(geometry);
+          } else if (this.type === "Polygon") {
+            evt.measure = formatArea(geometry);
           }
-          console.log('draw modify end', evt)
-          this.$emit('modifyend', evt, this.map)
-        })
+          console.log("draw modify end", evt);
+          this.$emit("modifyend", evt, this.map);
+        });
       }
     },
-    resetDraw () {
+    resetDraw() {
       if (this.draw) {
-        this.map.removeInteraction(this.draw)
-        this.draw = null
+        this.map.removeInteraction(this.draw);
+        this.draw = null;
       }
       const option = {
         source: this.layer.getSource(),
@@ -324,100 +324,108 @@ export default {
         wrapX: this.wrapX,
         geometryName: this.geometryName,
         geometryFunction: this.geometryFunction,
-        style: this.drawStyle ? setStyle(this.drawStyle) : null
-      }
-      if (this.type === 'Rectangle') {
+        style: this.drawStyle ? setStyle(this.drawStyle) : null,
+      };
+      if (this.type === "Rectangle") {
         const drawOpt = {
-          ...option, ...{ type: 'Circle', geometryFunction: createBox() }
-        }
-        this.draw = new Draw(drawOpt)
-      } else if (this.type === 'Square') {
+          ...option,
+          ...{ type: "Circle", geometryFunction: createBox() },
+        };
+        this.draw = new Draw(drawOpt);
+      } else if (this.type === "Square") {
         const drawOpt = {
-          ...option, ...{ type: 'Circle', geometryFunction: createRegularPolygon(4) }
-        }
-        this.draw = new Draw(drawOpt)
-      } else if (this.type.indexOf('Star') > -1) {
-        const points = this.type.split('-')[1] || 5
+          ...option,
+          ...{ type: "Circle", geometryFunction: createRegularPolygon(4) },
+        };
+        this.draw = new Draw(drawOpt);
+      } else if (this.type.indexOf("Star") > -1) {
+        const points = this.type.split("-")[1] || 5;
         const geometryFunction = function (coordinates, geometry) {
-          const center = coordinates[0]
-          const last = coordinates[coordinates.length - 1]
-          const dx = center[0] - last[0]
-          const dy = center[1] - last[1]
-          const radius = Math.sqrt(dx * dx + dy * dy)
-          const rotation = Math.atan2(dy, dx)
-          const newCoordinates = []
-          const numPoints = Number(points) * 2
+          const center = coordinates[0];
+          const last = coordinates[coordinates.length - 1];
+          const dx = center[0] - last[0];
+          const dy = center[1] - last[1];
+          const radius = Math.sqrt(dx * dx + dy * dy);
+          const rotation = Math.atan2(dy, dx);
+          const newCoordinates = [];
+          const numPoints = Number(points) * 2;
           for (let i = 0; i < numPoints; ++i) {
-            const angle = rotation + (i * 2 * Math.PI) / numPoints
-            const fraction = i % 2 === 0 ? 1 : 0.5
-            const offsetX = radius * fraction * Math.cos(angle)
-            const offsetY = radius * fraction * Math.sin(angle)
-            newCoordinates.push([center[0] + offsetX, center[1] + offsetY])
+            const angle = rotation + (i * 2 * Math.PI) / numPoints;
+            const fraction = i % 2 === 0 ? 1 : 0.5;
+            const offsetX = radius * fraction * Math.cos(angle);
+            const offsetY = radius * fraction * Math.sin(angle);
+            newCoordinates.push([center[0] + offsetX, center[1] + offsetY]);
           }
-          newCoordinates.push(newCoordinates[0].slice())
+          newCoordinates.push(newCoordinates[0].slice());
           if (!geometry) {
-            geometry = new Polygon([newCoordinates])
+            geometry = new Polygon([newCoordinates]);
           } else {
-            geometry.setCoordinates([newCoordinates])
+            geometry.setCoordinates([newCoordinates]);
           }
-          return geometry
-        }
+          return geometry;
+        };
         const drawOpt = {
-          ...option, ...{ type: 'Circle', geometryFunction }
-        }
-        this.draw = new Draw(drawOpt)
+          ...option,
+          ...{ type: "Circle", geometryFunction },
+        };
+        this.draw = new Draw(drawOpt);
       } else {
-        console.log(option)
-        this.draw = new Draw(option)
+        console.log(option);
+        this.draw = new Draw(option);
         if (this.arrow) {
           // 线加箭头
-          this.layer.on('postrender', () => { // 应对编辑后的箭头重制所以用postrender
-            const zoom = this.map.getView().getZoom()
-            this.layer.getSource().getFeatures().forEach(feature => {
-              if (feature.get('isArrow')) {
-                this.layer.getSource().removeFeature(feature)
-              }
-            })
+          this.layer.on("postrender", () => {
+            // 应对编辑后的箭头重制所以用postrender
+            const zoom = this.map.getView().getZoom();
+            this.layer
+              .getSource()
+              .getFeatures()
+              .forEach((feature) => {
+                if (feature.get("isArrow")) {
+                  this.layer.getSource().removeFeature(feature);
+                }
+              });
             if (Math.round(zoom) === zoom) {
-              this.layer.getSource().getFeatures().forEach(feature => {
-                arrowLine({
-                  coordinates: feature.getGeometry().getCoordinates(),
-                  map: this.map,
-                  source: this.layer.getSource(),
-                  ...this.arrow
-                })
-              })
+              this.layer
+                .getSource()
+                .getFeatures()
+                .forEach((feature) => {
+                  arrowLine({
+                    coordinates: feature.getGeometry().getCoordinates(),
+                    map: this.map,
+                    source: this.layer.getSource(),
+                    ...this.arrow,
+                  });
+                });
             }
-          })
+          });
         }
       }
     },
-    dispose () {
+    dispose() {
       // this.map.removeLayer(this.layer)
       // this.layer.getSource().clear()
-      this.map.removeInteraction(this.draw)
-      this.map.removeInteraction(this.select)
-      this.map.removeInteraction(this.modify)
-      this.layer.getSource().clear()
+      this.map.removeInteraction(this.draw);
+      this.map.removeInteraction(this.select);
+      this.map.removeInteraction(this.modify);
+      this.layer.getSource().clear();
     },
-    finish () {
-      this.draw.finishDrawing()
+    finish() {
+      this.draw.finishDrawing();
     },
-    remove () {
+    remove() {
       if (this.draw) {
-        this.map.removeInteraction(this.draw)
-        this.layer.getSource().clear()
-        this.map.removeInteraction(this.select)
-        this.map.removeInteraction(this.modify)
+        this.map.removeInteraction(this.draw);
+        this.layer.getSource().clear();
+        this.map.removeInteraction(this.select);
+        this.map.removeInteraction(this.modify);
       }
     },
-    setActive (value) {
-      this.draw.setActive(value)
-    }
-  }
-}
+    setActive(value) {
+      this.draw.setActive(value);
+    },
+  },
+};
 </script>
 
-<style scoped>
-
-</style>
+<style scoped></style>

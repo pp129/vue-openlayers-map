@@ -1,7 +1,7 @@
-import VImage from '@/components/layers/image/index.vue'
+import VImage from "@/components/layers/image/index.vue";
 
-VImage.install = Vue => {
-  Vue.component(VImage.name, VImage)
-}
+VImage.install = (Vue) => {
+  Vue.component(VImage.name, VImage);
+};
 
-export default VImage
+export default VImage;

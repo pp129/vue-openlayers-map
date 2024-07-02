@@ -1,14 +1,14 @@
-import './polyfills'
-import Vue from 'vue'
-import router from './router'
-import App from './App.vue'
-import olMap from '@/components/index'
+import "./polyfills";
+import Vue from "vue";
+import router from "./router";
+import App from "./App.vue";
+import olMap from "@/components/index";
 
-Vue.config.productionTip = false
+Vue.config.productionTip = false;
 
-Vue.use(olMap)
+Vue.use(olMap);
 
 new Vue({
   router,
-  render: h => h(App)
-}).$mount('#app')
+  render: (h) => h(App),
+}).$mount("#app");
