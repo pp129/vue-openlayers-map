@@ -51,7 +51,7 @@ export default {
           "PGIS_XM_GA_IMG",
           "FJ_BLUE",
           "FJ_BLUE_GA",
-          "GeoTIFF",
+          "GEOTIFF",
         ].includes(value.toUpperCase()),
     },
     tdVec: {
