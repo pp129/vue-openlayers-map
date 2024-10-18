@@ -8,7 +8,7 @@ import TileLayer from "ol/layer/Tile";
 import Mask from "ol-ext/filter/Mask";
 import { Fill } from "ol/style";
 import GeoTIFF from "ol/source/GeoTIFF";
-import { default as GeoTIFFLayer } from "ol/layer/WebGLTile";
+import GeoTIFFLayer from "ol/layer/WebGLTile";
 
 export default {
   name: "v-tile",
@@ -547,7 +547,9 @@ export default {
       const source = new GeoTIFF({
         ...this.GeoTiff,
       });
+      console.log("source", source);
       const layerOpt = { ...this.$props, ...{ source } };
+      // console.log("layerOpt", layerOpt);
       this.layer = new GeoTIFFLayer(layerOpt);
       this.layer.set("base", this.base);
       if (this.zIndex) {

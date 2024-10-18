@@ -19,6 +19,7 @@ import { getArea, getLength } from "ol/sphere";
 import proj4 from "proj4";
 import { register } from "ol/proj/proj4";
 proj4.defs("EPSG:4548", "+proj=tmerc +lat_0=0 +lon_0=117 +k=1 +x_0=500000 +y_0=0 +ellps=GRS80 +units=m +no_defs +type=crs");
+proj4.defs("EPSG:4490", "+proj=longlat +ellps=GRS80 +no_defs +type=crs");
 register(proj4);
 /**
  * Map扩展

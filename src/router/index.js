@@ -35,6 +35,11 @@ export const constantRouterMap = [
     name: "ModifyLine",
     component: () => import(/* webpackChunkName: "ModifyLine" */ "../examples/ModifyLine/index.vue"),
   },
+  {
+    path: "/Mobile",
+    name: "Mobile",
+    component: () => import(/* webpackChunkName: "Polyline" */ "../examples/Mobile/index.vue"),
+  },
 ];
 
 const router = new VueRouter({

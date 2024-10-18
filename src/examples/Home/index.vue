@@ -73,7 +73,7 @@
       @changeZoom="changeZoom"
     >
       <v-tile :tile-type="tile" :xyz="xyz" :z-index="3" :mask="tileFilter"></v-tile>
-      <v-tile ref="wms" tile-type="WMS" :wms="wms" :z-index="2"></v-tile>
+      <v-tile ref="wms" tile-type="WMS" :wms="wms" :z-index="9" visible></v-tile>
       <!-- 图片图层 -->
       <v-image
         :source="imageSource2"
@@ -200,6 +200,7 @@
 <script>
 import axios from "axios";
 import { getCentroid } from "@/utils";
+import { projection } from "@turf/turf";
 
 export default {
   name: "HomePage",
@@ -292,7 +293,15 @@ export default {
           name: "福建省深色",
           value: "FJ_BLUE",
         },
+        {
+          name: "集恩厦门卫星2022",
+          value: "XYZ",
+        },
       ],
+      XYZMix: {
+        url: "http://demo1.jointsurvey.com.cn:9901/Maps/XM_ic_2022/JointMap?service=GetImage&ak=a180e97163bf4e31ba1d2293c80a49b0&col={x}&row={y}&zoom={z}",
+        projection: "EPSG:4326",
+      },
       tile: "bd",
       xyz: {
         attributions: [
@@ -2445,6 +2454,10 @@ export default {
       }
     },
     changeTile() {
+      if (this.tile === "XYZ") {
+        this.xyz = { ...this.XYZMix };
+      }
+      console.log(this.xyz);
       setTimeout(() => {
         console.log(
           this.$refs.map.map

@@ -2,6 +2,7 @@ import { resolve } from "path";
 import { createVuePlugin } from "vite-plugin-vue2";
 import { defineConfig } from "vite";
 import { createHtmlPlugin } from "vite-plugin-html";
+import basicSsl from "@vitejs/plugin-basic-ssl";
 
 const build = (env) => {
   if (env === "production") {
@@ -38,8 +39,9 @@ const build = (env) => {
 export default defineConfig(({ command, mode }) => {
   return {
     server: {
-      host: "localhost",
-      port: 8080,
+      host: "0.0.0.0",
+      https: false,
+      port: 8081,
       open: true,
     },
     publicDir: mode === "lib" ? false : "public",
@@ -49,6 +51,7 @@ export default defineConfig(({ command, mode }) => {
       },
     },
     plugins: [
+      basicSsl(),
       createVuePlugin(),
       createHtmlPlugin({
         inject: {

@@ -1,7 +1,7 @@
 {
   "name": "v-ol-map",
   "private": false,
-  "version": "1.14.1",
+  "version": "1.14.2",
   "main": "lib/ol-map.umd.js",
   "files": [
     "lib"
@@ -20,6 +20,7 @@
   "devDependencies": {
     "@rollup/plugin-babel": "^5.3.1",
     "@types/node": "^18.6.5",
+    "@vitejs/plugin-basic-ssl": "^1.1.0",
     "@vitejs/plugin-legacy": "^2.0.1",
     "@vue/eslint-config-prettier": "^6.0.0",
     "babel-eslint": "^10.1.0",
@@ -45,7 +46,7 @@
     "gyeonghwon": "^0.1.1",
     "lodash": "^4.17.21",
     "nanoid": "^4.0.0",
-    "ol": "^7.3.0",
+    "ol": "^7.5.2",
     "ol-echarts": "^2.0.6",
     "ol-ext": "^4.0.4",
     "pinyin-pro": "^3.11.0",
