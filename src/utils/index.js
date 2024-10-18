@@ -21,6 +21,35 @@ import { register } from "ol/proj/proj4";
 proj4.defs("EPSG:4548", "+proj=tmerc +lat_0=0 +lon_0=117 +k=1 +x_0=500000 +y_0=0 +ellps=GRS80 +units=m +no_defs +type=crs");
 proj4.defs("EPSG:4490", "+proj=longlat +ellps=GRS80 +no_defs +type=crs");
 register(proj4);
+const projection4490 = new Projection({
+  code: "EPSG:4490",
+  units: "degrees",
+  axisOrientation: "neu",
+});
+projection4490.setExtent([-180, -90, 180, 90]);
+projection4490.setWorldExtent([-180, -90, 180, 90]);
+addProjection(projection4490);
+addCoordinateTransforms(
+  "EPSG:4326",
+  "EPSG:4490",
+  function (coordinate) {
+    return proj4("EPSG:4326", "EPSG:4490", coordinate);
+  },
+  function (coordinate) {
+    return proj4("EPSG:4490", "EPSG:4326", coordinate);
+  }
+);
+addCoordinateTransforms(
+  "EPSG:3857",
+  "EPSG:4490",
+  function (coordinate) {
+    return proj4("EPSG:3857", "EPSG:4490", coordinate);
+  },
+  function (coordinate) {
+    return proj4("EPSG:4490", "EPSG:3857", coordinate);
+  }
+);
+
 /**
  * Map扩展
  */

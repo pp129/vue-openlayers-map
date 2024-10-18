@@ -300,7 +300,7 @@ export default {
       ],
       XYZMix: {
         url: "http://demo1.jointsurvey.com.cn:9901/Maps/XM_ic_2022/JointMap?service=GetImage&ak=a180e97163bf4e31ba1d2293c80a49b0&col={x}&row={y}&zoom={z}",
-        projection: "EPSG:4326",
+        projection: "EPSG:4490",
       },
       tile: "bd",
       xyz: {
