@@ -72,7 +72,7 @@
       @load="onLoad"
       @changeZoom="changeZoom"
     >
-      <v-tile :tile-type="tile" :xyz="xyz" :z-index="3" :mask="tileFilter"></v-tile>
+      <v-tile :tile-type="tileType" :xyz="xyz" :z-index="3" :mask="tileFilter"></v-tile>
       <v-tile ref="wms" tile-type="WMS" :wms="wms" :z-index="9" visible></v-tile>
       <!-- 图片图层 -->
       <v-image
@@ -295,14 +295,25 @@ export default {
         },
         {
           name: "集恩厦门卫星2022",
-          value: "XYZ",
+          value: "XYZ_1",
+        },
+        {
+          name: "集恩厦门卫星2022_2",
+          value: "XYZ_2",
         },
       ],
       XYZMix: {
-        url: "http://demo1.jointsurvey.com.cn:9901/Maps/XM_ic_2022/JointMap?service=GetImage&ak=a180e97163bf4e31ba1d2293c80a49b0&col={x}&row={y}&zoom={z}",
-        projection: "EPSG:4490",
+        XYZ_1: {
+          url: "http://demo1.jointsurvey.com.cn:9901/Maps/XM_ic_2022/JointMap?service=GetImage&ak=a180e97163bf4e31ba1d2293c80a49b0&col={x}&row={y}&zoom={z}",
+          projection: "EPSG:4490",
+        },
+        XYZ_2: {
+          url: "http://44.64.128.233:8888/admin-api/Maps/FuJianSheng_XiaMen_vcc_L0_L20_20240929/JointMap?service=GetImage&ak=d59ec87cc74b40bbaf665d65b42554b7&col={x}&row={y}&zoom={z}",
+          projection: "EPSG:4490",
+        },
       },
       tile: "bd",
+      tileType: "bd",
       xyz: {
         attributions: [
           "custom attribution &copy; XXX Inc. " +
@@ -2454,18 +2465,22 @@ export default {
       }
     },
     changeTile() {
-      if (this.tile === "XYZ") {
-        this.xyz = { ...this.XYZMix };
+      // if (this.tile === "XYZ") {
+      //   this.xyz = { ...this.XYZMix };
+      // }
+      // this.tileType2 = val;
+      if (this.tile.indexOf("XYZ") > -1) {
+        this.tileType = "XYZ";
+        const tile = this.baseTile.find((item) => item.value === this.tile);
+        if (tile) {
+          console.log(tile);
+          this.xyz = {
+            ...this.XYZMix[this.tile],
+          };
+        }
+      } else {
+        this.tileType = this.tile;
       }
-      console.log(this.xyz);
-      setTimeout(() => {
-        console.log(
-          this.$refs.map.map
-            .getLayers()
-            .getArray()
-            .filter((x) => x.get("base"))
-        );
-      }, 1000);
     },
     loadTrack() {
       fetch("data-6k.json")

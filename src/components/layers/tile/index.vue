@@ -148,9 +148,16 @@ export default {
       },
       immediate: false,
     },
-    "xyz.attributions": {
+    xyz: {
       handler(value) {
-        this.layers.map((layer) => layer.getSource().setAttributions(value));
+        const layers = this.map
+          .getLayers()
+          .getArray()
+          .filter((x) => x.get("base"));
+        layers.forEach((layer) => {
+          this.map.removeLayer(layer);
+        });
+        this.init();
       },
       immediate: false,
       deep: true,
@@ -288,7 +295,7 @@ export default {
     initTileFJBlue() {
       // const url = 'https://xmghszzx.com/arcgis/rest/services/Updata/XMMAP_DP_2000/MapServer/tile'
       const url = "http://172.16.34.120:6080/arcgis/rest/services/xiamen/MapServer/tile"; // 加自绘翔安大桥
-      this.layer = this.initXYZbyURL(`${url}/{z}/{y}/{x}`, { projection: "EPSG:4326" });
+      this.layer = this.initXYZbyURL(`${url}/{z}/{y}/{x}`, { projection: "EPSG:4490" });
       this.layers = [this.layer];
       this.addToMap();
     },
