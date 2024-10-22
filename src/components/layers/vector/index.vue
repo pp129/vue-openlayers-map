@@ -32,6 +32,7 @@ import { Point } from "ol/geom";
 import Zoom from "ol-ext/featureanimation/Zoom";
 
 import Gyeonghwon from "gyeonghwon";
+import { feature } from "@turf/turf";
 
 export default {
   name: "v-vector",
@@ -55,6 +56,10 @@ export default {
       default() {
         return [];
       },
+    },
+    layerStyle: {
+      type: [Object, undefined],
+      default: undefined,
     },
     FeatureStyle: {
       type: [Object, Boolean],
@@ -274,28 +279,39 @@ export default {
         this.layer.set("cluster", true);
         this.layer.set("overlay", this.overlay);
       } else {
-        this.layerOpt = { ...this.$props, ...{ source } };
-        this.layer = new VectorLayer(this.layerOpt);
-        this.layer.setStyle((feature) => {
-          if (feature.get("style")) {
-            return setFeatureStyle(feature, feature.get("style"), this.map);
-          } else {
-            if (this.FeatureStyle && Object.keys(this.FeatureStyle).length > 0) {
-              return setStyle(this.FeatureStyle);
+        if (this.layerStyle && Object.keys(this.layerStyle).length > 0) {
+          this.layerOpt = {
+            ...this.$props,
+            ...{ source },
+            style: (feature) => {
+              return setFeatureStyle(feature, this.layerStyle, this.map);
+            },
+          };
+          this.layer = new VectorLayer(this.layerOpt);
+        } else {
+          this.layerOpt = { ...this.$props, ...{ source } };
+          this.layer = new VectorLayer(this.layerOpt);
+          this.layer.setStyle((feature) => {
+            if (feature.get("style")) {
+              return setFeatureStyle(feature, feature.get("style"), this.map);
             } else {
-              return setStyle({
-                fill: {
-                  color: "rgba(67,126,255,0.15)",
-                },
-                stroke: {
-                  color: "rgba(67,126,255,1)",
-                  width: 1,
-                  // lineDash: [20, 10, 20, 10]
-                },
-              });
+              if (this.FeatureStyle && Object.keys(this.FeatureStyle).length > 0) {
+                return setStyle(this.FeatureStyle);
+              } else {
+                return setStyle({
+                  fill: {
+                    color: "rgba(67,126,255,0.15)",
+                  },
+                  stroke: {
+                    color: "rgba(67,126,255,1)",
+                    width: 1,
+                    // lineDash: [20, 10, 20, 10]
+                  },
+                });
+              }
             }
-          }
-        });
+          });
+        }
       }
       this.layer.set("id", this.layerId);
       this.layer.set("type", "vector");

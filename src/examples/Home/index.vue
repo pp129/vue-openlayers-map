@@ -197,6 +197,8 @@
         :options="track.options"
         :trace-points-mode-play="track.mode"
       ></v-path>
+      <!-- 不用wfs图层也可以这样加载返回geojson格式的图层 -->
+      <!-- <v-vector :source="geoJSONSource" :z-index="1" :layer-style="geoJsonStyle" @singleclick="onClickWFS"></v-vector> -->
       <!-- wfs -->
       <v-wfs
         :options="wfsOptions"
@@ -1012,6 +1014,38 @@ export default {
       },
       positionWFS: undefined,
       wfsInfo: "",
+      geoJSONSource: {
+        url: "http://218.5.80.6:6600/geoserver/xiaqu/ows?service=WFS&version=1.0.0&request=GetFeature&typeName=xiaqu:PaiChuSouXQ_polygon&maxFeatures=50&outputFormat=application/json",
+        format: true,
+      },
+      geoJsonStyle: {
+        fill: {
+          color: "rgb(198, 226, 255,0.6)",
+        },
+        stroke: {
+          color: "rgb(51, 126, 204)",
+          width: 2,
+        },
+        text: {
+          text: "",
+          font: "16px sans-serif",
+          fill: {
+            color: "#fff",
+          },
+          stroke: {
+            color: "#000",
+            width: 3,
+          },
+        },
+        styleFunction: function (feature, resolution, map, style) {
+          const textStyle = style.getText(); // 获取文本样式
+          const text_ = feature.get("NAME"); // 设置文本内容
+          console.log(textStyle);
+          textStyle.setText(text_); // 更新文本样式
+          style.setText(textStyle);
+          return style; // 返回样式
+        },
+      },
     };
   },
   methods: {
@@ -3014,10 +3048,9 @@ export default {
       this.positionWFS = undefined;
       if (feature) {
         console.log("on click wfs", feature);
-        const properties = feature.get("properties");
-        console.log(properties);
         const geometry = feature.getGeometry();
         if (geometry) {
+          console.log(geometry);
           const { center } = calculateCenter(geometry);
           if (center) {
             const DISCRIB = feature.get("DISCRIB");
@@ -3103,7 +3136,7 @@ p {
   align-items: start;
   padding-left: 10px;
   flex-direction: column;
-  //background: #ffffff;
+  /*background: #ffffff;*/
 }
 .item {
   margin-top: 10px;

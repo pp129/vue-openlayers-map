@@ -7,7 +7,7 @@ import projzh from "@/utils/projConvert";
 import { addCoordinateTransforms, addProjection, Projection, transform } from "ol/proj";
 import { applyTransform, containsCoordinate, containsExtent, getHeight, getWidth, getCenter } from "ol/extent";
 import { distance, point, polygon, centroid } from "@turf/turf";
-import coordtransform, { gcj02towgs84 } from "@/utils/coordtransform";
+import coordtransform, { gcj02towgs84, bd09towgs84 } from "@/utils/coordtransform";
 import { Circle, LineString, MultiPoint, MultiPolygon, Point, Polygon } from "ol/geom";
 import { Fill, Icon, RegularShape, Stroke, Style, Text } from "ol/style";
 import CircleStyle from "ol/style/Circle";
@@ -16,6 +16,7 @@ import VectorSource from "ol/source/Vector";
 import VectorLayer from "ol/layer/Vector";
 import ImageCanvasSource from "ol/source/ImageCanvas";
 import { getArea, getLength } from "ol/sphere";
+import GeoJSON from "ol/format/GeoJSON";
 import proj4 from "proj4";
 import { register } from "ol/proj/proj4";
 proj4.defs("EPSG:4548", "+proj=tmerc +lat_0=0 +lon_0=117 +k=1 +x_0=500000 +y_0=0 +ellps=GRS80 +units=m +no_defs +type=crs");
@@ -664,17 +665,28 @@ export const getRadiusByUnit = (map, radius) => {
 /** source */
 
 export const addVectorSource = (option, map) => {
-  let features = [];
-  if (validObjKey(option, "features")) {
-    features = option.features;
-  }
+  // let features = [];
   if (validObjKey(option, "projection")) {
     if (option.projection === "GCJ02") {
       option.projection = gcj02towgs84;
+    } else if (option.projection === "baidu") {
+      option.projection = bd09towgs84;
     }
   }
-  const source = { ...option, ...{ features: setFeatures(features, map) } };
-  return new VectorSource(source);
+  if (validObjKey(option, "format") && option.format) {
+    option.format = new GeoJSON();
+  }
+  console.log("option", option);
+  const source = new VectorSource({
+    ...option,
+    // features: [],
+  });
+  if (validObjKey(option, "features")) {
+    const features = option.features;
+    // source = { ...option, ...{ features: setFeatures(features, map) } };
+    source.setFeatures(setFeatures(features, map));
+  }
+  return source;
 };
 
 /**
