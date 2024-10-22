@@ -59,6 +59,11 @@
         <button @click="setTileFilter(true)">展示</button>
         <button @click="setTileFilter(false)">隐藏</button>
       </div>
+      <div class="item">
+        <span class="label">wfs图层</span>
+        <button @click="setWFSVisible(true)">展示</button>
+        <button @click="setWFSVisible(false)">隐藏</button>
+      </div>
     </div>
     <v-map
       class="map"
@@ -72,7 +77,7 @@
       @load="onLoad"
       @changeZoom="changeZoom"
     >
-      <v-tile :tile-type="tileType" :xyz="xyz" :z-index="3" :mask="tileFilter"></v-tile>
+      <v-tile :tile-type="tileType" :xyz="xyz" :z-index="0" :mask="tileFilter"></v-tile>
       <v-tile ref="wms" tile-type="WMS" :wms="wms" :z-index="9" visible></v-tile>
       <!-- 图片图层 -->
       <v-image
@@ -192,6 +197,17 @@
         :options="track.options"
         :trace-points-mode-play="track.mode"
       ></v-path>
+      <!-- wfs -->
+      <v-wfs
+        :options="wfsOptions"
+        :z-index="1"
+        :layer-style="wfsLayerStyle"
+        :visible="wfsLayerVisible"
+        @singleclick="onClickWFS"
+      ></v-wfs>
+      <v-overlay class="overlay" :position="positionWFS">
+        {{ wfsInfo }}
+      </v-overlay>
       <v-heatmap :features="heatmap.features" :visible="heatmap.visible" :radius="3" :blur="6" :z-index="9"></v-heatmap>
     </v-map>
   </div>
@@ -199,8 +215,7 @@
 
 <script>
 import axios from "axios";
-import { getCentroid } from "@/utils";
-import { projection } from "@turf/turf";
+import { calculateCenter, getCentroid } from "@/utils";
 
 export default {
   name: "HomePage",
@@ -969,6 +984,34 @@ export default {
           },
         ],
       },
+      wfsLayerVisible: false,
+      wfsOptions: {
+        featureNS: "http://218.5.80.6:6600/geoserver/xiaqu/ows",
+        featureTypes: ["xiaqu:PaiChuSouXQ_polygon"],
+        srsName: "EPSG:4326",
+      },
+      wfsLayerStyle: {
+        fill: {
+          color: "rgb(198, 226, 255,0.6)",
+        },
+        stroke: {
+          color: "rgb(51, 126, 204)",
+          width: 2,
+        },
+        text: {
+          key: "NAME",
+          font: "16px sans-serif",
+          fill: {
+            color: "#fff",
+          },
+          stroke: {
+            color: "#000",
+            width: 3,
+          },
+        },
+      },
+      positionWFS: undefined,
+      wfsInfo: "",
     };
   },
   methods: {
@@ -2421,6 +2464,9 @@ export default {
         this.tileFilter = undefined;
       }
     },
+    setWFSVisible(visible) {
+      this.wfsLayerVisible = visible;
+    },
     onContextmenu(evt, map) {
       this.positionMenu = evt.coordinate;
     },
@@ -2963,6 +3009,25 @@ export default {
         }
       }
     },
+    onClickWFS(evt, feature) {
+      console.log(evt);
+      this.positionWFS = undefined;
+      if (feature) {
+        console.log("on click wfs", feature);
+        const properties = feature.get("properties");
+        console.log(properties);
+        const geometry = feature.getGeometry();
+        if (geometry) {
+          const { center } = calculateCenter(geometry);
+          if (center) {
+            const DISCRIB = feature.get("DISCRIB");
+            const NAME = feature.get("NAME");
+            this.wfsInfo = DISCRIB ? `分局：${DISCRIB} 派出所：${NAME}` : `派出所：${NAME}`;
+            this.positionWFS = center;
+          }
+        }
+      }
+    },
     getCentroid() {
       const coordinates = [
         [118.23048075355373, 24.587052571002776],
@@ -2985,6 +3050,10 @@ export default {
 </script>
 
 <style>
+p {
+  margin: 0;
+  padding: 0;
+}
 .ol-rotate-custom {
   right: 5em;
   top: 0.5em;
@@ -3044,7 +3113,7 @@ export default {
   align-items: center;
   border: 1px solid #666;
   border-radius: 6px;
-  padding: 10px;
+  padding: 6px;
   background: rgba(0, 0, 0, 0.2);
 }
 .label {

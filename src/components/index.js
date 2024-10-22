@@ -15,6 +15,7 @@ import VTrack from "@/components/track/index";
 import VPath from "@/components/path/index";
 import VSuperCluster from "@/components/layers/cluster/index";
 import VTraffic from "@/components/layers/traffic/index";
+import VWfs from "@/components/layers/wfs/index";
 import * as utils from "@/utils";
 
 const components = [
@@ -34,6 +35,7 @@ const components = [
   VEcharts,
   VSuperCluster,
   VTraffic,
+  VWfs,
 ];
 
 const install = function (Vue) {
@@ -70,5 +72,6 @@ export {
   VSuperCluster,
   VTraffic,
   VPath,
+  VWfs,
   utils,
 };
