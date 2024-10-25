@@ -2,7 +2,6 @@ import { resolve } from "path";
 import { createVuePlugin } from "vite-plugin-vue2";
 import { defineConfig } from "vite";
 import { createHtmlPlugin } from "vite-plugin-html";
-import basicSsl from "@vitejs/plugin-basic-ssl";
 
 const build = (env) => {
   if (env === "production") {
@@ -51,7 +50,6 @@ export default defineConfig(({ command, mode }) => {
       },
     },
     plugins: [
-      basicSsl(),
       createVuePlugin(),
       createHtmlPlugin({
         inject: {
@@ -65,7 +63,7 @@ export default defineConfig(({ command, mode }) => {
       }),
     ],
     esbuild: {
-      drop: ["console", "debugger"],
+      drop: mode === "build" ? ["console", "debugger"] : [],
     },
     build: build(mode),
   };

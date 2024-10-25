@@ -85,18 +85,7 @@ export default {
         ...this.$props,
         source: this.vectorSource,
         style: (feature) => {
-          let labelText = "";
-          if (this.layerStyle.text.key) {
-            labelText = feature.get(this.layerStyle.text.key);
-          }
-          const style = setStyle(this.layerStyle);
-          const textOptions = {
-            ...this.layerStyle.text,
-            text: labelText,
-          };
-          const textStyle = setText(textOptions);
-          style.setText(textStyle);
-          return style;
+          return setFeatureStyle(feature, this.layerStyle, this.map);
         },
       });
       this.vectorLayer.set("id", this.layerId);

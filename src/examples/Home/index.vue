@@ -1001,7 +1001,7 @@ export default {
           width: 2,
         },
         text: {
-          key: "NAME",
+          text: "",
           font: "16px sans-serif",
           fill: {
             color: "#fff",
@@ -1010,6 +1010,13 @@ export default {
             color: "#000",
             width: 3,
           },
+        },
+        styleFunction: function (feature, resolution, map, style) {
+          const textStyle = style.getText(); // 获取文本样式
+          const text_ = feature.get("NAME"); // 设置文本内容
+          textStyle.setText(text_); // 更新文本样式
+          style.setText(textStyle);
+          return style; // 返回样式
         },
       },
       positionWFS: undefined,
@@ -1040,7 +1047,6 @@ export default {
         styleFunction: function (feature, resolution, map, style) {
           const textStyle = style.getText(); // 获取文本样式
           const text_ = feature.get("NAME"); // 设置文本内容
-          console.log(textStyle);
           textStyle.setText(text_); // 更新文本样式
           style.setText(textStyle);
           return style; // 返回样式
