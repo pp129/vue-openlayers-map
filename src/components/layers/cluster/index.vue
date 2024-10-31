@@ -13,7 +13,6 @@ import Supercluster from "supercluster";
 import { convertCoordinate, setStyle, validObjKey } from "@/utils";
 import CircleStyle from "ol/style/Circle";
 import { unByKey } from "ol/Observable";
-// import { throttle } from 'throttle-debounce'
 
 export default {
   name: "v-super-cluster",
@@ -54,10 +53,6 @@ export default {
     },
     overlay: {
       type: Object,
-    },
-    throttleDelay: {
-      type: Number,
-      default: 1000,
     },
   },
   data() {

@@ -22,7 +22,7 @@ const build = (env) => {
         fileName: (format) => `ol-map.${format}.js`,
       },
       rollupOptions: {
-        external: ["vue"],
+        external: ["vue", "vue-router"],
         output: {
           globals: {
             vue: "Vue",
