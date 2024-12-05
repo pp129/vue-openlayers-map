@@ -1,7 +1,7 @@
 {
   "name": "v-ol-map",
   "private": false,
-  "version": "1.14.9",
+  "version": "1.14.10",
   "main": "lib/ol-map.umd.js",
   "files": [
     "lib",

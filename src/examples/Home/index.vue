@@ -211,6 +211,7 @@
         {{ wfsInfo }}
       </v-overlay>
       <v-heatmap :features="heatmap.features" :visible="heatmap.visible" :radius="3" :blur="6" :z-index="9"></v-heatmap>
+      <v-gd-route :url="GDRoute.url" :z-index="3" @singleclick="onClickGDRoute"></v-gd-route>
     </v-map>
   </div>
 </template>
@@ -1051,6 +1052,9 @@ export default {
           style.setText(textStyle);
           return style; // 返回样式
         },
+      },
+      GDRoute: {
+        url: "http://27.154.234.238:3398/admin-api/Features/gd_route_clean/JointFeature?ak=3a772a1c9c1245d5905a6f7cd522bbf5",
       },
     };
   },
@@ -3078,6 +3082,9 @@ export default {
       const feature = getCentroid([coordinates]);
       console.log(feature);
       this.features2.push(feature.geometry);
+    },
+    onClickGDRoute(evt, feature) {
+      console.log("onClickGDRoute===", feature);
     },
   },
   mounted() {
