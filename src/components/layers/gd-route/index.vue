@@ -49,8 +49,15 @@ export default {
   },
   watch: {
     visible: {
-      handler(value) {
+      async handler(value) {
+        if (this.timer) {
+          clearTimeout(this.timer);
+          this.timer = null;
+        }
         this.layer.setVisible(value);
+        if (this.layer && this.layer.getVisible()) {
+          await this.reload();
+        }
       },
       immediate: false,
     },
@@ -131,7 +138,6 @@ export default {
         return;
       }
       this.source = new VectorSource();
-      await this.renderRoute();
       const layerOpt = {
         ...this.$props,
         source: this.source,

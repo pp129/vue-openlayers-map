@@ -64,6 +64,11 @@
         <button @click="setWFSVisible(true)">展示</button>
         <button @click="setWFSVisible(false)">隐藏</button>
       </div>
+      <div class="item">
+        <span class="label">高德路况图层</span>
+        <button @click="setGDVisible(true)">展示</button>
+        <button @click="setGDVisible(false)">隐藏</button>
+      </div>
     </div>
     <v-map
       class="map"
@@ -78,7 +83,7 @@
       @changeZoom="changeZoom"
     >
       <v-tile :tile-type="tileType" :xyz="xyz" :z-index="0" :mask="tileFilter"></v-tile>
-      <v-tile ref="wms" tile-type="WMS" :wms="wms" :z-index="9" visible></v-tile>
+      <!-- <v-tile ref="wms" tile-type="WMS" :wms="wms" :z-index="9" visible></v-tile> -->
       <!-- 图片图层 -->
       <v-image
         :source="imageSource2"
@@ -87,7 +92,7 @@
         :z-index="9"
         :visible="imageVisible"
       ></v-image>
-      <v-tile tile-type="GeoTIFF" :z-index="9" :geo-tiff="GeoTIFF" visible></v-tile>
+      <!-- <v-tile tile-type="GeoTIFF" :z-index="9" :geo-tiff="GeoTIFF" visible></v-tile> -->
       <!--      <v-overview :tile-type="tile" :rotateWithView="rotateWithView" collapsible></v-overview>-->
       <!-- 海量点聚合 -->
       <v-super-cluster
@@ -200,18 +205,18 @@
       <!-- 不用wfs图层也可以这样加载返回geojson格式的图层 -->
       <!-- <v-vector :source="geoJSONSource" :z-index="1" :layer-style="geoJsonStyle" @singleclick="onClickWFS"></v-vector> -->
       <!-- wfs -->
-      <v-wfs
+      <!-- <v-wfs
         :options="wfsOptions"
         :z-index="1"
         :layer-style="wfsLayerStyle"
         :visible="wfsLayerVisible"
         @singleclick="onClickWFS"
-      ></v-wfs>
+      ></v-wfs> -->
       <v-overlay class="overlay" :position="positionWFS">
         {{ wfsInfo }}
       </v-overlay>
       <v-heatmap :features="heatmap.features" :visible="heatmap.visible" :radius="3" :blur="6" :z-index="9"></v-heatmap>
-      <v-gd-route :url="GDRoute.url" :z-index="3" @singleclick="onClickGDRoute"></v-gd-route>
+      <v-gd-route :url="GDRoute.url" :visible="GDRoute.visible" :z-index="3" @singleclick="onClickGDRoute"></v-gd-route>
     </v-map>
   </div>
 </template>
@@ -1055,6 +1060,7 @@ export default {
       },
       GDRoute: {
         url: "http://27.154.234.238:3398/admin-api/Features/gd_route_clean/JointFeature?ak=3a772a1c9c1245d5905a6f7cd522bbf5",
+        visible: true,
       },
     };
   },
@@ -3085,6 +3091,9 @@ export default {
     },
     onClickGDRoute(evt, feature) {
       console.log("onClickGDRoute===", feature);
+    },
+    setGDVisible(visible) {
+      this.GDRoute.visible = visible;
     },
   },
   mounted() {
