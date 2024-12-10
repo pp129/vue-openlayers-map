@@ -3,9 +3,10 @@ import BaseLayer from "@/components/layers/BaseLayer.vue";
 import { nanoid } from "nanoid";
 import { GeoJSON } from "ol/format";
 import VectorSource from "ol/source/Vector";
-import VectorLayer from "ol/layer/Vector";
-import { Stroke, Style } from "ol/style";
+import VectorLayer from "ol/layer/WebGLVector";
 import { unByKey } from "ol/Observable";
+import { throttle } from "throttle-debounce";
+// import { Stroke, Style } from "ol/style";
 
 export default {
   name: "v-gd-route",
@@ -17,7 +18,7 @@ export default {
   props: {
     interval: {
       type: Number,
-      default: 10000,
+      default: 30000,
     },
     layerId: {
       type: String,
@@ -28,7 +29,9 @@ export default {
     colors: {
       type: Array,
       default() {
-        return ["#4fd27d", "#ffd045", "#e80e0e", "#b40000", "#8f979c"];
+        //  return ["rgba(0,192,73,0.99609375)", "rgba(242,48,48,0.99609375)", "rgba(255,159,25,0.99609375)"];
+        // return ["#4fd27d", "#ffd045", "#e80e0e", "#b40000", "#8f979c"];
+        return ["rgba(0,192,73,0.99609375)", "rgba(255,159,25,0.99609375)", "#e80e0e", "#b40000", "#8f979c"];
       },
     },
     url: String,
@@ -37,9 +40,10 @@ export default {
     return {
       source: null,
       layer: null,
-      eventList: ["singleclick", "pointermove"],
+      eventList: ["singleclick"],
       eventRender: [],
       timer: null,
+      worker: null,
     };
   },
   computed: {
@@ -108,6 +112,17 @@ export default {
       const form = new FormData();
       form.append("f", "geojson");
       form.append("returnGeometry", true);
+      form.append("resultRecordCount", 50000);
+      const zoom = this.map.getView().getZoom();
+      console.log(zoom);
+      if (zoom < 15) {
+        form.append("where", "roadclass in (1,2,3)");
+      } else if (zoom >= 15 && zoom < 17) {
+        form.append("where", "roadclass in (1,2,3,4)");
+      } else if (zoom >= 17) {
+        form.append("where", "roadclass in (1,2,3,4,5)");
+      }
+      // form.append("where", "roadclass in (1,2,3,4)");
       const view = this.map.getView();
       const extent = view.calculateExtent(this.map.getSize());
       const polygon = [
@@ -141,15 +156,32 @@ export default {
       const layerOpt = {
         ...this.$props,
         source: this.source,
-        style: (feature) => {
-          const state = feature.get("state");
-          const color = this.getColor(Number(state));
-          return new Style({
-            stroke: new Stroke({
-              color: color,
-              width: 4,
-            }),
-          });
+        // style: (feature) => {
+        //   const state = feature.get("state");
+        //   const color = this.getColor(Number(state));
+        //   return new Style({
+        //     stroke: new Stroke({
+        //       color: color,
+        //       width: 4,
+        //     }),
+        //   });
+        // },
+        style: {
+          "stroke-color": [
+            "case",
+            ["==", ["get", "state"], 1],
+            this.colors[0],
+            ["==", ["get", "state"], 2],
+            this.colors[1],
+            ["==", ["get", "state"], 3],
+            this.colors[2],
+            ["==", ["get", "state"], 4],
+            this.colors[3],
+            ["==", ["get", "state"], -1],
+            this.colors[4],
+            ["*", ["get", "state"], this.colors[0]],
+          ],
+          "stroke-width": 4,
         },
       };
       this.layer = new VectorLayer(layerOpt);
@@ -183,7 +215,7 @@ export default {
         this.zoomEnd(evt);
       });
     },
-    async renderRoute() {
+    renderRoute: throttle(2000, async function () {
       const data = await this.getData();
       const { featureCount } = data;
       if (featureCount > 0) {
@@ -193,7 +225,7 @@ export default {
           this.source.addFeatures(features);
         }
       }
-    },
+    }),
     async reload() {
       await this.renderRoute();
       this.timer = setTimeout(async () => {

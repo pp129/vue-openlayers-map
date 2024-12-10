@@ -1,7 +1,7 @@
 {
   "name": "v-ol-map",
   "private": false,
-  "version": "1.14.10",
+  "version": "1.15.0",
   "main": "lib/ol-map.umd.js",
   "files": [
     "lib",
@@ -46,7 +46,7 @@
     "gifler": "^0.1.0",
     "gyeonghwon": "^0.1.1",
     "nanoid": "^4.0.0",
-    "ol": "^7.5.2",
+    "ol": "^10.3.1",
     "ol-echarts": "^2.0.6",
     "ol-ext": "^4.0.4",
     "pinyin-pro": "^3.11.0",
@@ -54,6 +54,7 @@
     "qs": "^6.11.0",
     "simplify-js": "^1.2.4",
     "supercluster": "^8.0.1",
+    "throttle-debounce": "^5.0.2",
     "vue": "^2.7.8",
     "vue-router": "^3.2.0",
     "vue-template-compiler": "^2.7.8"
