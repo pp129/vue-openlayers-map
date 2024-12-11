@@ -68,6 +68,8 @@
         <span class="label">高德路况图层</span>
         <button @click="setGDVisible(true)">展示</button>
         <button @click="setGDVisible(false)">隐藏</button>
+        <label> 是否启用webGL </label>
+        <input type="checkbox" name="modify" v-model="GDRoute.webGl" />
       </div>
     </div>
     <v-map
@@ -216,7 +218,13 @@
         {{ wfsInfo }}
       </v-overlay>
       <v-heatmap :features="heatmap.features" :visible="heatmap.visible" :radius="3" :blur="6" :z-index="9"></v-heatmap>
-      <v-gd-route :url="GDRoute.url" :visible="GDRoute.visible" :z-index="3" @singleclick="onClickGDRoute"></v-gd-route>
+      <v-gd-route
+        :url="GDRoute.url"
+        :visible="GDRoute.visible"
+        :web-gl="GDRoute.webGl"
+        :z-index="3"
+        @singleclick="onClickGDRoute"
+      ></v-gd-route>
     </v-map>
   </div>
 </template>
@@ -1059,8 +1067,9 @@ export default {
         },
       },
       GDRoute: {
-        url: "http://27.154.234.238:3398/admin-api/Features/gd_route_clean/JointFeature?ak=3a772a1c9c1245d5905a6f7cd522bbf5",
+        url: "http://36.248.238.35:8888/admin-api/Features/gd_route_clean/JointFeature?ak=f5ce622f301640a7a1d9b7d7e1ac5f6b",
         visible: true,
+        webGl: false,
       },
     };
   },

@@ -3,10 +3,11 @@ import BaseLayer from "@/components/layers/BaseLayer.vue";
 import { nanoid } from "nanoid";
 import { GeoJSON } from "ol/format";
 import VectorSource from "ol/source/Vector";
-import VectorLayer from "ol/layer/WebGLVector";
+import WebGLVector from "ol/layer/WebGLVector";
+import VectorLayer from "ol/layer/Vector";
 import { unByKey } from "ol/Observable";
+import { Stroke, Style } from "ol/style";
 import { throttle } from "throttle-debounce";
-// import { Stroke, Style } from "ol/style";
 
 export default {
   name: "v-gd-route",
@@ -35,6 +36,10 @@ export default {
       },
     },
     url: String,
+    webGl: {
+      type: Boolean,
+      default: false,
+    },
   },
   data() {
     return {
@@ -43,7 +48,6 @@ export default {
       eventList: ["singleclick"],
       eventRender: [],
       timer: null,
-      worker: null,
     };
   },
   computed: {
@@ -90,22 +94,30 @@ export default {
       immediate: false,
       deep: true,
     },
+    webGl: {
+      handler() {
+        this.dispose();
+        this.init();
+      },
+      immediate: false,
+      deep: true,
+    },
   },
   methods: {
     getColor(state) {
-      switch (state) {
-        case state === 1:
-          return this.colors[0];
-        case state === 2:
-          return this.colors[1];
-        case state === 3:
-          return this.colors[2];
-        case state === 4:
-          return this.colors[3];
-        case state === -1:
-          return this.colors[4];
-        default:
-          return this.colors[0];
+      // console.log("getColor", state);
+      if (state === 1) {
+        return this.colors[0];
+      } else if (state === 2) {
+        return this.colors[1];
+      } else if (state === 3) {
+        return this.colors[2];
+      } else if (state === 4) {
+        return this.colors[3];
+      } else if (state === -1) {
+        return this.colors[4];
+      } else {
+        return this.colors[0];
       }
     },
     async getData() {
@@ -148,43 +160,55 @@ export default {
           return data;
         });
     },
+    setLayer() {
+      if (this.webGl) {
+        const layerOpt = {
+          ...this.$props,
+          source: this.source,
+          style: {
+            "stroke-color": [
+              "case",
+              ["==", ["get", "state"], 1],
+              this.colors[0],
+              ["==", ["get", "state"], 2],
+              this.colors[1],
+              ["==", ["get", "state"], 3],
+              this.colors[2],
+              ["==", ["get", "state"], 4],
+              this.colors[3],
+              ["==", ["get", "state"], -1],
+              this.colors[4],
+              ["*", ["get", "state"], this.colors[0]],
+            ],
+            "stroke-width": 4,
+          },
+        };
+        return new WebGLVector(layerOpt);
+      } else {
+        const layerOpt = {
+          ...this.$props,
+          source: this.source,
+          style: (feature) => {
+            const state = feature.get("state");
+            const color = this.getColor(Number(state));
+            // console.log("121", color);
+            return new Style({
+              stroke: new Stroke({
+                color: color,
+                width: 4,
+              }),
+            });
+          },
+        };
+        return new VectorLayer(layerOpt);
+      }
+    },
     async init() {
       if (!this.url) {
         return;
       }
       this.source = new VectorSource();
-      const layerOpt = {
-        ...this.$props,
-        source: this.source,
-        // style: (feature) => {
-        //   const state = feature.get("state");
-        //   const color = this.getColor(Number(state));
-        //   return new Style({
-        //     stroke: new Stroke({
-        //       color: color,
-        //       width: 4,
-        //     }),
-        //   });
-        // },
-        style: {
-          "stroke-color": [
-            "case",
-            ["==", ["get", "state"], 1],
-            this.colors[0],
-            ["==", ["get", "state"], 2],
-            this.colors[1],
-            ["==", ["get", "state"], 3],
-            this.colors[2],
-            ["==", ["get", "state"], 4],
-            this.colors[3],
-            ["==", ["get", "state"], -1],
-            this.colors[4],
-            ["*", ["get", "state"], this.colors[0]],
-          ],
-          "stroke-width": 4,
-        },
-      };
-      this.layer = new VectorLayer(layerOpt);
+      this.layer = this.setLayer();
       this.layer.set("id", this.layerId);
       // this.layer.set("type", "vector");
       this.layer.set("users", true);
