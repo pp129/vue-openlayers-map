@@ -19,6 +19,7 @@ import { getArea, getLength } from "ol/sphere";
 import GeoJSON from "ol/format/GeoJSON";
 import proj4 from "proj4";
 import { register } from "ol/proj/proj4";
+
 proj4.defs("EPSG:4548", "+proj=tmerc +lat_0=0 +lon_0=117 +k=1 +x_0=500000 +y_0=0 +ellps=GRS80 +units=m +no_defs +type=crs");
 proj4.defs("EPSG:4490", "+proj=longlat +ellps=GRS80 +no_defs +type=crs");
 register(proj4);
@@ -434,6 +435,7 @@ export const setFeatures = (features, map, hasStyle = false) => {
  * @returns {FeatureExt}
  */
 export const setFeature = (option, map, hasStyle = false) => {
+  console.log(option);
   if (validObjKey(option, "type")) {
     const type = option.type;
     switch (type) {
@@ -566,7 +568,7 @@ export const setPolygon = (option) => {
     coordinates = option.coordinates;
   }
   const feature = new FeatureExt({
-    geometry: new Polygon([coordinates]),
+    geometry: new Polygon(coordinates),
   });
   feature.setId(option.id || `polygon-${nanoid()}`);
   if (typeof option === "object") {
@@ -589,7 +591,7 @@ export const setMultiPolygon = (option) => {
     coordinates = option.coordinates;
   }
   const feature = new FeatureExt({
-    geometry: new MultiPolygon([coordinates]),
+    geometry: new MultiPolygon(coordinates),
   });
   feature.setId(option.id || `polygon-${nanoid()}`);
   if (typeof option === "object") {
@@ -1223,6 +1225,14 @@ export class OlMap {
 
   static setControl(control, options, controlOptions) {
     return setControl(OlMap.map.map, control, options, controlOptions);
+  }
+
+  static writeFeaturesObject(features) {
+    if (features) return new GeoJSON().writeFeaturesObject(features);
+  }
+
+  static writeFeatureObject(feature) {
+    if (feature) return new GeoJSON().writeFeatureObject(feature);
   }
 
   get mapControlsZoom() {

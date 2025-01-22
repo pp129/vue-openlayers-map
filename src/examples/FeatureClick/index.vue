@@ -2,7 +2,7 @@
   <v-map :view="view">
     <v-tile tile-type="BD"></v-tile>
     <v-vector :features="features" @singleclick="onClickFeature" @pointermove="pointermove"></v-vector>
-    <v-vector :features="markers" @singleclick="onClickMarker"></v-vector>
+    <v-vector :features="markers" @singleclick="onClickMarker" @dblclick="onDblclick"></v-vector>
   </v-map>
 </template>
 
@@ -12,7 +12,7 @@ export default {
   data() {
     return {
       view: {
-        city: "xiamen",
+        city: "厦门",
         zoom: 12,
       },
       features: [
@@ -58,6 +58,9 @@ export default {
     },
     onClickMarker(evt, marker) {
       console.log("marker", marker);
+    },
+    onDblclick(evt, feature) {
+      console.log("onDblclick", feature);
     },
     pointermove(evt, feature) {
       // console.log('feature', feature)

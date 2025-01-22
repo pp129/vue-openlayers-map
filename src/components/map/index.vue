@@ -283,6 +283,12 @@ export default {
     setControl(controls, options) {
       OlMap.setControl(controls, options);
     },
+    writeFeaturesObject(features) {
+      return OlMap.writeFeaturesObject(features);
+    },
+    writeFeatureObject(feature) {
+      return OlMap.writeFeatureObject(feature);
+    },
     panTo(param) {
       OlMap.panTo(param);
     },

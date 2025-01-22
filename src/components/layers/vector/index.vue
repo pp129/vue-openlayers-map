@@ -101,7 +101,7 @@ export default {
       flashInterval: null,
       styleCache: {},
       eventRender: [],
-      eventList: ["singleclick", "pointermove"],
+      eventList: ["singleclick", "pointermove", "dblclick"],
       gh: null, // canvas控制对象
     };
   },

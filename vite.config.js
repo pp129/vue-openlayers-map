@@ -38,10 +38,10 @@ const build = (env) => {
 export default defineConfig(({ command, mode }) => {
   return {
     server: {
-      host: "0.0.0.0",
-      https: false,
-      port: 8081,
+      host: "localhost",
+      port: 8080,
       open: true,
+      hmr: true,
     },
     publicDir: mode === "lib" ? false : "public",
     resolve: {

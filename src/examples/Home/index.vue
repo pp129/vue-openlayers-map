@@ -1069,7 +1069,7 @@ export default {
       GDRoute: {
         url: "http://36.248.238.35:8888/admin-api/Features/gd_route_clean/JointFeature?ak=f5ce622f301640a7a1d9b7d7e1ac5f6b",
         visible: true,
-        webGl: false,
+        webGl: true,
       },
     };
   },

@@ -40,6 +40,16 @@ export const constantRouterMap = [
     name: "Mobile",
     component: () => import(/* webpackChunkName: "Polyline" */ "../examples/Mobile/index.vue"),
   },
+  {
+    path: "/TrafficRoute",
+    name: "TrafficRoute",
+    component: () => import(/* webpackChunkName: "TrafficRoute" */ "../examples/TrafficRoute/index.vue"),
+  },
+  {
+    path: "/RouteInArea",
+    name: "RouteInArea",
+    component: () => import(/* webpackChunkName: "RouteInArea" */ "../examples/RouteInArea/index.vue"),
+  },
 ];
 
 const router = new VueRouter({

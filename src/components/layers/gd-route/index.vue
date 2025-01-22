@@ -17,9 +17,9 @@ export default {
   extends: BaseLayer,
   inject: ["VMap"],
   props: {
-    interval: {
-      type: Number,
-      default: 30000,
+    className: {
+      type: String,
+      default: "gd-route-layer",
     },
     layerId: {
       type: String,
@@ -27,6 +27,12 @@ export default {
         return `traffic-layer-${nanoid()}`;
       },
     },
+    // 自动跟新频率（ms）
+    interval: {
+      type: Number,
+      default: 30000,
+    },
+    // 拥堵程度颜色
     colors: {
       type: Array,
       default() {
@@ -35,10 +41,46 @@ export default {
         return ["rgba(0,192,73,0.99609375)", "rgba(255,159,25,0.99609375)", "#e80e0e", "#b40000", "#8f979c"];
       },
     },
+    // 服务地址
     url: String,
+    // 过滤条件
+    where: String,
+    // 是否使用WebGLVector
     webGl: {
       type: Boolean,
       default: false,
+    },
+    // 路况线宽
+    lineWidth: {
+      type: [Number, String],
+      default: 2,
+    },
+    // 查询范围内的路况
+    geometry: Object,
+    // 以视窗为范围
+    inViewport: {
+      type: Boolean,
+      default: true,
+    },
+    lowLevel: {
+      type: Number,
+      default: 14,
+    },
+    lowLevelClass: {
+      type: String,
+      default: "(1,2,3)",
+    },
+    midLevelClass: {
+      type: String,
+      default: "(1,2,3,4)",
+    },
+    highLevel: {
+      type: Number,
+      default: 16,
+    },
+    highLevelClass: {
+      type: String,
+      default: "(1,2,3,4,5)",
     },
   },
   data() {
@@ -102,6 +144,30 @@ export default {
       immediate: false,
       deep: true,
     },
+    geometry: {
+      handler() {
+        this.dispose();
+        this.init();
+      },
+      immediate: false,
+      deep: true,
+    },
+    where: {
+      handler() {
+        this.dispose();
+        this.init();
+      },
+      immediate: false,
+      deep: true,
+    },
+    inViewport: {
+      handler() {
+        this.dispose();
+        this.init();
+      },
+      immediate: false,
+      deep: true,
+    },
   },
   methods: {
     getColor(state) {
@@ -126,29 +192,45 @@ export default {
       form.append("returnGeometry", true);
       form.append("resultRecordCount", 50000);
       const zoom = this.map.getView().getZoom();
-      console.log(zoom);
-      if (zoom < 15) {
-        form.append("where", "roadclass in (1,2,3)");
-      } else if (zoom >= 15 && zoom < 17) {
-        form.append("where", "roadclass in (1,2,3,4)");
-      } else if (zoom >= 17) {
-        form.append("where", "roadclass in (1,2,3,4,5)");
+      // console.log(zoom);
+      if (zoom < this.lowLevel) {
+        if (this.where) {
+          form.append("where", `roadclass in ${this.lowLevelClass} and ${this.where}`);
+        } else {
+          form.append("where", `roadclass in ${this.lowLevelClass}`);
+        }
+      } else if (zoom >= this.lowLevel && zoom < this.highLevel) {
+        if (this.where) {
+          form.append("where", `roadclass in ${this.midLevelClass} and ${this.where}`);
+        } else {
+          form.append("where", `roadclass in ${this.midLevelClass}`);
+        }
+      } else if (zoom >= this.highLevel) {
+        if (this.where) {
+          form.append("where", `roadclass in ${this.highLevelClass} and ${this.where}`);
+        } else {
+          form.append("where", `roadclass in ${this.highLevelClass}`);
+        }
       }
-      // form.append("where", "roadclass in (1,2,3,4)");
-      const view = this.map.getView();
-      const extent = view.calculateExtent(this.map.getSize());
-      const polygon = [
-        [extent[0], extent[1]],
-        [extent[2], extent[1]],
-        [extent[2], extent[3]],
-        [extent[0], extent[3]],
-        [extent[0], extent[1]],
-      ];
-      const geometry = {
-        type: "Polygon",
-        coordinates: [polygon],
-      };
-      form.append("geometry", JSON.stringify(geometry));
+
+      if (this.inViewport) {
+        const view = this.map.getView();
+        const extent = view.calculateExtent(this.map.getSize());
+        const polygon = [
+          [extent[0], extent[1]],
+          [extent[2], extent[1]],
+          [extent[2], extent[3]],
+          [extent[0], extent[3]],
+          [extent[0], extent[1]],
+        ];
+        const geometry = {
+          type: "Polygon",
+          coordinates: [polygon],
+        };
+        form.append("geometry", JSON.stringify(geometry));
+      } else {
+        if (this.geometry && Object.keys(this.geometry).length > 0) form.append("geometry", JSON.stringify(this.geometry));
+      }
       return fetch(this.url, {
         method: "POST",
         body: form,
@@ -178,9 +260,9 @@ export default {
               this.colors[3],
               ["==", ["get", "state"], -1],
               this.colors[4],
-              ["*", ["get", "state"], this.colors[0]],
+              this.colors[4],
             ],
-            "stroke-width": 4,
+            "stroke-width": this.lineWidth,
           },
         };
         return new WebGLVector(layerOpt);
@@ -195,7 +277,7 @@ export default {
             return new Style({
               stroke: new Stroke({
                 color: color,
-                width: 4,
+                width: this.lineWidth,
               }),
             });
           },
@@ -247,6 +329,7 @@ export default {
         if (this.source) {
           this.source.clear();
           this.source.addFeatures(features);
+          this.$emit("render", data);
         }
       }
     }),

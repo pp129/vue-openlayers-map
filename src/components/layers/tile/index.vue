@@ -574,7 +574,7 @@ export default {
         shadowWidth: maskOption.shadowWidth || 0,
         fill: maskOption.fill || "rgba(255, 255, 255, 0.8)",
       };
-      console.log(this.layers);
+      console.log(option.feature);
       const filterFeature = setFeature(option.feature, this.map);
       this.filterMask = new Mask({
         feature: filterFeature,
