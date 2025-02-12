@@ -34,7 +34,6 @@ export default {
   },
   data() {
     return {
-      vectorLayer: null,
       vectorSource: null,
       eventRender: [],
       eventList: ["singleclick", "pointermove"],
@@ -45,51 +44,18 @@ export default {
       return this.VMap.map;
     },
   },
-  watch: {
-    visible: {
-      handler(value) {
-        this.vectorLayer.setVisible(value);
-      },
-      immediate: false,
-    },
-    zIndex: {
-      handler(value) {
-        this.vectorLayer.setZIndex(value);
-      },
-      immediate: false,
-    },
-    maxZoom: {
-      handler(value) {
-        this.vectorLayer.setMaxZoom(value);
-      },
-      immediate: false,
-    },
-    minZoom: {
-      handler(value) {
-        this.vectorLayer.setMinZoom(value);
-      },
-      immediate: false,
-    },
-    extent: {
-      handler(value) {
-        this.vectorLayer.setExtent(value);
-      },
-      immediate: false,
-      deep: true,
-    },
-  },
   methods: {
     init() {
       this.vectorSource = new VectorSource();
-      this.vectorLayer = new VectorLayer({
+      this.layer = new VectorLayer({
         ...this.$props,
         source: this.vectorSource,
         style: (feature) => {
           return setFeatureStyle(feature, this.layerStyle, this.map);
         },
       });
-      this.vectorLayer.set("id", this.layerId);
-      this.map.addLayer(this.vectorLayer);
+      this.layer.set("id", this.layerId);
+      this.map.addLayer(this.layer);
       // 绑定事件
       this.eventList.forEach((listenerKey) => {
         this.eventRender.push(this.map.on(listenerKey, (evt) => this.eventHandler(listenerKey, evt)));
@@ -123,7 +89,7 @@ export default {
       return this.map.forEachFeatureAtPixel(
         pixel,
         (feature, layer) => {
-          if (layer?.get("id") === this.vectorLayer?.get("id")) return feature;
+          if (layer?.get("id") === this.layer?.get("id")) return feature;
         },
         {}
       );

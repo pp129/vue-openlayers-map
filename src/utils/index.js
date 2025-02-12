@@ -435,7 +435,7 @@ export const setFeatures = (features, map, hasStyle = false) => {
  * @returns {FeatureExt}
  */
 export const setFeature = (option, map, hasStyle = false) => {
-  console.log(option);
+  // console.log(option);
   if (validObjKey(option, "type")) {
     const type = option.type;
     switch (type) {

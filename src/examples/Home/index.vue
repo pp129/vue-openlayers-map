@@ -64,13 +64,6 @@
         <button @click="setWFSVisible(true)">展示</button>
         <button @click="setWFSVisible(false)">隐藏</button>
       </div>
-      <div class="item">
-        <span class="label">高德路况图层</span>
-        <button @click="setGDVisible(true)">展示</button>
-        <button @click="setGDVisible(false)">隐藏</button>
-        <label> 是否启用webGL </label>
-        <input type="checkbox" name="modify" v-model="GDRoute.webGl" />
-      </div>
     </div>
     <v-map
       class="map"
@@ -164,6 +157,8 @@
         :modify-style="measureModifyStyle"
         :modifiable="true"
       ></v-measure>
+      <!-- echarts图层 -->
+      <v-echarts :visible="echarts.visible" :chart-options="echarts.options"></v-echarts>
       <v-overlay class="overlay" :position="positionRadius">半径：{{ radius }} 米</v-overlay>
       <!--      <v-overlay class="overlay" :position="position">双击地图关闭弹框</v-overlay>-->
       <v-overlay class="overlay" :position="positionLevel">预警等级： {{ level }} 级</v-overlay>
@@ -218,13 +213,6 @@
         {{ wfsInfo }}
       </v-overlay>
       <v-heatmap :features="heatmap.features" :visible="heatmap.visible" :radius="3" :blur="6" :z-index="9"></v-heatmap>
-      <v-gd-route
-        :url="GDRoute.url"
-        :visible="GDRoute.visible"
-        :web-gl="GDRoute.webGl"
-        :z-index="3"
-        @singleclick="onClickGDRoute"
-      ></v-gd-route>
     </v-map>
   </div>
 </template>
@@ -335,11 +323,13 @@ export default {
       ],
       XYZMix: {
         XYZ_1: {
-          url: "http://demo1.jointsurvey.com.cn:9901/Maps/XM_ic_2022/JointMap?service=GetImage&ak=a180e97163bf4e31ba1d2293c80a49b0&col={x}&row={y}&zoom={z}",
+          url:
+            "http://demo1.jointsurvey.com.cn:9901/Maps/XM_ic_2022/JointMap?service=GetImage&ak=a180e97163bf4e31ba1d2293c80a49b0&col={x}&row={y}&zoom={z}",
           projection: "EPSG:4490",
         },
         XYZ_2: {
-          url: "http://44.64.128.233:8888/admin-api/Maps/FuJianSheng_XiaMen_vcc_L0_L20_20240929/JointMap?service=GetImage&ak=d59ec87cc74b40bbaf665d65b42554b7&col={x}&row={y}&zoom={z}",
+          url:
+            "http://44.64.128.233:8888/admin-api/Maps/FuJianSheng_XiaMen_vcc_L0_L20_20240929/JointMap?service=GetImage&ak=d59ec87cc74b40bbaf665d65b42554b7&col={x}&row={y}&zoom={z}",
           projection: "EPSG:4490",
         },
       },
@@ -1036,7 +1026,8 @@ export default {
       positionWFS: undefined,
       wfsInfo: "",
       geoJSONSource: {
-        url: "http://218.5.80.6:6600/geoserver/xiaqu/ows?service=WFS&version=1.0.0&request=GetFeature&typeName=xiaqu:PaiChuSouXQ_polygon&maxFeatures=50&outputFormat=application/json",
+        url:
+          "http://218.5.80.6:6600/geoserver/xiaqu/ows?service=WFS&version=1.0.0&request=GetFeature&typeName=xiaqu:PaiChuSouXQ_polygon&maxFeatures=50&outputFormat=application/json",
         format: true,
       },
       geoJsonStyle: {
@@ -1065,11 +1056,6 @@ export default {
           style.setText(textStyle);
           return style; // 返回样式
         },
-      },
-      GDRoute: {
-        url: "http://36.248.238.35:8888/admin-api/Features/gd_route_clean/JointFeature?ak=f5ce622f301640a7a1d9b7d7e1ac5f6b",
-        visible: true,
-        webGl: true,
       },
     };
   },
@@ -1142,7 +1128,8 @@ export default {
         //   zoom: 15
         // })
       }
-      const wmsSource = this.$refs.wms.layer.getSource();
+      const wmsSource = this.$refs.wms?.layer.getSource();
+      if (!wmsSource) return;
       const viewResolution = map.getView().getResolution();
       const projection = map.getView().getProjection();
       const url = wmsSource.getFeatureInfoUrl(evt.coordinate, viewResolution, projection, {
@@ -3097,12 +3084,6 @@ export default {
       const feature = getCentroid([coordinates]);
       console.log(feature);
       this.features2.push(feature.geometry);
-    },
-    onClickGDRoute(evt, feature) {
-      console.log("onClickGDRoute===", feature);
-    },
-    setGDVisible(visible) {
-      this.GDRoute.visible = visible;
     },
   },
   mounted() {

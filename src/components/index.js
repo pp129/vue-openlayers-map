@@ -4,6 +4,8 @@ import VOverview from "@/components/overviewMap/index";
 import VOverlay from "@/components/overlay/index";
 import VTile from "@/components/layers/tile/index";
 import VVector from "@/components/layers/vector/index";
+import VWebglVector from "@/components/layers/webGlVector/index";
+import VVectorTile from "@/components/layers/vectorTile/index";
 import VImage from "@/components/layers/image/index";
 import VRoute from "@/components/layers/route/index";
 import VHeatmap from "@/components/layers/heatmap/index";
@@ -25,6 +27,8 @@ const components = [
   VOverlay,
   VTile,
   VVector,
+  VWebglVector,
+  VVectorTile,
   VImage,
   VRoute,
   VHeatmap,
@@ -63,6 +67,8 @@ export {
   VOverlay,
   VTile,
   VVector,
+  VWebglVector,
+  VVectorTile,
   VImage,
   VRoute,
   VHeatmap,

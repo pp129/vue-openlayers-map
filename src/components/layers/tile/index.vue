@@ -96,7 +96,6 @@ export default {
   },
   data() {
     return {
-      layer: null,
       layers: [],
       addForOverview: false,
       filterMask: null,
@@ -117,36 +116,6 @@ export default {
       },
       immediate: false,
       deep: true,
-    },
-    visible: {
-      handler(value) {
-        this.layers.map((layer) => layer.setVisible(value));
-      },
-      immediate: false,
-    },
-    zIndex: {
-      handler(value) {
-        this.layers.map((layer) => layer.setZIndex(value));
-      },
-      immediate: false,
-    },
-    maxZoom: {
-      handler(value) {
-        this.layers.map((layer) => layer.setMaxZoom(value));
-      },
-      immediate: false,
-    },
-    minZoom: {
-      handler(value) {
-        this.layers.map((layer) => layer.setMinZoom(value));
-      },
-      immediate: false,
-    },
-    extent: {
-      handler(value) {
-        this.layers.map((layer) => layer.setExtent(value));
-      },
-      immediate: false,
     },
     xyz: {
       handler(value) {

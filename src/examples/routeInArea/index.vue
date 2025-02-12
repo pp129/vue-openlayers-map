@@ -1,5 +1,6 @@
 <template>
   <div style="width: 100%; height: 100%; position: relative">
+    <div class="box">路口填补 <input type="checkbox" v-model="GDRoute.fix" /></div>
     <v-map ref="map" :view="view">
       <v-tile tile-type="BD" :mask="mask"></v-tile>
       <!-- 辖区图层 -->
@@ -18,6 +19,7 @@
         :in-viewport="false"
         :geometry="geometry"
         :z-index="3"
+        :fix="GDRoute.fix"
       ></v-gd-route>
     </v-map>
   </div>
@@ -38,6 +40,7 @@ export default {
         url: "http://36.248.238.35:8888/admin-api/Features/gd_route_clean/JointFeature?ak=f5ce622f301640a7a1d9b7d7e1ac5f6b",
         visible: false,
         webGl: true,
+        fix: false,
       },
       jurisdiction: {
         visible: true,
@@ -128,4 +131,13 @@ export default {
 };
 </script>
 
-<style scoped></style>
+<style scoped>
+.box {
+  padding: 4px;
+  background: white;
+  position: absolute;
+  left: 3%;
+  top: 3%;
+  z-index: 9;
+}
+</style>

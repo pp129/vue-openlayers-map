@@ -1,11 +1,9 @@
 <script>
-import BaseLayer from "@/components/layers/BaseLayer.vue";
 import { nanoid } from "nanoid";
 import EChartsLayer from "ol-echarts";
 
 export default {
   name: "v-echarts",
-  extends: BaseLayer,
   inject: ["VMap"],
   render(createElement, context) {
     return null;
@@ -17,8 +15,18 @@ export default {
         return `draw-layer-${nanoid()}`;
       },
     },
+    chartOptions: {
+      type: Object,
+    },
     options: {
       type: Object,
+    },
+    visible: {
+      type: Boolean,
+      default: true,
+    },
+    zIndex: {
+      type: Number,
     },
   },
   data() {
@@ -30,42 +38,46 @@ export default {
     map() {
       return this.VMap.map;
     },
-    map3d() {
-      return this.VMap.map3d;
-    },
   },
   watch: {
     visible: {
-      handler(value) {
-        console.log("layer visible change", value);
-        this.layer.setVisible(value);
+      handler(val) {
+        if (this.layer) {
+          this.layer.setVisible(val);
+        }
       },
       immediate: false,
     },
     zIndex: {
-      handler(value) {
-        this.layer.setZIndex(value);
+      handler(val) {
+        if (this.layer) {
+          this.layer.setZIndex(val);
+        }
       },
       immediate: false,
     },
-    maxZoom: {
-      handler(value) {
-        this.layer.setMaxZoom(value);
+    chartOptions: {
+      handler(val) {
+        if (this.layer) {
+          this.layer.setChartOptions(val);
+        }
       },
-      immediate: false,
-    },
-    minZoom: {
-      handler(value) {
-        this.layer.setMinZoom(value);
-      },
-      immediate: false,
-    },
-    extent: {
-      handler(value) {
-        this.layer.setExtent(value);
-      },
-      immediate: false,
       deep: true,
+      immediate: false,
+    },
+  },
+  methods: {
+    init() {
+      this.layer = new EChartsLayer(this.chartOptions, this.options);
+      if (this.zIndex) {
+        this.layer.setZIndex(this.zIndex);
+      }
+      this.layer.setVisible(this.visible);
+      this.layer.appendTo(this.map);
+    },
+    dispose() {
+      // this.map.removeLayer(this.layer)
+      this.layer.remove();
     },
   },
   mounted() {
@@ -74,19 +86,6 @@ export default {
   beforeDestroy() {
     this.map.removeLayer(this.layer);
     this.dispose();
-  },
-  methods: {
-    init() {
-      this.layer = new EChartsLayer(this.options);
-      if (this.zIndex) {
-        this.layer.setZIndex(this.zIndex);
-      }
-      this.layer.appendTo(this.map);
-    },
-    dispose() {
-      // this.map.removeLayer(this.layer)
-      this.layer.remove();
-    },
   },
 };
 </script>

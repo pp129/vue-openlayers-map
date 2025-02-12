@@ -82,7 +82,6 @@ export default {
   },
   data() {
     return {
-      layer: null,
       draw: null,
       modify: null,
       select: null,

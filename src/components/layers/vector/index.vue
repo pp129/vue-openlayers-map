@@ -88,7 +88,6 @@ export default {
   },
   data() {
     return {
-      layer: null,
       ani: null,
       layerOpt: {},
       selectObj: null,
@@ -203,38 +202,6 @@ export default {
             this.setFlashAnimate();
           }, this.flashTime);
         }
-      },
-      immediate: false,
-      deep: true,
-    },
-    visible: {
-      handler(value) {
-        console.log("layer visible change", value);
-        this.layer.setVisible(value);
-      },
-      immediate: false,
-    },
-    zIndex: {
-      handler(value) {
-        this.layer.setZIndex(value);
-      },
-      immediate: false,
-    },
-    maxZoom: {
-      handler(value) {
-        this.layer.setMaxZoom(value);
-      },
-      immediate: false,
-    },
-    minZoom: {
-      handler(value) {
-        this.layer.setMinZoom(value);
-      },
-      immediate: false,
-    },
-    extent: {
-      handler(value) {
-        this.layer.setExtent(value);
       },
       immediate: false,
       deep: true,
