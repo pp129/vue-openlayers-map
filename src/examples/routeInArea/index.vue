@@ -19,7 +19,6 @@
         :in-viewport="false"
         :geometry="geometry"
         :z-index="3"
-        :fix="GDRoute.fix"
       ></v-gd-route>
     </v-map>
   </div>
@@ -45,7 +44,8 @@ export default {
       jurisdiction: {
         visible: true,
         source: {
-          url: "http://27.154.234.238:3398/admin-api/Features/jjzd20241230/JointFeature?ak=3a772a1c9c1245d5905a6f7cd522bbf5&returnGeometry=true&f=geojson",
+          url:
+            "http://27.154.234.238:3398/admin-api/Features/jjzd20241230/JointFeature?ak=3a772a1c9c1245d5905a6f7cd522bbf5&returnGeometry=true&f=geojson",
           format: true,
         },
         style: {

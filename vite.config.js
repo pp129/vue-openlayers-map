@@ -39,7 +39,7 @@ export default defineConfig(({ command, mode }) => {
   return {
     server: {
       host: "localhost",
-      port: 8080,
+      port: 8888,
       open: true,
       hmr: true,
     },

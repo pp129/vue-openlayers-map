@@ -5,7 +5,7 @@ import vectorTile from "@/components/layers/vectorTile";
 import vectorLayer from "@/components/layers/vector";
 import { GeoJSON } from "ol/format";
 import { throttle } from "throttle-debounce";
-import { createDefaultStyle } from "ol/style/flat";
+// import { createDefaultStyle } from "ol/style/flat";
 // import GDRouteFix from "@/utils/GDRouteFix";
 
 export default {
@@ -25,6 +25,23 @@ export default {
       props: {
         ...this.$props,
         data: this.data,
+        layerStyle: {
+          "stroke-color": [
+            "case",
+            ["==", ["get", "state"], 1],
+            this.colors[0],
+            ["==", ["get", "state"], 2],
+            this.colors[1],
+            ["==", ["get", "state"], 3],
+            this.colors[2],
+            ["==", ["get", "state"], 4],
+            this.colors[3],
+            ["==", ["get", "state"], -1],
+            this.colors[4],
+            ["*", ["get", "state"], this.colors[0]],
+          ],
+          "stroke-width": this.lineWidth,
+        },
       },
     });
   },
@@ -52,11 +69,15 @@ export default {
       type: String,
       default: "gd-route-layer",
     },
-    layerStyle: {
-      type: [Object, undefined],
+    colors: {
+      type: Array,
       default: () => {
-        return createDefaultStyle();
+        return ["#34b000", "#fecb00", "#df0100", "#8e0e0b", "#8f979c"];
       },
+    },
+    lineWidth: {
+      type: Number,
+      default: 1.5,
     },
     // 自动跟新频率（ms）
     interval: {
@@ -101,12 +122,25 @@ export default {
   },
   data() {
     return {
-      layer: null,
-      source: null,
-      eventList: ["singleclick"],
-      eventRender: [],
       timer: null,
       data: null,
+      style: {
+        "stroke-color": [
+          "case",
+          ["==", ["get", "state"], 1],
+          this.colors[0],
+          ["==", ["get", "state"], 2],
+          this.colors[1],
+          ["==", ["get", "state"], 3],
+          this.colors[2],
+          ["==", ["get", "state"], 4],
+          this.colors[3],
+          ["==", ["get", "state"], -1],
+          this.colors[4],
+          ["*", ["get", "state"], this.colors[0]],
+        ],
+        "stroke-width": this.lineWidth,
+      },
     };
   },
   computed: {
@@ -220,7 +254,7 @@ export default {
       this.$nextTick(async () => {
         this.layer = this.$refs[this.rendered + "Layer"].layer;
         if (!this.webGl && this.rendered === "v") {
-          this.layer.setStyle(this.layerStyle);
+          this.layer.setStyle(this.style);
         }
         // 视窗改变后渲染
         this.map.getView().once("change:resolution", () => {

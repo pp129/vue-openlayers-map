@@ -28,7 +28,8 @@
         :rendered="GDRoute.rendered"
         :fix="GDRoute.fix"
         :z-index="3"
-        :layer-style="GDRoute.style"
+        :line-width="1.5"
+        :colors="colors"
       ></v-gd-route>
     </v-map>
   </div>
@@ -40,13 +41,14 @@ export default {
   components: {},
   props: {},
   data() {
-    const colors = ["#4fd27d", "#ffd045", "#e80e0e", "#b40000", "#8f979c"];
+    const colors = ["#34b000", "#fecb00", "#df0100", "#8e0e0b", "#8f979c"];
     return {
       view: {
         city: "厦门",
         zoom: 11,
       },
       enableSelect: false,
+      colors: colors,
       GDRoute: {
         url:
           "http://36.248.238.35:8888/admin-api/Features/gd_route_clean/JointFeatureXmGaode?ak=f5ce622f301640a7a1d9b7d7e1ac5f6b",
