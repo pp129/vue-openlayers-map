@@ -9,7 +9,7 @@ import { unByKey } from "ol/Observable";
 
 export default {
   name: "v-webgl-vector",
-  render(createElement, context) {
+  render() {
     return null;
   },
   extends: BaseLayer,
@@ -28,7 +28,7 @@ export default {
       type: Object,
     },
     layerStyle: {
-      type: [Object, undefined],
+      type: [Object, Array, undefined],
       default: () => {
         return createDefaultStyle();
       },
@@ -79,6 +79,7 @@ export default {
         source: this.vectorSource,
         style: this.layerStyle,
       });
+      this.layer.setStyle(this.layerStyle);
       this.layer.set("id", this.layerId);
       this.layer.set("type", "webGlVector");
       this.layer.set("users", true);
