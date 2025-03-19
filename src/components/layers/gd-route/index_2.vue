@@ -1,5 +1,5 @@
 <script>
-import BaseLayer from "@/components/layers/BaseLayer.vue";
+import BaseLayer from "../BaseLayer.vue";
 import { nanoid } from "nanoid";
 import { GeoJSON } from "ol/format";
 import VectorSource from "ol/source/Vector";

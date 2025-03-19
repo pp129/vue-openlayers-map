@@ -1,5 +1,5 @@
 <script>
-import BaseLayer from "@/components/layers/BaseLayer.vue";
+import BaseLayer from "../BaseLayer.vue";
 import { nanoid } from "nanoid";
 import Projection from "ol/proj/Projection";
 import ImageLayer from "ol/layer/Image";
@@ -18,9 +18,7 @@ export default {
   props: {
     layerId: {
       type: String,
-      default() {
-        return `image-layer-${nanoid()}`;
-      },
+      default: "",
     },
     source: {
       type: Object,
@@ -107,8 +105,8 @@ export default {
           source,
         });
       }
-
-      this.layer.set("id", this.layerId);
+      const layerId = this.layerId || `image-layer-${nanoid()}`;
+      this.layer.set("id", layerId);
       this.layer.set("type", "image");
       this.layer.set("users", true);
       if (this.zIndex) {

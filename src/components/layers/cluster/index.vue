@@ -3,7 +3,7 @@
 </template>
 
 <script>
-import BaseLayer from "@/components/layers/BaseLayer.vue";
+import BaseLayer from "../BaseLayer.vue";
 import { nanoid } from "nanoid";
 import VectorLayer from "ol/layer/Vector";
 import VectorSource from "ol/source/Vector";
@@ -21,9 +21,7 @@ export default {
   props: {
     layerId: {
       type: String,
-      default() {
-        return `cluster-layer-${nanoid()}`;
-      },
+      default: "",
     },
     features: {
       type: Array,
@@ -201,7 +199,8 @@ export default {
         style: (feature) => this.styleFunction(styleCache, feature),
       });
       this.layer.set("cluster", true);
-      this.layer.set("id", this.layerId);
+      const layerId = this.layerId || `cluster-layer-${nanoid()}`;
+      this.layer.set("id", layerId);
       this.layer.set("type", "vector");
       this.layer.set("users", true);
       if (this.zIndex) {

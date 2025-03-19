@@ -1,5 +1,6 @@
 import { VMap, VTile } from "../components";
 import { Default as MapStoriies } from "./VMap.stories";
+import md from "./VTile.md?raw";
 
 // More on how to set up stories at: https://storybook.js.org/docs/writing-stories
 export default {
@@ -19,6 +20,23 @@ export default {
     components: { VMap, VTile },
     template: `<v-map :view="args.view"><v-tile :tile-type="args.tileType" :xyz="args.xyz"></v-tile></v-map>`,
   }),
+  parameters: {
+    docs: {
+      description: {
+        component: md,
+      },
+    },
+  },
+};
+
+export const Default = {
+  args: {
+    ...MapStoriies.args,
+    tileType: "TD",
+  },
+};
+
+export const XYZ = {
   args: {
     ...MapStoriies.args,
     tileType: "XYZ",
@@ -29,7 +47,3 @@ export default {
     },
   },
 };
-
-export const Default = {};
-
-// export const XYZ = {};

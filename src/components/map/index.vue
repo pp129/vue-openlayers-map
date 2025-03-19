@@ -1,6 +1,6 @@
 <template>
-  <div :id="target" :style="{ width: mapWidth, height: mapHeight }">
-    <a :id="downLoadId" :download="downloadName"></a>
+  <div :id="mapId" :style="{ width: mapWidth, height: mapHeight }">
+    <a :id="'download' + mapId" :download="downloadName"></a>
     <slot v-if="load"></slot>
   </div>
 </template>
@@ -11,6 +11,10 @@ import { OlMap, setStyle } from "@/utils/index.js";
 import { getCenter, boundingExtent } from "ol/extent";
 import * as olEasing from "ol/easing";
 
+/**
+ * 地图容器组件
+ * @displayName v-map
+ */
 export default {
   name: "v-map",
   provide() {
@@ -19,14 +23,18 @@ export default {
     };
   },
   props: {
-    // 地图容器宽度
+    /**
+     * 地图容器宽度
+     */
     width: {
       type: [String, Number],
       default() {
         return "100%";
       },
     },
-    // 地图容器高度
+    /**
+     * 地图容器高度
+     */
     height: {
       type: [String, Number],
       default() {
@@ -36,7 +44,7 @@ export default {
     // 地图容器Id
     target: {
       type: String,
-      default: `map-${nanoid()}`,
+      default: "",
     },
     // 视窗属性
     view: {
@@ -54,14 +62,14 @@ export default {
   computed: {
     mapOption() {
       return {
-        target: this.target,
+        // target: this.target,
         view: this.view,
         controls: this.controls,
         interactions: this.interactions,
       };
     },
     map() {
-      return OlMap.map.map;
+      return this.vMap;
     },
     mapWidth() {
       return typeof this.width === "string" ? this.width : this.width.toString() + "px";
@@ -118,7 +126,7 @@ export default {
     },
     "controls.zoom": {
       handler(value) {
-        const zoom = OlMap.map.mapControlsZoom;
+        const zoom = this.vMap.mapControlsZoom;
         if (zoom) {
           OlMap.setControl("zoom", value, this.controls.zoomOptions);
         }
@@ -128,7 +136,7 @@ export default {
     },
     "controls.rotate": {
       handler(value) {
-        const rotate = OlMap.map.mapControlsRotate;
+        const rotate = this.vMap.mapControlsRotate;
         if (rotate) {
           OlMap.setControl("rotate", value, this.controls.rotateOptions);
         }
@@ -138,7 +146,7 @@ export default {
     },
     "controls.attribution": {
       handler(value) {
-        const rotate = OlMap.map.mapControlsAttribution;
+        const rotate = this.vMap.mapControlsAttribution;
         if (rotate) {
           OlMap.setControl("attribution", value, this.controls.attributionOptions);
         }
@@ -148,7 +156,7 @@ export default {
     },
     "controls.FullScreen": {
       handler(value) {
-        const FullScreen = OlMap.map.mapControlsFullScreen;
+        const FullScreen = this.vMap.mapControlsFullScreen;
         if (FullScreen) {
           OlMap.setControl("FullScreen", value);
         }
@@ -158,7 +166,7 @@ export default {
     },
     "controls.ScaleLine": {
       handler(value) {
-        const ScaleLine = OlMap.map.mapControlsScaleLine;
+        const ScaleLine = this.vMap.mapControlsScaleLine;
         if (ScaleLine) {
           OlMap.setControl("ScaleLine", value);
         }
@@ -169,9 +177,10 @@ export default {
   },
   data() {
     return {
+      mapId: "",
       vMap: null,
       load: false,
-      downLoadId: `download-${nanoid()}`,
+      // downLoadId: `download-${generateUUId()}`,
       downloadName: "map.png",
       noBase: true,
       properties: {
@@ -182,7 +191,8 @@ export default {
   methods: {
     initMap() {
       this.init().then((res) => {
-        if (res === "success") {
+        if (res !== "failed") {
+          this.vMap = res.map;
           console.log("map load");
           // 绑定事件
           const events = [
@@ -221,6 +231,12 @@ export default {
                   this.map.getTargetElement().style.cursor = hitImage || hit ? "pointer" : "";
                 }
               });
+            /**
+             * Triggers when the mouse pointermove
+             *
+             * @property {object} evt The event
+             * @property {object} map Map Object
+             */
             this.$emit("pointermove", evt, this.map);
           });
           events.forEach((event) => {
@@ -228,6 +244,11 @@ export default {
               this.$emit(event, evt, this.map);
             });
           });
+          /**
+           * Triggers when the map loaded
+           *
+           * @property {object} map Map Object
+           */
           this.$emit("load", this.map);
           this.load = true;
         }
@@ -235,9 +256,12 @@ export default {
     },
     init() {
       return new Promise((resolve, reject) => {
-        OlMap.map = new OlMap(this.mapOption);
-        if (OlMap.map.map) {
-          resolve("success");
+        const map = new OlMap({
+          ...this.mapOption,
+          target: this.mapId,
+        });
+        if (map.map) {
+          resolve(map);
         } else {
           reject(new Error("fail"));
         }
@@ -260,6 +284,12 @@ export default {
       this.map.disposeInternal();
     },
     zoomEnd(evt) {
+      /**
+       * Triggers when the mapview zoom changed
+       *
+       * @property {object} evt The Event
+       * @property {object} map Map Object
+       */
       this.$emit("changeZoom", evt, this.map);
       evt.map.once("moveend", (evt) => {
         this.zoomEnd(evt);
@@ -321,9 +351,9 @@ export default {
           this.downloadName = downloadName + ".png";
         }
       } else {
-        this.downloadName = `map-export-${nanoid()}.png`;
+        this.downloadName = `map-export-${this.mapId}.png`;
       }
-      OlMap.exportPNG(this.downLoadId);
+      OlMap.exportPNG(`download-${this.mapId}`);
     },
     getDistancePoint(from, to, units) {
       return OlMap.getDistancePoint(from, to, units);
@@ -340,6 +370,9 @@ export default {
         feature.setStyle(setStyle(param));
       }
     },
+  },
+  created() {
+    this.mapId = this.target || nanoid();
   },
   mounted() {
     this.initMap();

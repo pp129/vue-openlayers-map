@@ -1,5 +1,5 @@
 <template>
-  <div :id="element" :class="className">
+  <div :id="elementId" :class="className">
     <slot :data="data"></slot>
   </div>
 </template>
@@ -14,15 +14,11 @@ export default {
   props: {
     overlayId: {
       type: String,
-      default() {
-        return `overlay-id-${nanoid()}`;
-      },
+      default: "",
     },
     element: {
       type: String,
-      default() {
-        return `overlay-el-${nanoid()}`;
-      },
+      default: "",
     },
     position: {
       type: [Array, undefined],
@@ -55,6 +51,7 @@ export default {
   },
   data() {
     return {
+      elementId: "",
       overlay: null,
     };
   },
@@ -88,13 +85,14 @@ export default {
       this.overlay.setPosition(coordinates);
     },
   },
+  created() {
+    this.elementId = this.element || `overlay-el-${nanoid()}`;
+  },
   mounted() {
     // const ele =
-    let overlayEl;
-    if (typeof this.element === "string") {
-      overlayEl = document.getElementById(this.element.toString());
-    }
-    const overlayOption = { ...this.$props, ...{ id: this.overlayId, element: overlayEl } };
+    let overlayEl = document.getElementById(this.elementId);
+    const id = this.overlayId || `overlay-id-${nanoid()}`;
+    const overlayOption = { ...this.$props, ...{ id: id, element: overlayEl } };
     this.overlay = new Overlay(overlayOption);
     for (const i in overlayOption) {
       if (Object.prototype.hasOwnProperty.call(overlayOption, i)) {

@@ -1,6 +1,5 @@
 <script>
 import PathSimplifier from "./track.js";
-import { nanoid } from "nanoid";
 
 export default {
   name: "v-track",
@@ -9,12 +8,6 @@ export default {
   },
   inject: ["VMap"],
   props: {
-    id: {
-      type: String,
-      default() {
-        return `track-${nanoid()}`;
-      },
-    },
     paths: {
       type: Array,
       default() {

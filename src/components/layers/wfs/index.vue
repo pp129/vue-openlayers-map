@@ -1,5 +1,5 @@
 <script>
-import BaseLayer from "@/components/layers/BaseLayer.vue";
+import BaseLayer from "../BaseLayer.vue";
 import { nanoid } from "nanoid";
 import VectorSource from "ol/source/Vector";
 import VectorLayer from "ol/layer/Vector";
@@ -17,7 +17,7 @@ export default {
   props: {
     layerId: {
       type: String,
-      default: `vector-layer-${nanoid()}`,
+      default: "",
     },
     options: {
       type: Object,
@@ -54,7 +54,8 @@ export default {
           return setFeatureStyle(feature, this.layerStyle, this.map);
         },
       });
-      this.layer.set("id", this.layerId);
+      const layerId = this.layerId || `wfs-layer-${nanoid()}`;
+      this.layer.set("id", layerId);
       this.map.addLayer(this.layer);
       // 绑定事件
       this.eventList.forEach((listenerKey) => {

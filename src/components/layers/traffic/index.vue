@@ -1,5 +1,5 @@
 <script>
-import BaseLayer from "@/components/layers/BaseLayer.vue";
+import BaseLayer from "../BaseLayer.vue";
 import { nanoid } from "nanoid";
 import TrafficLayer from "@/utils/TrafficLayer";
 import { unByKey } from "ol/Observable";
@@ -14,9 +14,7 @@ export default {
   props: {
     layerId: {
       type: String,
-      default() {
-        return `traffic-layer-${nanoid()}`;
-      },
+      default: "",
     },
     timeout: {
       type: Number,
@@ -108,7 +106,8 @@ export default {
       };
       // eslint-disable-next-line no-undef
       this.trafficLayer = typeof BDTrafficLayer === "undefined" ? new TrafficLayer(layerOpts) : new BDTrafficLayer(layerOpts);
-      this.trafficLayer.layer.set("id", this.layerId);
+      const layerId = this.layerId || `traffic-layer-${nanoid()}`;
+      this.trafficLayer.layer.set("id", layerId);
       this.trafficLayer.layer.set("type", "traffic");
       this.trafficLayer.layer.set("users", true);
       if (this.zIndex) {

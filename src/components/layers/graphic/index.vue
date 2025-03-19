@@ -1,5 +1,5 @@
 <script>
-import BaseLayer from "@/components/layers/BaseLayer.vue";
+import BaseLayer from "../BaseLayer.vue";
 import { nanoid } from "nanoid";
 import { FeatureExt, setImage, setStyle, validObjKey } from "@/utils";
 import ImageCanvasSource from "ol/source/ImageCanvas";
@@ -22,9 +22,7 @@ export default {
   props: {
     layerId: {
       type: String,
-      default() {
-        return `graphic-layer-${nanoid()}`;
-      },
+      default: "",
     },
     features: {
       type: Array,
@@ -164,7 +162,8 @@ export default {
     setLayer(source) {
       const layerOpt = { ...this.$props, ...{ source } };
       this.layer = new ImageLayer(layerOpt);
-      this.layer.set("id", this.layerId);
+      const layerId = this.layerId || `graphic-layer-${nanoid()}`;
+      this.layer.set("id", layerId);
       this.layer.set("type", "graphic");
       this.layer.set("users", true);
       if (this.zIndex) {

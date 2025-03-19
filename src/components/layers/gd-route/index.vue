@@ -1,5 +1,5 @@
 <script>
-import BaseLayer from "@/components/layers/BaseLayer.vue";
+import BaseLayer from "../BaseLayer.vue";
 import webGlVector from "@/components/layers/webGlVector";
 import vectorTile from "@/components/layers/vectorTile";
 import vectorLayer from "@/components/layers/vector";

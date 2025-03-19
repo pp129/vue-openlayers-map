@@ -1,5 +1,5 @@
 <script>
-import BaseLayer from "@/components/layers/BaseLayer.vue";
+import BaseLayer from "../BaseLayer.vue";
 import { nanoid } from "nanoid";
 import { createDefaultStyle } from "ol/style/flat";
 import VectorTileSource from "ol/source/VectorTile";
@@ -15,9 +15,7 @@ export default {
   props: {
     layerId: {
       type: String,
-      default() {
-        return `vector-layer-${nanoid()}`;
-      },
+      default: "",
     },
     source: {
       type: Object,
@@ -60,7 +58,8 @@ export default {
         source: this.vectorTileSource,
         style: this.layerStyle,
       });
-      this.layer.set("id", this.layerId);
+      const layerId = this.layerId || `vectorTile-layer-${nanoid()}`;
+      this.layer.set("id", layerId);
       this.layer.set("type", "vectorTile");
       this.layer.set("users", true);
       if (this.zIndex) {

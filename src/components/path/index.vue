@@ -1,5 +1,4 @@
 <script>
-import { nanoid } from "nanoid";
 import VzPath from "@/utils/path";
 
 export default {
@@ -9,12 +8,6 @@ export default {
   },
   inject: ["VMap"],
   props: {
-    id: {
-      type: String,
-      default() {
-        return `track-${nanoid()}`;
-      },
-    },
     // 事件触发是否穿透
     bubble: {
       type: Boolean,

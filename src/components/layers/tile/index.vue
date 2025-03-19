@@ -1,5 +1,5 @@
 <script>
-import BaseLayer from "@/components/layers/BaseLayer.vue";
+import BaseLayer from "../BaseLayer.vue";
 import { nanoid } from "nanoid";
 import { AMapMercatorProj, setFeature, validObjKey } from "@/utils/index.js";
 import TileGrid from "ol/tilegrid/TileGrid";
@@ -20,9 +20,7 @@ export default {
   props: {
     layerId: {
       type: String,
-      default() {
-        return `tile-layer-${nanoid()}`;
-      },
+      default: "",
     },
     preload: {
       type: Number,
@@ -237,6 +235,8 @@ export default {
       const layerOpt = { ...this.$props, ...{ source } };
       this.layer = new TileLayer(layerOpt);
       this.layer.set("base", this.base);
+      const layerId = this.layerId || `tile-layer-${nanoid()}`;
+      this.layer.set("id", layerId);
       // this.layer.setZIndex(0)
       this.layers = [this.layer];
       this.addToMap();
@@ -251,6 +251,8 @@ export default {
       const layerOpt = { ...this.$props, ...{ source } };
       this.layer = new TileLayer(layerOpt);
       this.layer.set("base", this.base);
+      const layerId = this.layerId || `tile-layer-${nanoid()}`;
+      this.layer.set("id", layerId);
       // this.layer.setZIndex(0)
       if (this.zIndex) {
         this.layer.setZIndex(this.zIndex);
@@ -296,6 +298,8 @@ export default {
       const source = new XYZ(xyzOpt);
       const layerOpt = { ...this.$props, ...{ source } };
       this.layer = new TileLayer(layerOpt);
+      const layerId = this.layerId || `tile-layer-${nanoid()}`;
+      this.layer.set("id", layerId);
       this.layers = [this.layer];
       this.addToMap();
     },
@@ -310,6 +314,8 @@ export default {
       this.layer = new TileLayer(layerOpt);
       this.layer.set("base", this.base);
       this.layer.set("type", "wms");
+      const layerId = this.layerId || `tile-layer-${nanoid()}`;
+      this.layer.set("id", layerId);
       // this.layer.setZIndex(0)
       if (this.zIndex) {
         this.layer.setZIndex(this.zIndex);
@@ -333,6 +339,8 @@ export default {
       const layerOpt = { ...this.$props, ...{ source } };
       const layer = new TileLayer(layerOpt);
       layer.set("base", true);
+      const layerId = this.layerId || `tile-layer-${nanoid()}`;
+      layer.set("id", layerId);
       if (this.zIndex) {
         layer.setZIndex(this.zIndex);
       }
@@ -449,6 +457,8 @@ export default {
       layer.set("type", "bd");
       layer.set("name", "bd");
       layer.set("base", true);
+      const layerId = this.layerId || `tile-layer-${nanoid()}`;
+      layer.set("id", layerId);
       if (this.zIndex) {
         layer.setZIndex(this.zIndex);
       }
@@ -495,6 +505,8 @@ export default {
       layer.set("type", "AMap");
       layer.set("name", "AMap");
       layer.set("base", true);
+      const layerId = this.layerId || `tile-layer-${nanoid()}`;
+      layer.set("id", layerId);
       if (this.zIndex) {
         layer.setZIndex(this.zIndex);
       }
@@ -505,6 +517,8 @@ export default {
       const layerOpt = { ...this.$props, ...{ source } };
       this.layer = new TileLayer(layerOpt);
       this.layer.set("base", this.base);
+      const layerId = this.layerId || `tile-layer-${nanoid()}`;
+      this.layer.set("id", layerId);
       // this.layer.setZIndex(0)
       this.layers = [this.layer];
       if (!this.addForOverview) {

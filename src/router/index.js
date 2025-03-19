@@ -50,6 +50,11 @@ export const constantRouterMap = [
     name: "RouteInArea",
     component: () => import(/* webpackChunkName: "RouteInArea" */ "../examples/RouteInArea/index.vue"),
   },
+  {
+    path: "/MultiMap",
+    name: "MultiMap",
+    component: () => import(/* webpackChunkName: "MultiMap" */ "../examples/MultiMap/index.vue"),
+  },
 ];
 
 const router = new VueRouter({

@@ -1,5 +1,5 @@
 <script>
-import BaseLayer from "@/components/layers/BaseLayer.vue";
+import BaseLayer from "../BaseLayer.vue";
 import { nanoid } from "nanoid";
 import WebGLVectorLayer from "ol/layer/WebGLVector";
 import { createDefaultStyle } from "ol/style/flat";
@@ -17,9 +17,7 @@ export default {
   props: {
     layerId: {
       type: String,
-      default() {
-        return `vector-layer-${nanoid()}`;
-      },
+      default: "",
     },
     source: {
       type: Object,
@@ -80,7 +78,8 @@ export default {
         style: this.layerStyle,
       });
       this.layer.setStyle(this.layerStyle);
-      this.layer.set("id", this.layerId);
+      const layerId = this.layerId || `webGlVector-layer-${nanoid()}`;
+      this.layer.set("id", layerId);
       this.layer.set("type", "webGlVector");
       this.layer.set("users", true);
       if (this.zIndex) {

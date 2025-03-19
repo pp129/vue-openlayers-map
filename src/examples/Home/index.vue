@@ -97,15 +97,15 @@
         :z-index="99"
         @singleclick="onClickCluster"
       >
-        <v-overlay v-if="clusterOverlay.cluster" :position="clusterOverlay.position">
-          <ul>
-            <li v-for="item in clusterOverlay.list" :key="item.id" @click="showClusterItem(item.id)">{{ item.id }}</li>
-          </ul>
-        </v-overlay>
-        <v-overlay v-else :position="clusterOverlay.position">
-          {{ clusterOverlay.info.name }}
-        </v-overlay>
       </v-super-cluster>
+      <v-overlay v-if="clusterOverlay.cluster" :position="clusterOverlay.position">
+        <ul>
+          <li v-for="item in clusterOverlay.list" :key="item.id" @click="showClusterItem(item.id)">{{ item.id }}</li>
+        </ul>
+      </v-overlay>
+      <v-overlay v-else :position="clusterOverlay.position">
+        {{ clusterOverlay.info.name }}
+      </v-overlay>
       <!--矢量图层-->
       <v-vector
         ref="layer1"
@@ -120,8 +120,8 @@
         @singleclick="onClickFeatures"
         @pointermove="pointermove"
       >
-        <v-overlay :position="position">{{ overlay.name }}双击地图关闭弹框</v-overlay>
       </v-vector>
+      <v-overlay :position="position">{{ overlay.name }}双击地图关闭弹框</v-overlay>
       <!--可编辑图层-->
       <v-vector
         :features="features2"

@@ -1,5 +1,5 @@
 <script>
-import BaseLayer from "@/components/layers/BaseLayer.vue";
+import BaseLayer from "../BaseLayer.vue";
 import { nanoid } from "nanoid";
 import { addVectorSource, formatArea, formatLength, setFeatures, setStyle } from "@/utils";
 import VectorLayer from "ol/layer/Vector";
@@ -18,9 +18,7 @@ export default {
   props: {
     layerId: {
       type: String,
-      default() {
-        return `draw-layer-${nanoid()}`;
-      },
+      default: "",
     },
     features: {
       type: Array,
@@ -200,7 +198,8 @@ export default {
           }
         }
       });
-      this.layer.set("id", this.layerId);
+      const layerId = this.layerId || `draw-layer-${nanoid()}`;
+      this.layer.set("id", layerId);
       this.layer.set("type", "draw");
       this.layer.set("users", true);
       if (this.zIndex) {

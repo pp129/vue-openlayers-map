@@ -1,5 +1,5 @@
 <script>
-import BaseLayer from "@/components/layers/BaseLayer.vue";
+import BaseLayer from "../BaseLayer.vue";
 import { nanoid } from "nanoid";
 import { addVectorSource, setFeatures } from "@/utils";
 import { Heatmap } from "ol/layer";
@@ -17,9 +17,7 @@ export default {
   props: {
     layerId: {
       type: String,
-      default() {
-        return `heatmap-layer-${nanoid()}`;
-      },
+      default: "",
     },
     source: {
       type: [Object, undefined],
@@ -96,7 +94,8 @@ export default {
     }
     const layerOpt = { ...this.$props, ...{ source } };
     this.layer = new Heatmap(layerOpt);
-    this.layer.set("id", this.layerId);
+    const layerId = this.layerId || `heatmap-layer-${nanoid()}`;
+    this.layer.set("id", layerId);
     this.layer.set("type", "heatmap");
     this.layer.set("users", true);
     if (this.zIndex) {

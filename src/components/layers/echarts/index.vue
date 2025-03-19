@@ -9,12 +9,6 @@ export default {
     return null;
   },
   props: {
-    layerId: {
-      type: String,
-      default() {
-        return `draw-layer-${nanoid()}`;
-      },
-    },
     chartOptions: {
       type: Object,
     },

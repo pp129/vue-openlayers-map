@@ -1,7 +1,7 @@
 {
   "name": "v-ol-map",
   "private": false,
-  "version": "1.16.2",
+  "version": "1.16.3",
   "main": "lib/ol-map.umd.js",
   "files": [
     "lib",
@@ -18,7 +18,7 @@
     "publish": "npm publish",
     "lint": "eslint --ext .js,.vue src",
     "lint:fix": "eslint --fix --ext .js,.vue src",
-    "storybook": "storybook dev -p 6006",
+    "sb": "storybook dev -p 6006",
     "build-storybook": "storybook build"
   },
   "devDependencies": {
@@ -51,11 +51,11 @@
     "vite": "^3.0.9",
     "vite-plugin-html": "^3.2.0",
     "vite-plugin-require-transform": "^1.0.12",
-    "vite-plugin-vue2": "^2.0.2"
+    "vite-plugin-vue2": "^2.0.2",
+    "vue-docgen-cli": "^4.79.0"
   },
   "dependencies": {
-    "@turf/line-slice-along": "^6.5.0",
-    "@turf/turf": "^6.5.0",
+    "@turf/turf": "^7.2.0",
     "axios": "^0.27.2",
     "echarts": "^4.9.0",
     "gifler": "^0.1.0",

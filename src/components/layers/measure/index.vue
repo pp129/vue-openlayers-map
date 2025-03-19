@@ -1,5 +1,5 @@
 <script>
-import BaseLayer from "@/components/layers/BaseLayer.vue";
+import BaseLayer from "../BaseLayer.vue";
 import { Circle as CircleStyle, Fill, RegularShape, Stroke, Style, Text } from "ol/style";
 import { getArea, getLength } from "ol/sphere";
 import { nanoid } from "nanoid";
@@ -19,9 +19,7 @@ export default {
   props: {
     layerId: {
       type: String,
-      default() {
-        return `measure-layer-${nanoid()}`;
-      },
+      default: "",
     },
     features: {
       type: Array,
@@ -241,7 +239,8 @@ export default {
       this.layer.setStyle((feature) => {
         return styleFunction(feature, this.segments);
       });
-      this.layer.set("id", this.layerId);
+      const layerId = this.layerId || `measure-layer-${nanoid()}`;
+      this.layer.set("id", layerId);
       this.layer.set("type", "measure");
       this.layer.set("users", true);
       if (this.zIndex) {

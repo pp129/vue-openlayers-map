@@ -47,8 +47,8 @@ export default defineConfig(({ command, mode }) => {
           target: "http://172.16.34.120:6080",
           changeOrigin: true,
           rewrite: (path) => path.replace(/^\/arcgis/, "/arcgis/rest/services/xiamen/MapServer/tile"),
-        }
-      }
+        },
+      },
     },
     publicDir: mode === "lib" ? false : "public",
     resolve: {
