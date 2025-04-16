@@ -22,10 +22,10 @@ export default {
     zIndex: {
       type: Number,
     },
-    minResolution: {
+    maxResolution: {
       type: Number,
     },
-    maxResolution: {
+    minResolution: {
       type: Number,
     },
     minZoom: {
@@ -63,6 +63,12 @@ export default {
       },
       immediate: false,
     },
+    opacity: {
+      handler(value) {
+        this.layer.setOpacity(value);
+      },
+      immediate: false,
+    },
     zIndex: {
       handler(value) {
         this.layer.setZIndex(value);
@@ -84,6 +90,25 @@ export default {
     extent: {
       handler(value) {
         this.layer.setExtent(value);
+      },
+      immediate: false,
+      deep: true,
+    },
+    maxResolution: {
+      handler(value) {
+        this.layer.setMaxResolution(value);
+      },
+      immediate: false,
+    },
+    minResolution: {
+      handler(value) {
+        this.layer.setMinResolution(value);
+      },
+      immediate: false,
+    },
+    properties: {
+      handler(value) {
+        this.layer.setProperties(value);
       },
       immediate: false,
       deep: true,

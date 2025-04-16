@@ -3,8 +3,9 @@ import BaseLayer from "../BaseLayer.vue";
 import { nanoid } from "nanoid";
 import VectorSource from "ol/source/Vector";
 import VectorLayer from "ol/layer/Vector";
-import { setFeatureStyle, setStyle, setText, validObjKey } from "@/utils";
 import { WFS, GeoJSON } from "ol/format";
+import { setFeatureStyle, validObjKey } from "@/utils";
+import { addLayerToParentComp } from "@/utils/parent";
 
 export default {
   name: "v-wfs",
@@ -12,7 +13,16 @@ export default {
     return null;
   },
   extends: BaseLayer,
-  inject: ["VMap"],
+  inject: {
+    VMap: {
+      value: "VMap",
+      default: null,
+    },
+    VGroupLayer: {
+      value: "VGroupLayer",
+      default: null,
+    },
+  },
   components: {},
   props: {
     layerId: {
@@ -43,6 +53,9 @@ export default {
     map() {
       return this.VMap.map;
     },
+    groupLayer() {
+      return this.VGroupLayer?.layer;
+    },
   },
   methods: {
     init() {
@@ -56,7 +69,13 @@ export default {
       });
       const layerId = this.layerId || `wfs-layer-${nanoid()}`;
       this.layer.set("id", layerId);
-      this.map.addLayer(this.layer);
+      // this.map.addLayer(this.layer);
+      addLayerToParentComp({
+        type: this.$parent.$options.name,
+        map: this.map,
+        layer: this.layer,
+        groupLayer: this.groupLayer,
+      });
       // 绑定事件
       this.eventList.forEach((listenerKey) => {
         this.eventRender.push(this.map.on(listenerKey, (evt) => this.eventHandler(listenerKey, evt)));

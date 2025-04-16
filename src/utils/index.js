@@ -1039,6 +1039,14 @@ export const setControl = (map, control, options, controlOptions) => {
   }
 };
 
+export const writeFeaturesObject = (features) => {
+  if (features) return new GeoJSON().writeFeaturesObject(features);
+};
+
+export const writeFeatureObject = (feature) => {
+  if (feature) return new GeoJSON().writeFeatureObject(feature);
+};
+
 export const formatLength = (line) => {
   const length = getLength(line, {
     projection: "EPSG:4326",

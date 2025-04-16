@@ -1,8 +1,9 @@
 <script>
 import BaseLayer from "../BaseLayer.vue";
 import { nanoid } from "nanoid";
-import TrafficLayer from "@/utils/TrafficLayer";
 import { unByKey } from "ol/Observable";
+import TrafficLayer from "@/utils/TrafficLayer";
+import { addLayerToParentComp } from "@/utils/parent";
 
 export default {
   name: "v-traffic",
@@ -10,7 +11,16 @@ export default {
     return null;
   },
   extends: BaseLayer,
-  inject: ["VMap"],
+  inject: {
+    VMap: {
+      value: "VMap",
+      default: null,
+    },
+    VGroupLayer: {
+      value: "VGroupLayer",
+      default: null,
+    },
+  },
   props: {
     layerId: {
       type: String,
@@ -52,6 +62,9 @@ export default {
   computed: {
     map() {
       return this.VMap.map;
+    },
+    groupLayer() {
+      return this.VGroupLayer?.layer;
     },
   },
   watch: {
@@ -114,7 +127,13 @@ export default {
         this.trafficLayer.layer.setZIndex(this.zIndex);
       }
       this.trafficLayer.layer.setVisible(this.visible);
-      this.map.addLayer(this.trafficLayer.layer);
+      // this.map.addLayer(this.trafficLayer.layer);
+      addLayerToParentComp({
+        type: this.$parent.$options.name,
+        map: this.map,
+        layer: this.trafficLayer.layer,
+        groupLayer: this.groupLayer,
+      });
       if (this.timeout) {
         this.timer = setInterval(() => {
           this.trafficLayer.layer &&

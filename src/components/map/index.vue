@@ -7,7 +7,7 @@
 
 <script>
 import { nanoid } from "nanoid";
-import { OlMap, setStyle } from "@/utils/index.js";
+import * as VOlMap from "@/utils/index.js";
 import { getCenter, boundingExtent } from "ol/extent";
 import * as olEasing from "ol/easing";
 
@@ -50,7 +50,9 @@ export default {
     view: {
       type: Object,
     },
-    // 控制属性
+    /**
+     * 控制属性
+     */
     controls: {
       type: Object,
     },
@@ -256,7 +258,7 @@ export default {
     },
     init() {
       return new Promise((resolve, reject) => {
-        const map = new OlMap({
+        const map = new VOlMap.OlMap({
           ...this.mapOption,
           target: this.mapId,
         });
@@ -296,34 +298,34 @@ export default {
       });
     },
     setCenter(center) {
-      OlMap.setCenter(center);
+      VOlMap.setCenter(this.map, center);
     },
     setZoom(zoom) {
-      OlMap.setZoom(zoom);
+      VOlMap.setZoom(this.map, zoom);
     },
     setConstrainResolution(enabled) {
-      OlMap.setConstrainResolution(enabled);
+      VOlMap.setConstrainResolution(this.map, enabled);
     },
     setMaxZoom(zoom) {
-      OlMap.setMaxZoom(zoom);
+      VOlMap.setMaxZoom(this.map, zoom);
     },
     setMinZoom(zoom) {
-      OlMap.setMinZoom(zoom);
+      VOlMap.setMinZoom(this.map, zoom);
     },
     setControl(controls, options) {
-      OlMap.setControl(controls, options);
+      VOlMap.setControl(this.map, controls, options);
     },
     writeFeaturesObject(features) {
-      return OlMap.writeFeaturesObject(features);
+      return VOlMap.writeFeaturesObject(features);
     },
     writeFeatureObject(feature) {
-      return OlMap.writeFeatureObject(feature);
+      return VOlMap.writeFeatureObject(feature);
     },
     panTo(param) {
-      OlMap.panTo(param);
+      VOlMap.panTo(this.map, param);
     },
     flyTo(param) {
-      OlMap.flyTo(param);
+      VOlMap.flyTo(this.map, param);
     },
     fit(geometryOrExtent, options) {
       let easing = olEasing.inAndOut;
@@ -341,7 +343,7 @@ export default {
       return boundingExtent(coordinates);
     },
     calculateCenter(geometry) {
-      return OlMap.calculateCenter(geometry);
+      return VOlMap.calculateCenter(geometry);
     },
     exportPNG(downloadName) {
       if (downloadName) {
@@ -353,10 +355,10 @@ export default {
       } else {
         this.downloadName = `map-export-${this.mapId}.png`;
       }
-      OlMap.exportPNG(`download-${this.mapId}`);
+      VOlMap.exportPNG(this.map, `download-${this.mapId}`);
     },
     getDistancePoint(from, to, units) {
-      return OlMap.getDistancePoint(from, to, units);
+      return VOlMap.getDistancePoint(from, to, units);
     },
     closeOverlays() {
       this.map.getOverlays().forEach((overlay) => {

@@ -4,6 +4,7 @@ import { nanoid } from "nanoid";
 import { createDefaultStyle } from "ol/style/flat";
 import VectorTileSource from "ol/source/VectorTile";
 import VectorTileLayer from "ol/layer/VectorTile";
+import { addLayerToParentComp } from "@/utils/parent";
 
 export default {
   name: "v-vector-tile",
@@ -11,7 +12,16 @@ export default {
     return null;
   },
   extends: BaseLayer,
-  inject: ["VMap"],
+  inject: {
+    VMap: {
+      value: "VMap",
+      default: null,
+    },
+    VGroupLayer: {
+      value: "VGroupLayer",
+      default: null,
+    },
+  },
   props: {
     layerId: {
       type: String,
@@ -39,6 +49,9 @@ export default {
     map() {
       return this.VMap.map;
     },
+    groupLayer() {
+      return this.VGroupLayer?.layer;
+    },
   },
   watch: {
     source: {
@@ -65,7 +78,13 @@ export default {
       if (this.zIndex) {
         this.layer.setZIndex(this.zIndex);
       }
-      this.map.addLayer(this.layer);
+      // this.map.addLayer(this.layer);
+      addLayerToParentComp({
+        type: this.$parent.$options.name,
+        map: this.map,
+        layer: this.layer,
+        groupLayer: this.groupLayer,
+      });
       this.$emit("load", this.layer, this.map);
     },
   },

@@ -2,6 +2,7 @@ import "@/polyfills";
 import VMap from "@/components/map/index";
 import VOverview from "@/components/overviewMap/index";
 import VOverlay from "@/components/overlay/index";
+import VGroupLayer from "@/components/layers/group/index";
 import VTile from "@/components/layers/tile/index";
 import VVector from "@/components/layers/vector/index";
 import VWebglVector from "@/components/layers/webGlVector/index";
@@ -25,6 +26,7 @@ const components = [
   VMap,
   VOverview,
   VOverlay,
+  VGroupLayer,
   VTile,
   VVector,
   VWebglVector,
@@ -65,6 +67,7 @@ export {
   VMap,
   VOverview,
   VOverlay,
+  VGroupLayer,
   VTile,
   VVector,
   VWebglVector,

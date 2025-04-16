@@ -3,9 +3,10 @@ import BaseLayer from "../BaseLayer.vue";
 import { nanoid } from "nanoid";
 import axios from "axios";
 import qs from "qs";
-import { addVectorSource, setFeatures, setStyle } from "@/utils";
 import VectorLayer from "ol/layer/Vector";
+import { addVectorSource, setFeatures, setStyle } from "@/utils";
 import { arrowLine } from "@/utils/arrowLine";
+import { addLayerToParentComp } from "@/utils/parent";
 
 export default {
   name: "v-route",
@@ -13,7 +14,16 @@ export default {
     return null;
   },
   extends: BaseLayer,
-  inject: ["VMap"],
+  inject: {
+    VMap: {
+      value: "VMap",
+      default: null,
+    },
+    VGroupLayer: {
+      value: "VGroupLayer",
+      default: null,
+    },
+  },
   props: {
     layerId: {
       type: String,
@@ -236,7 +246,6 @@ export default {
   },
   data() {
     return {
-      layer: null,
       source: null,
       features: [],
       defaultStyle: {
@@ -302,6 +311,9 @@ export default {
     map() {
       return this.VMap.map;
     },
+    groupLayer() {
+      return this.VGroupLayer?.layer;
+    },
   },
   watch: {
     stops: {
@@ -310,36 +322,6 @@ export default {
       },
       immediate: false,
       deep: true,
-    },
-    visible: {
-      handler(value) {
-        if (this.layer) this.layer.setVisible(value);
-      },
-      immediate: false,
-    },
-    zIndex: {
-      handler(value) {
-        if (this.layer) this.layer.setZIndex(value);
-      },
-      immediate: false,
-    },
-    maxZoom: {
-      handler(value) {
-        if (this.layer) this.layer.setMaxZoom(value);
-      },
-      immediate: false,
-    },
-    minZoom: {
-      handler(value) {
-        if (this.layer) this.layer.setMinZoom(value);
-      },
-      immediate: false,
-    },
-    extent: {
-      handler(value) {
-        if (this.layer) this.layer.setExtent(value);
-      },
-      immediate: false,
     },
   },
   mounted() {
@@ -654,7 +636,13 @@ export default {
         if (this.zIndex) {
           this.layer.setZIndex(this.zIndex);
         }
-        this.map.addLayer(this.layer);
+        // this.map.addLayer(this.layer);
+        addLayerToParentComp({
+          type: this.$parent.$options.name,
+          map: this.map,
+          layer: this.layer,
+          groupLayer: this.groupLayer,
+        });
       }
       if (this.stops.length >= 2) {
         if (this.arrow) {

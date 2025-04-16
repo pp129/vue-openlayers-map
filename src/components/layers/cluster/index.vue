@@ -10,14 +10,24 @@ import VectorSource from "ol/source/Vector";
 import GeoJSON from "ol/format/GeoJSON";
 import { Fill, Style, Text } from "ol/style";
 import Supercluster from "supercluster";
-import { convertCoordinate, setStyle, validObjKey } from "@/utils";
 import CircleStyle from "ol/style/Circle";
 import { unByKey } from "ol/Observable";
+import { convertCoordinate, setStyle, validObjKey } from "@/utils";
+import { addLayerToParentComp } from "@/utils/parent";
 
 export default {
   name: "v-super-cluster",
   extends: BaseLayer,
-  inject: ["VMap"],
+  inject: {
+    VMap: {
+      value: "VMap",
+      default: null,
+    },
+    VGroupLayer: {
+      value: "VGroupLayer",
+      default: null,
+    },
+  },
   props: {
     layerId: {
       type: String,
@@ -66,6 +76,9 @@ export default {
   computed: {
     map() {
       return this.VMap.map;
+    },
+    groupLayer() {
+      return this.VGroupLayer?.layer;
     },
   },
   watch: {
@@ -206,7 +219,13 @@ export default {
       if (this.zIndex) {
         this.layer.setZIndex(this.zIndex);
       }
-      this.map.addLayer(this.layer);
+      // this.map.addLayer(this.layer);
+      addLayerToParentComp({
+        type: this.$parent.$options.name,
+        map: this.map,
+        layer: this.layer,
+        groupLayer: this.groupLayer,
+      });
       // 重新计算聚合 节流
       this.map.on("movestart", (evt) => {
         this.$emit("movestart");

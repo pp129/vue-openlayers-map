@@ -1,7 +1,7 @@
 {
   "name": "v-ol-map",
   "private": false,
-  "version": "1.16.3",
+  "version": "1.16.4",
   "main": "lib/ol-map.umd.js",
   "files": [
     "lib",
@@ -18,7 +18,7 @@
     "publish": "npm publish",
     "lint": "eslint --ext .js,.vue src",
     "lint:fix": "eslint --fix --ext .js,.vue src",
-    "sb": "storybook dev -p 6006",
+    "storybook": "storybook dev -p 6006",
     "build-storybook": "storybook build"
   },
   "devDependencies": {

@@ -1,8 +1,9 @@
 <script>
 import BaseLayer from "../BaseLayer.vue";
 import { nanoid } from "nanoid";
-import { addVectorSource, setFeatures } from "@/utils";
 import { Heatmap } from "ol/layer";
+import { addVectorSource, setFeatures } from "@/utils";
+import { addLayerToParentComp } from "@/utils/parent";
 
 export default {
   name: "v-heatmap",
@@ -10,7 +11,16 @@ export default {
     return null;
   },
   extends: BaseLayer,
-  inject: ["VMap"],
+  inject: {
+    VMap: {
+      value: "VMap",
+      default: null,
+    },
+    VGroupLayer: {
+      value: "VGroupLayer",
+      default: null,
+    },
+  },
   data() {
     return {};
   },
@@ -85,6 +95,9 @@ export default {
     map() {
       return this.VMap.map;
     },
+    groupLayer() {
+      return this.VGroupLayer?.layer;
+    },
   },
   mounted() {
     const source = addVectorSource(this.source, this.map);
@@ -101,7 +114,13 @@ export default {
     if (this.zIndex) {
       this.layer.setZIndex(this.zIndex);
     }
-    this.map.addLayer(this.layer);
+    // this.map.addLayer(this.layer);
+    addLayerToParentComp({
+      type: this.$parent.$options.name,
+      map: this.map,
+      layer: this.layer,
+      groupLayer: this.groupLayer,
+    });
   },
   beforeDestroy() {
     // this.layer.getSource().clear()

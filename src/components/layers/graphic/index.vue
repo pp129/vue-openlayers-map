@@ -1,11 +1,12 @@
 <script>
 import BaseLayer from "../BaseLayer.vue";
 import { nanoid } from "nanoid";
-import { FeatureExt, setImage, setStyle, validObjKey } from "@/utils";
 import ImageCanvasSource from "ol/source/ImageCanvas";
 import { toContext } from "ol/render";
 import { Point } from "ol/geom";
 import ImageLayer from "ol/layer/Image";
+import { FeatureExt, setImage, setStyle, validObjKey } from "@/utils";
+import { addLayerToParentComp } from "@/utils/parent";
 
 export default {
   name: "v-graphic",
@@ -13,11 +14,18 @@ export default {
     return null;
   },
   extends: BaseLayer,
-  inject: ["VMap"],
+  inject: {
+    VMap: {
+      value: "VMap",
+      default: null,
+    },
+    VGroupLayer: {
+      value: "VGroupLayer",
+      default: null,
+    },
+  },
   data() {
-    return {
-      layer: null,
-    };
+    return {};
   },
   props: {
     layerId: {
@@ -38,43 +46,15 @@ export default {
     map() {
       return this.VMap.map;
     },
+    groupLayer() {
+      return this.VGroupLayer?.layer;
+    },
   },
   watch: {
     features: {
       handler(value) {
         console.log("layers change", value);
         this.layer.getSource().refresh();
-      },
-      immediate: false,
-    },
-    visible: {
-      handler(value) {
-        console.log("layer visible change", value);
-        this.layer.setVisible(value);
-      },
-      immediate: false,
-    },
-    zIndex: {
-      handler(value) {
-        this.layer.setZIndex(value);
-      },
-      immediate: false,
-    },
-    maxZoom: {
-      handler(value) {
-        this.layer.setMaxZoom(value);
-      },
-      immediate: false,
-    },
-    minZoom: {
-      handler(value) {
-        this.layer.setMinZoom(value);
-      },
-      immediate: false,
-    },
-    extent: {
-      handler(value) {
-        this.layer.setExtent(value);
       },
       immediate: false,
     },
@@ -169,7 +149,13 @@ export default {
       if (this.zIndex) {
         this.layer.setZIndex(this.zIndex);
       }
-      this.map.addLayer(this.layer);
+      // this.map.addLayer(this.layer);
+      addLayerToParentComp({
+        type: this.$parent.$options.name,
+        map: this.map,
+        layer: this.layer,
+        groupLayer: this.groupLayer,
+      });
     },
   },
 };

@@ -3,10 +3,11 @@ import BaseLayer from "../BaseLayer.vue";
 import { nanoid } from "nanoid";
 import Projection from "ol/proj/Projection";
 import ImageLayer from "ol/layer/Image";
+import Static from "ol/source/ImageStatic";
 import Layer from "ol-ext/layer/GeoImage";
 import Source from "ol-ext/source/GeoImage";
-import Static from "ol/source/ImageStatic";
 import { validObjKey } from "@/utils";
+import { addLayerToParentComp } from "@/utils/parent";
 
 export default {
   name: "v-image",
@@ -14,7 +15,16 @@ export default {
     return null;
   },
   extends: BaseLayer,
-  inject: ["VMap"],
+  inject: {
+    VMap: {
+      value: "VMap",
+      default: null,
+    },
+    VGroupLayer: {
+      value: "VGroupLayer",
+      default: null,
+    },
+  },
   props: {
     layerId: {
       type: String,
@@ -39,10 +49,6 @@ export default {
       type: Boolean,
       default: false,
     },
-    opacity: {
-      type: Number,
-      default: 1,
-    },
   },
   data() {
     return {
@@ -53,15 +59,11 @@ export default {
     map() {
       return this.VMap.map;
     },
+    groupLayer() {
+      return this.VGroupLayer?.layer;
+    },
   },
   watch: {
-    opacity: {
-      handler(value) {
-        this.layer.setOpacity(value);
-      },
-      immediate: false,
-      deep: true,
-    },
     source: {
       handler(value) {
         // this.layer.getSource().clear()
@@ -112,7 +114,13 @@ export default {
       if (this.zIndex) {
         this.layer.setZIndex(this.zIndex);
       }
-      this.map.addLayer(this.layer);
+      // this.map.addLayer(this.layer);
+      addLayerToParentComp({
+        type: this.$parent.$options.name,
+        map: this.map,
+        layer: this.layer,
+        groupLayer: this.groupLayer,
+      });
       this.$emit("load", this.layer, this.map);
     },
     dispose() {

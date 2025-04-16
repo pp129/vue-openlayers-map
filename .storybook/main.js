@@ -12,9 +12,6 @@ const config = {
     "@storybook/addon-a11y",
     "@storybook/addon-storysource",
   ],
-  framework: {
-    name: "@storybook/vue-vite",
-  },
   docs: {
     autodocs: true,
     docsMode: true,

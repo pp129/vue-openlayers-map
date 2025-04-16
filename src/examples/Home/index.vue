@@ -64,6 +64,11 @@
         <button @click="setWFSVisible(true)">展示</button>
         <button @click="setWFSVisible(false)">隐藏</button>
       </div>
+      <div class="item">
+        <span class="label">wms图层</span>
+        <button @click="wmsVisible = true">展示</button>
+        <button @click="wmsVisible = false">隐藏</button>
+      </div>
     </div>
     <v-map
       class="map"
@@ -78,7 +83,7 @@
       @changeZoom="changeZoom"
     >
       <v-tile :tile-type="tileType" :xyz="xyz" :z-index="0" :mask="tileFilter"></v-tile>
-      <!-- <v-tile ref="wms" tile-type="WMS" :wms="wms" :z-index="9" visible></v-tile> -->
+      <v-tile ref="wms" tile-type="WMS" :wms="wms" :z-index="9" :visible="wmsVisible"></v-tile>
       <!-- 图片图层 -->
       <v-image
         :source="imageSource2"
@@ -359,16 +364,18 @@ export default {
         crossOrigin: "anonymous",
       },
       tileFilter: undefined,
+      wmsVisible: false,
       wms: {
-        url: "http://218.5.80.6:6600/geoserver/nd/wms",
+        url: "http://172.16.34.132:8222/geoserver/test/wms",
         params: {
-          VERSION: "1.1.1",
+          VERSION: "1.3.0",
           FORMAT: "image/png",
           STYLES: "",
-          LAYERS: "nd:nd_layer",
-          TILED: true,
+          LAYERS: "test:camera_30w",
         },
         serverType: "geoserver",
+        ratio: 1,
+        crossOrigin: "anonymous",
       },
       modify: false,
       select: {
@@ -2496,7 +2503,7 @@ export default {
         this.tileFilter = {
           feature: {
             type: "polygon",
-            coordinates,
+            coordinates: [coordinates],
           },
           shadowWidth: 50,
           fill: "rgba(0,0,0,0.8)",
@@ -2623,8 +2630,14 @@ export default {
       const extent = geometry.getExtent();
       const inExtent = [];
       this.$refs.layer1.layer.getSource().forEachFeatureInExtent(extent, (feature) => {
-        if (feature.get("flash")) {
-          inExtent.push(feature);
+        // console.log(feature);
+        const point = feature.get("features");
+        if (point && point.length > 0) {
+          point.forEach((feature) => {
+            if (feature.get("flash")) {
+              inExtent.push(feature);
+            }
+          });
         }
       });
       this.$refs.map.updateFeature(feature, "style", {

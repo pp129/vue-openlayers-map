@@ -1,18 +1,28 @@
 <script>
 import BaseLayer from "../BaseLayer.vue";
+import { nanoid } from "nanoid";
 import { Circle as CircleStyle, Fill, RegularShape, Stroke, Style, Text } from "ol/style";
 import { getArea, getLength } from "ol/sphere";
-import { nanoid } from "nanoid";
-import { addVectorSource, setFeatures, setStyle } from "@/utils";
 import { Modify } from "ol/interaction";
 import { LineString, Point } from "ol/geom";
 import VectorLayer from "ol/layer/Vector";
 import Draw from "ol/interaction/Draw";
+import { addVectorSource, setFeatures, setStyle } from "@/utils";
+import { addLayerToParentComp } from "@/utils/parent";
 
 export default {
   name: "v-measure",
   extends: BaseLayer,
-  inject: ["VMap"],
+  inject: {
+    VMap: {
+      value: "VMap",
+      default: null,
+    },
+    VGroupLayer: {
+      value: "VGroupLayer",
+      default: null,
+    },
+  },
   render(createElement, context) {
     return null;
   },
@@ -89,6 +99,9 @@ export default {
     map() {
       return this.VMap.map;
     },
+    groupLayer() {
+      return this.VGroupLayer?.layer;
+    },
   },
   watch: {
     type: {
@@ -96,8 +109,11 @@ export default {
         this.map.removeInteraction(this.draw);
         this.map.removeInteraction(this.select);
         this.map.removeInteraction(this.modify);
+        this.layer?.getSource().clear();
         if (value) {
           this.init();
+        } else {
+          this.dispose();
         }
       },
       immediate: false,
@@ -109,7 +125,7 @@ export default {
     }
   },
   beforeDestroy() {
-    this.map.removeLayer(this.layer);
+    // this.map.removeLayer(this.layer);
     this.dispose();
   },
   methods: {
@@ -246,7 +262,13 @@ export default {
       if (this.zIndex) {
         this.layer.setZIndex(this.zIndex);
       }
-      this.map.addLayer(this.layer);
+      // this.map.addLayer(this.layer);
+      addLayerToParentComp({
+        type: this.$parent.$options.name,
+        map: this.map,
+        layer: this.layer,
+        groupLayer: this.groupLayer,
+      });
       this.modify.set("type", "measure");
       if (this.modifiable) {
         this.map.addInteraction(this.modify);

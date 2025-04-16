@@ -6,6 +6,7 @@ import { createDefaultStyle } from "ol/style/flat";
 import VectorSource from "ol/source/Vector";
 import { GeoJSON } from "ol/format";
 import { unByKey } from "ol/Observable";
+import { addLayerToParentComp } from "@/utils/parent";
 
 export default {
   name: "v-webgl-vector",
@@ -13,7 +14,16 @@ export default {
     return null;
   },
   extends: BaseLayer,
-  inject: ["VMap"],
+  inject: {
+    VMap: {
+      value: "VMap",
+      default: null,
+    },
+    VGroupLayer: {
+      value: "VGroupLayer",
+      default: null,
+    },
+  },
   props: {
     layerId: {
       type: String,
@@ -42,6 +52,9 @@ export default {
   computed: {
     map() {
       return this.VMap.map;
+    },
+    groupLayer() {
+      return this.VGroupLayer?.layer;
     },
   },
   watch: {
@@ -85,7 +98,13 @@ export default {
       if (this.zIndex) {
         this.layer.setZIndex(this.zIndex);
       }
-      this.map.addLayer(this.layer);
+      // this.map.addLayer(this.layer);
+      addLayerToParentComp({
+        type: this.$parent.$options.name,
+        map: this.map,
+        layer: this.layer,
+        groupLayer: this.groupLayer,
+      });
       this.$emit("load", this.layer, this.map);
       // 绑定事件
       this.eventList.forEach((listenerKey) => {

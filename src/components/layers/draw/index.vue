@@ -1,17 +1,27 @@
 <script>
 import BaseLayer from "../BaseLayer.vue";
 import { nanoid } from "nanoid";
-import { addVectorSource, formatArea, formatLength, setFeatures, setStyle } from "@/utils";
 import VectorLayer from "ol/layer/Vector";
 import Draw, { createBox, createRegularPolygon } from "ol/interaction/Draw";
 import { Polygon } from "ol/geom";
 import { Modify, Snap } from "ol/interaction";
 import { arrowLine } from "@/utils/arrowLine";
+import { addVectorSource, formatArea, formatLength, setFeatures, setStyle } from "@/utils";
+import { addLayerToParentComp } from "@/utils/parent";
 
 export default {
   name: "v-draw",
   extends: BaseLayer,
-  inject: ["VMap"],
+  inject: {
+    VMap: {
+      value: "VMap",
+      default: null,
+    },
+    VGroupLayer: {
+      value: "VGroupLayer",
+      default: null,
+    },
+  },
   render(createElement, context) {
     return null;
   },
@@ -149,6 +159,9 @@ export default {
     map() {
       return this.VMap.map;
     },
+    groupLayer() {
+      return this.VGroupLayer?.layer;
+    },
   },
   watch: {
     type: {
@@ -205,7 +218,13 @@ export default {
       if (this.zIndex) {
         this.layer.setZIndex(this.zIndex);
       }
-      this.map.addLayer(this.layer);
+      // this.map.addLayer(this.layer);
+      addLayerToParentComp({
+        type: this.$parent.$options.name,
+        map: this.map,
+        layer: this.layer,
+        groupLayer: this.groupLayer,
+      });
       if (this.type) {
         this.initDraw();
       }

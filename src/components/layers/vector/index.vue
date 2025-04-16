@@ -5,7 +5,6 @@
 <script>
 import BaseLayer from "../BaseLayer.vue";
 import { nanoid } from "nanoid";
-
 import {
   addClusterLayer,
   addVectorSource,
@@ -17,9 +16,10 @@ import {
   setStyle,
   validObjKey,
 } from "@/utils";
+import { addLayerToParentComp } from "@/utils/parent";
 import VectorLayer from "ol/layer/Vector";
 import { Modify, Select } from "ol/interaction";
-import { Collection } from "ol";
+import Collection from "ol/Collection";
 import { unByKey } from "ol/Observable";
 import { getVectorContext } from "ol/render";
 import { easeOut } from "ol/easing";
@@ -30,14 +30,22 @@ import { Cluster } from "ol/source";
 import { arrowLine } from "@/utils/arrowLine";
 import { Point } from "ol/geom";
 import Zoom from "ol-ext/featureanimation/Zoom";
-
 import Gyeonghwon from "gyeonghwon";
-import { feature } from "@turf/turf";
 
 export default {
   name: "v-vector",
   extends: BaseLayer,
-  inject: ["VMap"],
+  // inject: ["VMap", "VGroupLayer"],
+  inject: {
+    VMap: {
+      value: "VMap",
+      default: null,
+    },
+    VGroupLayer: {
+      value: "VGroupLayer",
+      default: null,
+    },
+  },
   props: {
     layerId: {
       type: String,
@@ -105,6 +113,9 @@ export default {
   computed: {
     map() {
       return this.VMap.map;
+    },
+    groupLayer() {
+      return this.VGroupLayer?.layer;
     },
   },
   watch: {
@@ -285,7 +296,14 @@ export default {
       if (this.zIndex) {
         this.layer.setZIndex(this.zIndex);
       }
-      this.map.addLayer(this.layer);
+      console.log(this.$parent.$options.name);
+      // this.map.addLayer(this.layer);
+      addLayerToParentComp({
+        type: this.$parent.$options.name,
+        map: this.map,
+        layer: this.layer,
+        groupLayer: this.groupLayer,
+      });
       this.features.forEach((feature) => {
         if (
           (feature.type === "polyline" || feature.type === "Polyline" || feature.type === "LineString") &&

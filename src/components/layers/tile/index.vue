@@ -559,6 +559,7 @@ export default {
       };
       console.log(option.feature);
       const filterFeature = setFeature(option.feature, this.map);
+      console.log(filterFeature);
       this.filterMask = new Mask({
         feature: filterFeature,
         wrapX: option.wrapX || true,
