@@ -1,0 +1,29 @@
+import { Canvas, Meta, Controls } from "@storybook/blocks";
+
+import * as VTile from "./VTile.stories";
+
+<Meta of={VTile} />
+
+# v-tile
+
+瓦片图层
+
+```js
+import { VMap, VTile } from "v-ol-map";
+```
+
+<Canvas of={VTile.Default} />
+
+## XYZ
+
+> 自定义 XYZ 规则瓦片图层
+
+```js
+import { VMap, VTile } from "vectors";
+```
+
+<Canvas of={VTile.XYZ} />
+
+## Docs
+
+<Controls />

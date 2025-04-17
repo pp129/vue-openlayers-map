@@ -1,0 +1,29 @@
+import { Canvas, Meta, Controls } from "@storybook/blocks";
+
+import * as VVector from "./VVector.stories";
+
+<Meta of={VVector} />
+
+# v-vector
+
+矢量图层
+
+```js
+import { VMap, VVector } from "v-ol-map";
+```
+
+<Canvas of={VVector.Default} />
+
+## Modify
+
+> 要素可编辑
+
+```js
+import { VMap, VVector, VTile } from "vectors";
+```
+
+<Canvas of={VVector.Modify} />
+
+## Docs
+
+<Controls />

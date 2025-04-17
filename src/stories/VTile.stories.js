@@ -6,7 +6,6 @@ import md from "./VTile.md?raw";
 export default {
   title: "VOlMap/Tile",
   // tags: ["autodocs"],
-  decorators: [() => ({ template: '<div style="height: 60vh;width: 100%;"><story /></div>' })],
   component: VTile,
   render: (args, { argTypes }) => ({
     setup() {
@@ -18,7 +17,11 @@ export default {
     },
     // props: Object.keys(argTypes),
     components: { VMap, VTile },
-    template: `<v-map :view="args.view"><v-tile :tile-type="args.tileType" :xyz="args.xyz"></v-tile></v-map>`,
+    template: `
+      <v-map :view="args.view">
+        <v-tile :tile-type="args.tileType" :xyz="args.xyz"></v-tile>
+      </v-map>
+    `,
   }),
   parameters: {
     docs: {

@@ -1,7 +1,7 @@
 {
   "name": "v-ol-map",
   "private": false,
-  "version": "1.16.4",
+  "version": "1.16.5",
   "main": "lib/ol-map.umd.js",
   "files": [
     "lib",
@@ -19,7 +19,8 @@
     "lint": "eslint --ext .js,.vue src",
     "lint:fix": "eslint --fix --ext .js,.vue src",
     "storybook": "storybook dev -p 6006",
-    "build-storybook": "storybook build"
+    "build-storybook": "storybook build",
+    "chromatic": "npx chromatic --project-token=chpt_75b1de4d859122e"
   },
   "devDependencies": {
     "@rollup/plugin-babel": "^5.3.1",
@@ -36,6 +37,7 @@
     "@vitejs/plugin-legacy": "^2.0.1",
     "@vue/eslint-config-prettier": "^6.0.0",
     "babel-eslint": "^10.1.0",
+    "chromatic": "^11.28.0",
     "eslint": "^6.7.2",
     "eslint-plugin-import": "^2.27.5",
     "eslint-plugin-node": "^11.1.0",

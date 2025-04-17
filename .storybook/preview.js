@@ -9,6 +9,7 @@ const preview = {
       },
     },
   },
+  decorators: [() => ({ template: '<div style="height: 60vh;width: 100%;"><story /></div>' })],
 };
 
 export default preview;

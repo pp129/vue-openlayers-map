@@ -481,7 +481,7 @@ export default {
         const feature = evt.features.getArray()[0];
         const geometry = feature.getGeometry();
         // console.log(geometry.getCoordinates())
-        const type = feature.get("type").toLowerCase();
+        const type = feature.get("type")?.toLowerCase();
         if (type === "linestring" || type === "polyline") {
           evt.measure = formatLength(geometry);
         } else if (type === "polygon") {

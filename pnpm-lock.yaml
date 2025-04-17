@@ -105,6 +105,9 @@ importers:
       babel-eslint:
         specifier: ^10.1.0
         version: 10.1.0(eslint@6.7.2)
+      chromatic:
+        specifier: ^11.28.0
+        version: 11.28.0
       eslint:
         specifier: ^6.7.2
         version: 6.7.2
@@ -2741,6 +2744,18 @@ packages:
   chownr@2.0.0:
     resolution: {integrity: sha512-bIomtDF5KGpdogkLd9VspvFzk9KfpyyGlS8YFVZl7TGPBHL5snIOnxeshwVgPteQ9b4Eydl+pVbIyE1DcvCWgQ==}
     engines: {node: '>=10'}
+
+  chromatic@11.28.0:
+    resolution: {integrity: sha512-Xy3907MXY5UP7LoMksmsT02xCUsoLZpcC6sRITjd+KiXBteOxPF7J+QsFqy/VzQCEN6fpt/R2bOIpE+PwPfcZA==}
+    hasBin: true
+    peerDependencies:
+      '@chromatic-com/cypress': ^0.*.* || ^1.0.0
+      '@chromatic-com/playwright': ^0.*.* || ^1.0.0
+    peerDependenciesMeta:
+      '@chromatic-com/cypress':
+        optional: true
+      '@chromatic-com/playwright':
+        optional: true
 
   ci-info@3.9.0:
     resolution: {integrity: sha512-NIxF55hv4nSqQswkAeiOi1r83xy8JldOFDTWiug55KBu9Jnblncd2U6ViHmYgHf01TPZS77NJBhBMKdWj9HQMQ==}
@@ -8013,7 +8028,7 @@ snapshots:
       get-port: 5.1.1
       giget: 1.2.4
       globby: 11.1.0
-      jscodeshift: 0.15.2(@babel/preset-env@7.26.9(@babel/core@7.26.7))
+      jscodeshift: 0.15.2(@babel/preset-env@7.26.9(@babel/core@7.26.8))
       leven: 3.1.0
       ora: 5.4.1
       prettier: 2.8.8
@@ -8047,7 +8062,7 @@ snapshots:
       '@types/cross-spawn': 6.0.6
       cross-spawn: 7.0.6
       globby: 11.1.0
-      jscodeshift: 0.15.2(@babel/preset-env@7.26.9(@babel/core@7.26.7))
+      jscodeshift: 0.15.2(@babel/preset-env@7.26.9(@babel/core@7.26.8))
       lodash: 4.17.21
       prettier: 2.8.8
       recast: 0.23.9
@@ -10279,6 +10294,8 @@ snapshots:
 
   chownr@2.0.0: {}
 
+  chromatic@11.28.0: {}
+
   ci-info@3.9.0: {}
 
   citty@0.1.6:
@@ -11841,7 +11858,7 @@ snapshots:
       argparse: 1.0.10
       esprima: 4.0.1
 
-  jscodeshift@0.15.2(@babel/preset-env@7.26.9(@babel/core@7.26.7)):
+  jscodeshift@0.15.2(@babel/preset-env@7.26.9(@babel/core@7.26.8)):
     dependencies:
       '@babel/core': 7.26.8
       '@babel/parser': 7.26.9
