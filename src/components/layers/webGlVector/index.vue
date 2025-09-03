@@ -7,6 +7,7 @@ import VectorSource from "ol/source/Vector";
 import { GeoJSON } from "ol/format";
 import { unByKey } from "ol/Observable";
 import { addLayerToParentComp } from "@/utils/parent";
+// import { bbox as bboxStrategy } from "ol/loadingstrategy";
 
 export default {
   name: "v-webgl-vector",
@@ -40,6 +41,14 @@ export default {
       default: () => {
         return createDefaultStyle();
       },
+    },
+    declutter: {
+      type: [Boolean, Number, String],
+      default: false,
+    },
+    updateWhileInteracting: {
+      type: Boolean,
+      default: false,
     },
   },
   data() {
@@ -79,8 +88,11 @@ export default {
   },
   methods: {
     init() {
-      this.vectorSource = new VectorSource(this.source);
-      console.log(this.data);
+      this.vectorSource = new VectorSource({
+        ...this.source,
+        // strategy: bboxStrategy,
+      });
+      console.log(this.$props);
       if (this.data) {
         const features = new GeoJSON().readFeatures(this.data);
         this.vectorSource.addFeatures(features);
@@ -99,8 +111,15 @@ export default {
         this.layer.setZIndex(this.zIndex);
       }
       // this.map.addLayer(this.layer);
+
+      // 如果上一层是v-gd-route，需要再一层$parent
+      let parentType = this.$parent.$options.name;
+      if (this.$parent.$options.name === "v-gd-route") {
+        parentType = this.$parent.$parent.$options.name;
+      }
+
       addLayerToParentComp({
-        type: this.$parent.$options.name,
+        type: parentType,
         map: this.map,
         layer: this.layer,
         groupLayer: this.groupLayer,

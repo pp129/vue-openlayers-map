@@ -22,7 +22,7 @@
     <div id="layertree">
       <ul>
         <li class="layertreenode">
-          <span>Layer group</span>
+          <span>图层组</span>
           <fieldset>
             <label class="checkbox" for="visible1">
               visible <input id="visible1" v-model="groupOptions.visible" class="visible" type="checkbox" />
@@ -41,7 +41,7 @@
           </fieldset>
           <ul>
             <li v-for="layer in vectorLayers" :key="layer.id">
-              <span>layer {{ layer.id }}</span>
+              <span>layer {{ layer.name }}</span>
               <fieldset>
                 <label class="checkbox" for="visible10">
                   visible <input v-model="layer.visible" class="visible" type="checkbox" />
@@ -55,7 +55,7 @@
           </ul>
         </li>
         <li>
-          <span>layer4</span>
+          <span>黄色要素图层</span>
           <fieldset>
             <label class="checkbox" for="visible0">
               visible <input v-model="layerOptions.visible" class="visible" type="checkbox" />
@@ -125,6 +125,7 @@ export default {
       vectorLayers: [
         {
           id: "v_1",
+          name: "蓝色要素图层",
           features: [
             {
               id: "point1",
@@ -147,6 +148,7 @@ export default {
         },
         {
           id: "v_2",
+          name: "红色要素图层",
           features: [
             {
               id: "point2",
@@ -169,6 +171,7 @@ export default {
         },
         {
           id: "v_3",
+          name: "绿色要素图层",
           features: [
             {
               id: "point3",

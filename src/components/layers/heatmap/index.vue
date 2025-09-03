@@ -50,7 +50,7 @@ export default {
       default: 8,
     },
     weight: {
-      type: String,
+      type: [String, Function],
       default: "weight",
     },
     gradient: {
@@ -105,7 +105,7 @@ export default {
       const features = setFeatures(this.features, this.map);
       source.addFeatures(features);
     }
-    const layerOpt = { ...this.$props, ...{ source } };
+    const layerOpt = { ...this.$props, source };
     this.layer = new Heatmap(layerOpt);
     const layerId = this.layerId || `heatmap-layer-${nanoid()}`;
     this.layer.set("id", layerId);
@@ -122,6 +122,7 @@ export default {
       groupLayer: this.groupLayer,
     });
   },
+  methods: {},
   beforeDestroy() {
     // this.layer.getSource().clear()
     this.map.removeLayer(this.layer);

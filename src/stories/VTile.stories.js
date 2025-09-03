@@ -10,16 +10,19 @@ export default {
   render: (args, { argTypes }) => ({
     setup() {
       const mapOptions = MapStoriies.args;
+      const tileType = args.tileType;
+      const xyz = args.xyz;
       return {
-        ...mapOptions,
-        args,
+        view: mapOptions.view,
+        tileType,
+        xyz,
       };
     },
     // props: Object.keys(argTypes),
     components: { VMap, VTile },
     template: `
-      <v-map :view="args.view">
-        <v-tile :tile-type="args.tileType" :xyz="args.xyz"></v-tile>
+      <v-map :view="view">
+        <v-tile :tile-type="tileType" :xyz="xyz"></v-tile>
       </v-map>
     `,
   }),

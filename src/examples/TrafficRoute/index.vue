@@ -30,6 +30,8 @@
         :z-index="3"
         :line-width="1.5"
         :colors="colors"
+        :updateWhileInteracting="false"
+        :declutter="true"
       ></v-gd-route>
     </v-map>
   </div>
@@ -95,6 +97,7 @@ export default {
 
 <style scoped>
 .tool {
+  display: none;
   position: absolute;
   top: 10px;
   left: 10px;

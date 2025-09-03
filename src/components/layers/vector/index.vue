@@ -91,6 +91,14 @@ export default {
     overlay: {
       type: Object,
     },
+    declutter: {
+      type: [Boolean, Number, String],
+      default: false,
+    },
+    updateWhileInteracting: {
+      type: Boolean,
+      default: false,
+    },
   },
   data() {
     return {
@@ -298,8 +306,14 @@ export default {
       }
       console.log(this.$parent.$options.name);
       // this.map.addLayer(this.layer);
+      // 如果上一层是v-gd-route，需要再一层$parent
+      let parentType = this.$parent.$options.name;
+      if (this.$parent.$options.name === "v-gd-route") {
+        parentType = this.$parent.$parent.$options.name;
+      }
+      console.log(parentType);
       addLayerToParentComp({
-        type: this.$parent.$options.name,
+        type: parentType,
         map: this.map,
         layer: this.layer,
         groupLayer: this.groupLayer,

@@ -60,6 +60,11 @@ export const constantRouterMap = [
     name: "GroupLayer",
     component: () => import(/* webpackChunkName: "MultiMap" */ "../examples/Group/index.vue"),
   },
+  {
+    path: "/WMS",
+    name: "WMS",
+    component: () => import(/* webpackChunkName: "WMS" */ "../examples/WMS/index.vue"),
+  },
 ];
 
 const router = new VueRouter({

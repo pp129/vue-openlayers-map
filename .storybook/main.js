@@ -2,6 +2,9 @@
 const config = {
   framework: {
     name: "@storybook/vue-vite",
+    // options: {
+    //   docgen: "vue-component-meta",
+    // },
   },
   staticDirs: ["../public"],
   stories: ["../src/**/*.mdx", "../src/**/*.stories.@(js|jsx|mjs|ts|tsx)"],

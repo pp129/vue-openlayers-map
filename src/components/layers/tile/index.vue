@@ -9,6 +9,7 @@ import Mask from "ol-ext/filter/Mask";
 import { Fill } from "ol/style";
 import GeoTIFF from "ol/source/GeoTIFF";
 import GeoTIFFLayer from "ol/layer/WebGLTile";
+import { Projection } from "ol/proj";
 
 export default {
   name: "v-tile",
@@ -308,7 +309,11 @@ export default {
       if (validObjKey(this.wms, "tileGrid")) {
         tileGrid = new TileGrid(this.wms.tileGrid);
       }
-      const wmsOpt = { ...this.wms, ...{ tileGrid } };
+      const wmsOpt = {
+        ...this.wms,
+        tileGrid,
+        projection: "EPSG:4326",
+      };
       const source = new TileWMS(wmsOpt);
       const layerOpt = { ...this.$props, ...{ source } };
       this.layer = new TileLayer(layerOpt);
