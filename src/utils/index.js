@@ -55,7 +55,7 @@ addCoordinateTransforms(
 /**
  * Map扩展
  */
-const e = function (t, r, s, i, a, n) {
+const forEachFeatureAtCoordinate = function (t, r, s, i, a, n) {
   t.getSource()._forEachFeatureAtCoordinate &&
     t.getSource()._forEachFeatureAtCoordinate(
       r,
@@ -81,21 +81,21 @@ Map.prototype.forEachSmFeatureAtPixel = function (t, r, s, i) {
     const h = n[ss];
     // console.log(h)
     // eslint-disable-next-line no-useless-call
-    h.getVisible() && a.call(null, h) && e(h, l, o, r, t, i);
+    h.getVisible() && a.call(null, h) && forEachFeatureAtCoordinate(h, l, o, r, t, i);
   }
   // t:pixel, r:callback(feature,layer), s:options
-  return this.forEachFeatureAtPixel(t, r, s);
+  return this.forEachFeatureAtPixel(t, r, {});
 };
 const getGraphicsInExtent = function (source, e) {
   const t = [];
   // eslint-disable-next-line multiline-ternary
   return e
-    ? (source.get("graphics").map(function (r) {
+    ? (source.get("graphics")?.map(function (r) {
         // eslint-disable-next-line no-sequences
         return containsExtent(e, r.getGeometry().getExtent()) && t.push(r), r;
       }),
       t)
-    : (source.get("graphics").map(function (e) {
+    : (source.get("graphics")?.map(function (e) {
         // eslint-disable-next-line no-sequences
         return t.push(e), e;
       }),

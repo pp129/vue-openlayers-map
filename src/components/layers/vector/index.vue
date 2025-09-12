@@ -85,6 +85,10 @@ export default {
       type: [Object, Boolean],
       default: false,
     },
+    featureFlash: {
+      type: Boolean,
+      default: false,
+    },
     flashTime: {
       type: Number,
     },
@@ -213,11 +217,13 @@ export default {
           this.setModify();
         }
         // 闪光点
-        this.setFlashAnimate();
-        if (this.flashTime) {
-          this.flashInterval = setInterval(() => {
-            this.setFlashAnimate();
-          }, this.flashTime);
+        if (this.featureFlash) {
+          this.setFlashAnimate();
+          if (this.flashTime) {
+            this.flashInterval = setInterval(() => {
+              this.setFlashAnimate();
+            }, this.flashTime);
+          }
         }
       },
       immediate: false,
@@ -353,12 +359,15 @@ export default {
         }
       });
       // 闪光点
-      this.setFlashAnimate();
-      if (this.flashTime) {
-        this.flashInterval = setInterval(() => {
-          this.setFlashAnimate();
-        }, this.flashTime);
+      if (this.featureFlash) {
+        this.setFlashAnimate();
+        if (this.flashTime) {
+          this.flashInterval = setInterval(() => {
+            this.setFlashAnimate();
+          }, this.flashTime);
+        }
       }
+
       this.$emit("load", this.layer, this.map);
       if (this.modify) {
         this.setModify();

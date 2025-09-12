@@ -70,7 +70,7 @@ export default defineConfig(({ command, mode }) => {
       }),
     ],
     esbuild: {
-      // drop: command === "build" ? ["console", "debugger"] : [],
+      drop: command === "build" ? ["console", "debugger"] : [],
     },
     build: build(mode),
   };

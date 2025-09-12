@@ -1,4 +1,5 @@
 <script>
+import { nanoid } from "nanoid";
 import BaseLayer from "../BaseLayer.vue";
 import LineString from "ol/geom/LineString";
 import ImageLayer from "ol/layer/Image";
@@ -12,7 +13,6 @@ import CanvasImmediateRenderer from "ol/render/canvas/Immediate";
 import { getSquaredTolerance } from "ol/renderer/vector";
 import { getUserProjection, getTransformFromProjections } from "ol/proj";
 import { addLayerToParentComp } from "@/utils/parent";
-import { windowOpen } from "echarts/lib/util/format";
 
 export default {
   name: "v-gd-route",
@@ -31,6 +31,10 @@ export default {
     },
   },
   props: {
+    layerId: {
+      type: String,
+      default: "",
+    },
     className: {
       type: String,
       default: "gd-route-layer",
@@ -113,6 +117,7 @@ export default {
       },
       source: null,
       canvas: null,
+      layer: null,
     };
   },
   computed: {
@@ -238,16 +243,17 @@ export default {
       return new ImageCanvasSource({
         canvasFunction: (extent, resolution, pixelRatio, size, projection) => {
           const vc = this.getCanvasVectorContext(extent, resolution, pixelRatio, size, projection);
-          console.log(size);
-          features.forEach((item) => {
-            var anchor = new Feature({
-              geometry: new LineString(item.geometry.coordinates),
+          // console.log(size);
+          if (features && features.length > 0) {
+            features.forEach((item) => {
+              var anchor = new Feature({
+                geometry: new LineString(item.geometry.coordinates),
+              });
+              anchor.setProperties(item.properties);
+              const lineStyle = this.setLineStyle(anchor.get("state"));
+              vc.drawFeature(anchor, lineStyle);
             });
-            anchor.setProperties(item.properties);
-            const lineStyle = this.setLineStyle(anchor.get("state"));
-            vc.drawFeature(anchor, lineStyle);
-          });
-
+          }
           return this.canvas;
         },
         projection: "EPSG:4326",
@@ -262,6 +268,8 @@ export default {
       this.layer = new ImageLayer({
         source: this.source,
       });
+      const layerId = this.layerId || `route-layer-${nanoid()}`;
+      this.layer.set("id", layerId);
       // 如果上一层是v-gd-route，需要再一层$parent
       let parentType = this.$parent.$options.name;
       if (this.$parent.$options.name === "v-gd-route") {
