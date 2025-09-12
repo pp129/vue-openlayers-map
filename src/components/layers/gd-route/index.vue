@@ -1,3 +1,33 @@
+<template>
+  <div>
+    <!-- 交通图例 -->
+    <div v-if="showLegend" class="traffic-legend">
+      <div class="legend-title">交通状况</div>
+      <div class="legend-item">
+        <span class="legend-color" :style="{ backgroundColor: colors[0] }"></span>
+        <span class="legend-text">畅通</span>
+      </div>
+      <div class="legend-item">
+        <span class="legend-color" :style="{ backgroundColor: colors[1] }"></span>
+        <span class="legend-text">缓慢</span>
+      </div>
+      <div class="legend-item">
+        <span class="legend-color" :style="{ backgroundColor: colors[2] }"></span>
+        <span class="legend-text">拥堵</span>
+      </div>
+      <div class="legend-item">
+        <span class="legend-color" :style="{ backgroundColor: colors[3] }"></span>
+        <span class="legend-text">严重拥堵</span>
+      </div>
+      <div class="legend-item">
+        <span class="legend-color" :style="{ backgroundColor: colors[4] }"></span>
+        <span class="legend-text">无数据</span>
+      </div>
+    </div>
+    <slot></slot>
+  </div>
+</template>
+
 <script>
 import { nanoid } from "nanoid";
 import BaseLayer from "../BaseLayer.vue";
@@ -7,18 +37,13 @@ import ImageCanvasSource from "ol/source/ImageCanvas";
 import Feature from "ol/Feature";
 import Style from "ol/style/Style";
 import Stroke from "ol/style/Stroke";
-import { throttle } from "throttle-debounce";
-import { create as createTransform, multiply as multiplyTransform, compose as composeTransform, makeInverse } from "ol/transform";
+import { debounce } from "throttle-debounce";
+import { create as createTransform, compose as composeTransform } from "ol/transform";
 import CanvasImmediateRenderer from "ol/render/canvas/Immediate";
-import { getSquaredTolerance } from "ol/renderer/vector";
-import { getUserProjection, getTransformFromProjections } from "ol/proj";
 import { addLayerToParentComp } from "@/utils/parent";
 
 export default {
   name: "v-gd-route",
-  render() {
-    return null;
-  },
   extends: BaseLayer,
   inject: {
     VMap: {
@@ -49,22 +74,34 @@ export default {
       type: Number,
       default: 1.5,
     },
-    // 自动跟新频率（ms）
-    interval: {
+    // 自动更新频率（ms）
+    updateInterval: {
       type: Number,
       default: 30000,
     },
+    // 显示图例
+    showLegend: {
+      type: Boolean,
+      default: false,
+    },
     // 服务地址
-    url: String,
+    url: {
+      type: String,
+      required: true,
+    },
+    // 请求参数
+    requestParams: {
+      type: Object,
+      default: () => ({
+        f: "geojson",
+        returnGeometry: true,
+        resultRecordCount: 50000,
+      }),
+    },
     // 过滤条件
     where: String,
-    // 查询范围内的路况
-    geometry: Object,
-    // 以视窗为范围
-    inViewport: {
-      type: Boolean,
-      default: true,
-    },
+    // 查询范围内的路况（GeoJSON字符串）
+    geometry: String,
     lowLevel: {
       type: Number,
       default: 14,
@@ -96,28 +133,10 @@ export default {
   },
   data() {
     return {
-      timer: null,
-      data: null,
-      style: {
-        "stroke-color": [
-          "case",
-          ["==", ["get", "state"], 1],
-          this.colors[0],
-          ["==", ["get", "state"], 2],
-          this.colors[1],
-          ["==", ["get", "state"], 3],
-          this.colors[2],
-          ["==", ["get", "state"], 4],
-          this.colors[3],
-          ["==", ["get", "state"], -1],
-          this.colors[4],
-          ["*", ["get", "state"], this.colors[0]],
-        ],
-        "stroke-width": this.lineWidth,
-      },
-      source: null,
-      canvas: null,
-      layer: null,
+      updateTimer: null,
+      trafficLayer: null,
+      trafficFeatures: [], // 存储交通要素
+      hoveredFeatureId: null, // 当前悬浮的要素ID
     };
   },
   computed: {
@@ -131,242 +150,487 @@ export default {
   watch: {
     geometry: {
       handler() {
-        this.dispose();
-        this.renderRoute();
+        this.debouncedUpdateTrafficData();
       },
       immediate: false,
       deep: true,
     },
     where: {
       handler() {
-        this.dispose();
-        this.renderRoute();
+        this.debouncedUpdateTrafficData();
       },
       immediate: false,
       deep: true,
     },
-    inViewport: {
+    visible: {
+      handler(visible) {
+        if (this.trafficLayer) {
+          this.trafficLayer.setVisible(visible);
+          if (visible) {
+            this.startUpdate();
+          } else {
+            this.stopUpdate();
+          }
+        }
+      },
+      immediate: false,
+    },
+    updateInterval: {
       handler() {
-        this.dispose();
-        this.renderRoute();
+        if (this.visible) {
+          this.startUpdate();
+        }
+      },
+      immediate: false,
+    },
+    colors: {
+      handler() {
+        this.debouncedUpdateTrafficData();
       },
       immediate: false,
       deep: true,
+    },
+    lineWidth: {
+      handler() {
+        this.debouncedUpdateTrafficData();
+      },
+      immediate: false,
+    },
+    url: {
+      handler() {
+        this.debouncedUpdateTrafficData();
+      },
+      immediate: false,
+    },
+    requestParams: {
+      handler() {
+        this.debouncedUpdateTrafficData();
+      },
+      immediate: false,
+      deep: true,
+    },
+    opacity: {
+      handler(opacity) {
+        if (this.trafficLayer) {
+          this.trafficLayer.setOpacity(opacity);
+        }
+      },
+      immediate: false,
     },
   },
   methods: {
-    // 获取路况数据
-    async getData() {
-      const form = new FormData();
-      form.append("f", "geojson");
-      form.append("returnGeometry", true);
-      form.append("resultRecordCount", 50000);
-      const zoom = this.map.getView().getZoom();
-      // 根据层级判断显示道路级别
-      if (zoom < this.lowLevel) {
-        if (this.where) {
-          form.append("where", `roadclass in ${this.lowLevelClass} and ${this.where}`);
-        } else {
-          form.append("where", `roadclass in ${this.lowLevelClass}`);
-        }
-      } else if (zoom >= this.lowLevel && zoom < this.highLevel) {
-        if (this.where) {
-          form.append("where", `roadclass in ${this.midLevelClass} and ${this.where}`);
-        } else {
-          form.append("where", `roadclass in ${this.midLevelClass}`);
-        }
-      } else if (zoom >= this.highLevel) {
-        if (this.where) {
-          form.append("where", `roadclass in ${this.highLevelClass} and ${this.where}`);
-        } else {
-          form.append("where", `roadclass in ${this.highLevelClass}`);
-        }
+    // 根据地图缩放级别生成道路级别过滤参数
+    generateWhereParam(zoom) {
+      if (zoom <= this.lowLevel) {
+        return `roadclass in ${this.lowLevelClass}`;
+      } else if (zoom <= this.highLevel) {
+        return `roadclass in ${this.midLevelClass}`;
+      } else {
+        return `roadclass in ${this.highLevelClass}`;
       }
-      // 是否以视窗为范围
-      if (this.inViewport) {
+    },
+    // 获取完整的where参数，包含层级过滤和附加条件
+    getCurrentWhereParam() {
+      const currentZoom = this.map?.getView().getZoom() || 10;
+      const baseWhere = this.generateWhereParam(currentZoom);
+
+      if (this.where && this.where.trim()) {
+        return `${baseWhere} AND (${this.where.trim()})`;
+      }
+
+      return baseWhere;
+    },
+    // 根据当前地图视窗范围生成Polygon GeoJSON
+    getCurrentExtentGeometry() {
+      if (!this.map) {
+        return "";
+      }
+
+      try {
         const view = this.map.getView();
         const extent = view.calculateExtent(this.map.getSize());
-        const polygon = [
-          [extent[0], extent[1]],
-          [extent[2], extent[1]],
-          [extent[2], extent[3]],
-          [extent[0], extent[3]],
-          [extent[0], extent[1]],
-        ];
-        const geometry = {
+        const [minX, minY, maxX, maxY] = extent;
+
+        const polygon = {
           type: "Polygon",
-          coordinates: [polygon],
+          coordinates: [
+            [
+              [minX, minY],
+              [maxX, minY],
+              [maxX, maxY],
+              [minX, maxY],
+              [minX, minY],
+            ],
+          ],
         };
-        form.append("geometry", JSON.stringify(geometry));
-      } else {
-        // 显示指定范围内的路况
-        if (this.geometry && Object.keys(this.geometry).length > 0) form.append("geometry", JSON.stringify(this.geometry));
-      }
-      return fetch(this.url, {
-        method: "POST",
-        body: form,
-      })
-        .then((res) => {
-          return res.json();
-        })
-        .then((data) => {
-          return data;
-        });
-    },
-    setColors(state) {
-      if (state === 1) {
-        return this.colors[0];
-      } else if (state === 2) {
-        return this.colors[1];
-      } else if (state === 3) {
-        return this.colors[2];
-      } else if (state === 4) {
-        return this.colors[3];
-      } else if (state === -1) {
-        return this.colors[4];
-      } else {
-        return this.colors[0];
+
+        return JSON.stringify(polygon);
+      } catch (error) {
+        console.warn("Failed to generate extent geometry:", error);
+        return "";
       }
     },
-    setLineStyle(state) {
-      return new Style({
-        stroke: new Stroke({
-          color: this.setColors(state),
-          width: this.lineWidth,
-        }),
-      });
+    // 获取当前的geometry参数
+    getCurrentGeometryParam() {
+      if (this.geometry && this.geometry.trim()) {
+        return this.geometry.trim();
+      }
+      return this.getCurrentExtentGeometry();
     },
-    async setSource() {
-      const data = await this.getData();
-      const { features } = data;
-      this.$emit("render", data);
-      return new ImageCanvasSource({
-        canvasFunction: (extent, resolution, pixelRatio, size, projection) => {
-          const vc = this.getCanvasVectorContext(extent, resolution, pixelRatio, size, projection);
-          // console.log(size);
-          if (features && features.length > 0) {
-            features.forEach((item) => {
-              var anchor = new Feature({
-                geometry: new LineString(item.geometry.coordinates),
-              });
-              anchor.setProperties(item.properties);
-              const lineStyle = this.setLineStyle(anchor.get("state"));
-              vc.drawFeature(anchor, lineStyle);
-            });
+    // 根据state值获取对应的颜色
+    getColorByState(state) {
+      const colorMap = {
+        1: 0, // 畅通
+        2: 1, // 缓慢
+        3: 2, // 拥堵
+        4: 3, // 严重拥堵
+        [-1]: 4, // 无数据
+      };
+
+      const colorIndex = colorMap[state];
+      return colorIndex !== undefined ? this.colors[colorIndex] : this.colors[4];
+    },
+    // 获取状态文本
+    getStateText(state) {
+      const stateMap = {
+        1: "畅通",
+        2: "缓慢",
+        3: "拥堵",
+        4: "严重拥堵",
+        [-1]: "无数据",
+      };
+      return stateMap[state] || "未知";
+    },
+    // 计算点到线段的距离
+    distanceToLineSegment(point, start, end) {
+      const [px, py] = point;
+      const [sx, sy] = start;
+      const [ex, ey] = end;
+
+      const lengthSquared = (ex - sx) * (ex - sx) + (ey - sy) * (ey - sy);
+
+      if (lengthSquared === 0) {
+        return Math.sqrt((px - sx) * (px - sx) + (py - sy) * (py - sy));
+      }
+
+      const t = Math.max(0, Math.min(1, ((px - sx) * (ex - sx) + (py - sy) * (ey - sy)) / lengthSquared));
+      const projectionX = sx + t * (ex - sx);
+      const projectionY = sy + t * (ey - sy);
+
+      return Math.sqrt((px - projectionX) * (px - projectionX) + (py - projectionY) * (py - projectionY));
+    },
+    // 检测鼠标位置是否在要素上
+    getFeatureAtPixel(pixel) {
+      if (!this.map) return null;
+
+      const coordinate = this.map.getCoordinateFromPixel(pixel);
+      if (!coordinate) return null;
+
+      const tolerance = (this.map.getView().getResolution() || 1) * 5;
+
+      for (const feature of this.trafficFeatures) {
+        const geometry = feature.getGeometry();
+        if (geometry && geometry.getType() === "LineString") {
+          const coordinates = geometry.getCoordinates();
+
+          for (let i = 0; i < coordinates.length - 1; i++) {
+            const start = coordinates[i];
+            const end = coordinates[i + 1];
+
+            const distance = this.distanceToLineSegment(coordinate, start, end);
+            if (distance <= tolerance) {
+              return feature;
+            }
           }
-          return this.canvas;
-        },
-        projection: "EPSG:4326",
+        }
+      }
+
+      return null;
+    },
+    // 鼠标移动事件处理
+    handleMouseMove(event) {
+      if (!this.map) return;
+
+      const pixel = this.map.getEventPixel(event.originalEvent);
+      const feature = this.getFeatureAtPixel(pixel);
+
+      if (feature) {
+        this.map.getTargetElement().style.cursor = "pointer";
+        const featureId = feature.get("gid") || "unknown";
+        if (this.hoveredFeatureId !== featureId) {
+          this.hoveredFeatureId = featureId;
+        }
+      } else {
+        this.map.getTargetElement().style.cursor = "default";
+        if (this.hoveredFeatureId !== null) {
+          this.hoveredFeatureId = null;
+        }
+      }
+    },
+    // 鼠标点击事件处理
+    handleMapClick(event) {
+      if (!this.map) return;
+
+      const pixel = this.map.getEventPixel(event.originalEvent);
+      const feature = this.getFeatureAtPixel(pixel);
+
+      if (feature) {
+        const featureInfo = {
+          road_name: feature.get("road_name") || "未知道路",
+          speed: feature.get("speed") || 0,
+          state: feature.get("state") || -1,
+          travel_time: feature.get("travel_time") || "未知",
+          length: feature.get("length") || "未知",
+          color: this.getColorByState(feature.get("state") || -1),
+          stateText: this.getStateText(feature.get("state") || -1),
+          coordinate: event.coordinate,
+          feature_id: feature.get("feature_id") || "",
+          gid: feature.get("gid") || "",
+        };
+
+        // emit点击事件，由父组件处理信息显示
+        this.$emit("click", featureInfo);
+      }
+    },
+    // 加载交通数据
+    async loadTrafficDataFromJson() {
+      try {
+        const formData = new FormData();
+
+        Object.entries(this.requestParams || {}).forEach(([key, value]) => {
+          formData.append(key, String(value));
+        });
+
+        const whereParam = this.getCurrentWhereParam();
+        formData.append("where", whereParam);
+
+        const geometryParam = this.getCurrentGeometryParam();
+        if (geometryParam) {
+          formData.append("geometry", geometryParam);
+        }
+
+        const response = await fetch(this.url, {
+          method: "POST",
+          body: formData,
+        });
+
+        const data = await response.json();
+
+        // 触发数据渲染事件
+        this.$emit("render", data);
+
+        const features = [];
+
+        if (data.features && Array.isArray(data.features)) {
+          data.features.forEach((item) => {
+            if (item.geometry && item.geometry.type === "LineString") {
+              const lineString = new LineString(item.geometry.coordinates);
+              const state = item.properties.state || -1;
+              const color = this.getColorByState(state);
+
+              const style = new Style({
+                stroke: new Stroke({
+                  color: color,
+                  width: this.lineWidth,
+                }),
+              });
+
+              const feature = new Feature({
+                geometry: lineString,
+                road_name: item.properties.road_name,
+                speed: parseFloat(item.properties.speed) || 0,
+                state: item.properties.state,
+                travel_time: item.properties.travel_time,
+                length: item.properties.length,
+                feature_id: item.properties.gid?.toString() || "",
+                gid: item.properties.gid,
+              });
+
+              feature.setStyle(style);
+              features.push(feature);
+            }
+          });
+        }
+
+        return features;
+      } catch (error) {
+        console.warn("Failed to load traffic data from URL:", error);
+        return [];
+      }
+    },
+    // 生成Canvas矢量上下文
+    getCanvasVectorContext(canvas, extent, resolution, pixelRatio) {
+      if (!this.map || this.trafficFeatures.length === 0) return;
+
+      const ctx = canvas.getContext("2d");
+      if (!ctx) return;
+
+      const transform = createTransform();
+      const canvasWidth = canvas.width;
+      const canvasHeight = canvas.height;
+
+      const extentWidth = extent[2] - extent[0];
+      const extentHeight = extent[3] - extent[1];
+      const scaleX = canvasWidth / extentWidth;
+      const scaleY = canvasHeight / extentHeight;
+
+      composeTransform(transform, 0, canvasHeight, scaleX, -scaleY, 0, -extent[0], -extent[1]);
+
+      const immediateRenderer = new CanvasImmediateRenderer(ctx, pixelRatio, extent, transform, 0);
+
+      this.trafficFeatures.forEach((feature) => {
+        const geometry = feature.getGeometry();
+        const style = feature.getStyle();
+
+        if (geometry && style) {
+          immediateRenderer.setStyle(style);
+          immediateRenderer.drawGeometry(geometry);
+        }
       });
     },
-    async init() {
-      if (!this.url) {
-        return;
-      }
-      this.canvas = document.createElement("canvas");
-      this.source = await this.setSource();
-      this.layer = new ImageLayer({
-        source: this.source,
+    // 初始化交通层
+    initTrafficLayer() {
+      if (!this.map) return;
+
+      const imageCanvasSource = new ImageCanvasSource({
+        canvasFunction: (extent, resolution, pixelRatio, size) => {
+          const canvas = document.createElement("canvas");
+          canvas.width = size[0];
+          canvas.height = size[1];
+
+          this.getCanvasVectorContext(canvas, extent, resolution, pixelRatio);
+
+          return canvas;
+        },
+        ratio: 1,
       });
+
+      this.trafficLayer = new ImageLayer({
+        ...this.$props,
+        source: imageCanvasSource,
+      });
+
       const layerId = this.layerId || `route-layer-${nanoid()}`;
-      this.layer.set("id", layerId);
-      // 如果上一层是v-gd-route，需要再一层$parent
-      let parentType = this.$parent.$options.name;
-      if (this.$parent.$options.name === "v-gd-route") {
-        parentType = this.$parent.$parent.$options.name;
-      }
+      this.trafficLayer.set("id", layerId);
+
       addLayerToParentComp({
-        type: parentType,
+        type: this.$parent.$options.name,
         map: this.map,
-        layer: this.layer,
+        layer: this.trafficLayer,
         groupLayer: this.groupLayer,
       });
 
-      this.$nextTick(async () => {
-        // 视窗改变后渲染
-        this.map.getView().once("change:resolution", () => {
-          this.map.once("moveend", (evt) => {
-            this.zoomEnd(evt);
-          });
-        });
-        // 定时更新
-        if (this.layer && this.layer.getVisible()) {
-          await this.reload();
-        }
-      });
+      this.debouncedUpdateTrafficData();
     },
-    async zoomEnd(evt) {
-      if (this.layer && this.layer.getVisible()) {
-        await this.renderRoute();
-      }
-      evt.map.once("moveend", (evt) => {
-        this.zoomEnd(evt);
-      });
-    },
-    renderRoute: throttle(2000, async function () {
-      this.source = await this.setSource();
-      this.source.refresh();
-      this.layer.setSource(this.source);
-    }),
-    async reload() {
-      await this.renderRoute();
-      this.timer = setTimeout(async () => {
-        if (this.layer && this.layer.getVisible()) {
-          await this.reload();
-        }
-      }, this.interval);
-    },
-    dispose() {
-      if (this.timer) {
-        clearTimeout(this.timer);
-        this.timer = null;
-      }
-    },
-    getCanvasVectorContext(extent, resolution, pixelRatio, size, projection) {
-      this.canvas.width = size[0] * 1;
-      this.canvas.height = size[1] * 1;
-      let width = Math.round(size[0] * 1);
-      let height = Math.round(size[1] * 1);
-      let context = this.canvas.getContext("2d");
-      let coordinateToPixelTransform = createTransform();
-      let pixelTransform = createTransform();
-      let inversePixelTransform = createTransform();
+    // 更新交通数据
+    async updateTrafficData() {
+      if (!this.trafficLayer) return;
 
-      let rotation = this.map.getView().getRotation();
-      let center = this.map.getView().getCenter();
-      composeTransform(
-        coordinateToPixelTransform,
-        size[0] / 2,
-        size[1] / 2,
-        1 / resolution,
-        -1 / resolution,
-        -rotation,
-        -center[0],
-        -center[1]
-      );
-      composeTransform(
-        pixelTransform,
-        size[0] / 2,
-        size[1] / 2,
-        1 / pixelRatio,
-        1 / pixelRatio,
-        rotation,
-        -width / 2,
-        -height / 2
-      );
-      makeInverse(inversePixelTransform, pixelTransform);
-      const transform = multiplyTransform(inversePixelTransform.slice(), coordinateToPixelTransform);
-      const squaredTolerance = getSquaredTolerance(resolution, pixelRatio);
-      let userTransform;
-      const userProjection = getUserProjection();
-      if (userProjection) {
-        userTransform = getTransformFromProjections(userProjection, projection);
+      try {
+        this.trafficFeatures = await this.loadTrafficDataFromJson();
+
+        const source = this.trafficLayer.getSource();
+        source.changed();
+      } catch (error) {
+        console.warn("Failed to update traffic data:", error);
       }
-      return new CanvasImmediateRenderer(context, pixelRatio, extent, transform, rotation, squaredTolerance, userTransform);
+    },
+    // 启动定时更新
+    startUpdate() {
+      if (this.updateTimer) {
+        clearInterval(this.updateTimer);
+      }
+
+      this.updateTimer = setInterval(() => {
+        this.updateTrafficData();
+      }, this.updateInterval);
+    },
+    // 停止定时更新
+    stopUpdate() {
+      if (this.updateTimer) {
+        clearInterval(this.updateTimer);
+        this.updateTimer = null;
+      }
+    },
+    // 地图缩放级别变化处理
+    mapZoomHandler() {
+      this.debouncedUpdateTrafficData();
+    },
+    // 地图移动处理
+    mapMoveHandler() {
+      if (!this.geometry) {
+        this.debouncedUpdateTrafficData();
+      }
+    },
+    // 清理资源
+    dispose() {
+      this.stopUpdate();
+
+      if (this.map) {
+        this.map.getView().un("change:resolution", this.mapZoomHandler);
+        this.map.getView().un("change:center", this.mapMoveHandler);
+        this.map.un("pointermove", this.handleMouseMove);
+        this.map.un("click", this.handleMapClick);
+        this.map.getTargetElement().style.cursor = "default";
+      }
+
+      if (this.debouncedUpdateTrafficData) {
+        this.debouncedUpdateTrafficData.cancel();
+      }
+
+      if (this.trafficLayer) {
+        try {
+          if (this.map && this.map.getLayers().getArray().includes(this.trafficLayer)) {
+            this.map.removeLayer(this.trafficLayer);
+          }
+        } catch (error) {
+          console.warn("Failed to remove traffic layer:", error);
+        }
+      }
+    },
+    // 暴露给父组件的方法
+    getLayer() {
+      return this.trafficLayer;
+    },
+    updateData() {
+      return this.updateTrafficData();
+    },
+    startAutoUpdate() {
+      this.startUpdate();
+    },
+    stopAutoUpdate() {
+      this.stopUpdate();
+    },
+    getCurrentWhere() {
+      return this.getCurrentWhereParam();
+    },
+    getCurrentGeometry() {
+      return this.getCurrentGeometryParam();
+    },
+    getCurrentZoom() {
+      return this.map?.getView().getZoom() || 10;
+    },
+    getCurrentExtent() {
+      return this.map?.getView().calculateExtent(this.map.getSize());
     },
   },
+  created() {
+    // 创建防抖版本的数据更新函数，2秒内只会触发一次请求
+    this.debouncedUpdateTrafficData = debounce(2000, this.updateTrafficData);
+  },
   mounted() {
-    this.init();
+    if (this.map) {
+      this.initTrafficLayer();
+
+      this.map.getView().on("change:resolution", this.mapZoomHandler);
+      this.map.getView().on("change:center", this.mapMoveHandler);
+      this.map.on("pointermove", this.handleMouseMove);
+      this.map.on("click", this.handleMapClick);
+
+      if (this.visible) {
+        this.startUpdate();
+      }
+    }
   },
   beforeDestroy() {
     this.dispose();
@@ -374,4 +638,39 @@ export default {
 };
 </script>
 
-<style scoped></style>
+<style scoped>
+.traffic-legend {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background: rgba(255, 255, 255, 0.9);
+  padding: 10px;
+  border-radius: 4px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  z-index: 1000;
+  font-size: 12px;
+}
+
+.legend-title {
+  font-weight: bold;
+  margin-bottom: 8px;
+  color: #333;
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  margin-bottom: 4px;
+}
+
+.legend-color {
+  width: 16px;
+  height: 3px;
+  margin-right: 6px;
+  border-radius: 2px;
+}
+
+.legend-text {
+  color: #666;
+}
+</style>
