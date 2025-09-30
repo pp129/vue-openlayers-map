@@ -5,9 +5,15 @@
         <label>显示路况</label>
         <input type="checkbox" v-model="GDRoute.visible" />
       </div>
+      <div class="item">
+        <label>选择底图</label>
+        <select id="changeLayer" class="btn" v-model="tile" @change="changeTile">
+          <option v-for="(item, index) in baseTile" :key="index" :value="item.value">{{ item.name }}</option>
+        </select>
+      </div>
     </div>
     <v-map ref="map" :view="view">
-      <v-tile tile-type="BD"></v-tile>
+      <v-tile :tile-type="tileType" :xyz="xyz" :z-index="0"></v-tile>
       <!-- 路况图层 -->
       <v-gd-route
         :url="GDRoute.url"
@@ -40,6 +46,71 @@ export default {
           "http://36.248.238.35:8888/admin-api/Features/gd_route_clean/JointFeatureXmGaode?ak=f5ce622f301640a7a1d9b7d7e1ac5f6b",
         visible: true,
       },
+      tile: "bd",
+      tileType: "bd",
+      baseTile: [
+        {
+          name: "天地图-街道+注记",
+          value: "TD",
+        },
+        {
+          name: "天地图-影像+注记",
+          value: "TD_IMG",
+        },
+        {
+          name: "百度",
+          value: "bd",
+        },
+        {
+          name: "百度-暗夜",
+          value: "BD_BLUE",
+        },
+        {
+          name: "百度-深色",
+          value: "bd_dark",
+        },
+        {
+          name: "arcgis-暗夜",
+          value: "arcgis_blue",
+        },
+        {
+          name: "arcgis-灰色",
+          value: "arcgis_gray",
+        },
+        {
+          name: "arcgis-暖色",
+          value: "arcgis_warm",
+        },
+        {
+          name: "arcgis-正常",
+          value: "arcgis_normal",
+        },
+        {
+          name: "高德",
+          value: "GD",
+        },
+        {
+          name: "高德卫星",
+          value: "GD_IMG",
+        },
+        {
+          name: "OSM",
+          value: "OSM",
+        },
+        {
+          name: "福建省深色",
+          value: "FJ_BLUE",
+        },
+        {
+          name: "集恩厦门卫星2022",
+          value: "XYZ_1",
+        },
+        {
+          name: "集恩厦门卫星2022_2",
+          value: "XYZ_2",
+        },
+      ],
+      xyz: {},
     };
   },
   computed: {},
@@ -47,6 +118,24 @@ export default {
   methods: {
     handleClick(e) {
       console.log(e);
+    },
+    changeTile() {
+      // if (this.tile === "XYZ") {
+      //   this.xyz = { ...this.XYZMix };
+      // }
+      // this.tileType2 = val;
+      if (this.tile.indexOf("XYZ") > -1) {
+        this.tileType = "XYZ";
+        const tile = this.baseTile.find((item) => item.value === this.tile);
+        if (tile) {
+          console.log(tile);
+          this.xyz = {
+            ...this.XYZMix[this.tile],
+          };
+        }
+      } else {
+        this.tileType = this.tile;
+      }
     },
   },
   created() {},

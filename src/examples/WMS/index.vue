@@ -1,6 +1,6 @@
 <template>
   <div style="width: 100%; height: 100%; position: relative">
-    <v-map ref="map" :view="view">
+    <v-map ref="map" :view="view" :interactions="interactions">
       <v-tile tile-type="BD"></v-tile>
       <v-tile ref="wms" tile-type="WMS" :wms="wms" :z-index="9" :visible="true"></v-tile>
     </v-map>
@@ -17,6 +17,12 @@ export default {
       view: {
         city: "厦门",
         zoom: 12,
+      },
+      interactions: {
+        DragRotateAndZoom: true,
+        doubleClickZoom: false,
+        dragPan: true,
+        mouseWheelZoom: true,
       },
       wms: {
         url: "http://172.16.34.132:8222/geoserver/test/wms",

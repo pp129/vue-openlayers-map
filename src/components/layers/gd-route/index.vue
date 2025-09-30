@@ -134,7 +134,7 @@ export default {
   data() {
     return {
       updateTimer: null,
-      trafficLayer: null,
+      layer: null,
       trafficFeatures: [], // 存储交通要素
       hoveredFeatureId: null, // 当前悬浮的要素ID
     };
@@ -164,8 +164,7 @@ export default {
     },
     visible: {
       handler(visible) {
-        if (this.trafficLayer) {
-          this.trafficLayer.setVisible(visible);
+        if (this.layer) {
           if (visible) {
             this.startUpdate();
           } else {
@@ -208,14 +207,6 @@ export default {
       },
       immediate: false,
       deep: true,
-    },
-    opacity: {
-      handler(opacity) {
-        if (this.trafficLayer) {
-          this.trafficLayer.setOpacity(opacity);
-        }
-      },
-      immediate: false,
     },
   },
   methods: {
@@ -505,18 +496,18 @@ export default {
         ratio: 1,
       });
 
-      this.trafficLayer = new ImageLayer({
+      this.layer = new ImageLayer({
         ...this.$props,
         source: imageCanvasSource,
       });
 
       const layerId = this.layerId || `route-layer-${nanoid()}`;
-      this.trafficLayer.set("id", layerId);
+      this.layer.set("id", layerId);
 
       addLayerToParentComp({
         type: this.$parent.$options.name,
         map: this.map,
-        layer: this.trafficLayer,
+        layer: this.layer,
         groupLayer: this.groupLayer,
       });
 
@@ -524,12 +515,12 @@ export default {
     },
     // 更新交通数据
     async updateTrafficData() {
-      if (!this.trafficLayer) return;
+      if (!this.layer) return;
 
       try {
         this.trafficFeatures = await this.loadTrafficDataFromJson();
 
-        const source = this.trafficLayer.getSource();
+        const source = this.layer.getSource();
         source.changed();
       } catch (error) {
         console.warn("Failed to update traffic data:", error);
@@ -578,10 +569,10 @@ export default {
         this.debouncedUpdateTrafficData.cancel();
       }
 
-      if (this.trafficLayer) {
+      if (this.layer) {
         try {
-          if (this.map && this.map.getLayers().getArray().includes(this.trafficLayer)) {
-            this.map.removeLayer(this.trafficLayer);
+          if (this.map && this.map.getLayers().getArray().includes(this.layer)) {
+            this.map.removeLayer(this.layer);
           }
         } catch (error) {
           console.warn("Failed to remove traffic layer:", error);
@@ -590,7 +581,7 @@ export default {
     },
     // 暴露给父组件的方法
     getLayer() {
-      return this.trafficLayer;
+      return this.layer;
     },
     updateData() {
       return this.updateTrafficData();

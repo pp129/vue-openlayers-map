@@ -315,7 +315,7 @@ export default {
         projection: "EPSG:4326",
       };
       const source = new TileWMS(wmsOpt);
-      const layerOpt = { ...this.$props, ...{ source } };
+      const layerOpt = { ...this.$props, source };
       this.layer = new TileLayer(layerOpt);
       this.layer.set("base", this.base);
       this.layer.set("type", "wms");
