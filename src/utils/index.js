@@ -17,6 +17,8 @@ import VectorLayer from "ol/layer/Vector";
 import ImageCanvasSource from "ol/source/ImageCanvas";
 import { getArea, getLength } from "ol/sphere";
 import GeoJSON from "ol/format/GeoJSON";
+import WKT from "ol/format/WKT";
+import EsriJSON from "ol/format/EsriJSON";
 import proj4 from "proj4";
 import { register } from "ol/proj/proj4";
 
@@ -1047,6 +1049,39 @@ export const writeFeatureObject = (feature) => {
   if (feature) return new GeoJSON().writeFeatureObject(feature);
 };
 
+// 将GeoJSON对象转换为WKT字符串
+export const geojson2wktFeatureString = (geoJsonFeature) => {
+  // 创建一个GeoJSON格式对象
+  const geoJsonFormat = new GeoJSON();
+
+  // 读取GeoJSON对象
+  const feature = geoJsonFormat.readFeature(geoJsonFeature);
+
+  // 创建一个WKT格式对象
+  const wktFormat = new WKT();
+
+  // 将OpenLayers的Feature对象转换为WKT字符串
+  const wktString = wktFormat.writeFeature(feature);
+
+  return wktString;
+};
+
+export const geojson2wktGeometryString = (geoJson) => {
+  // 创建一个GeoJSON格式对象
+  const geoJsonFormat = new GeoJSON();
+
+  // 读取GeoJSON对象
+  const geom = geoJsonFormat.readGeometry(geoJson);
+
+  // 创建一个WKT格式对象
+  const wktFormat = new WKT();
+
+  // 转换为WKT字符串
+  const wktString = wktFormat.writeGeometry(geom);
+
+  return wktString;
+};
+
 export const formatLength = (line) => {
   const length = getLength(line, {
     projection: "EPSG:4326",
@@ -1073,6 +1108,87 @@ export const formatArea = (polygon) => {
     format,
     area,
   };
+};
+
+/**
+ * 使用shoelace公式计算多边形环的面积
+ * @param {Array} ring 多边形环的坐标数组 [[x1,y1], [x2,y2], ...]
+ * @returns {number} 环的面积（绝对值）
+ */
+export const calculateRingArea = (ring) => {
+  if (!ring || ring.length < 3) return 0;
+
+  let area = 0;
+  const n = ring.length;
+
+  for (let i = 0; i < n - 1; i++) {
+    const j = (i + 1) % (n - 1); // 跳过最后一个重复点
+    area += ring[i][0] * ring[j][1];
+    area -= ring[j][0] * ring[i][1];
+  }
+
+  return Math.abs(area / 2);
+};
+
+/**
+ * 简化EsriJSON多边形，只保留最大的外环
+ * 将类似"田"字形的多环多边形简化为"口"字形的单环多边形
+ * @param {Object} esriJson EsriJSON格式的多边形数据
+ * @returns {Object} 简化后的EsriJSON格式多边形（只包含最大外环）
+ */
+export const simplifyEsriPolygon = (esriJson) => {
+  if (!esriJson || !esriJson.rings || !Array.isArray(esriJson.rings)) {
+    throw new Error("Invalid EsriJSON polygon data");
+  }
+
+  const rings = esriJson.rings;
+  if (rings.length === 0) {
+    return esriJson;
+  }
+
+  // 如果只有一个环，直接返回
+  if (rings.length === 1) {
+    return esriJson;
+  }
+
+  // 计算每个环的面积，找到最大的外环
+  let maxArea = 0;
+  let maxRingIndex = 0;
+
+  rings.forEach((ring, index) => {
+    const area = calculateRingArea(ring);
+    if (area > maxArea) {
+      maxArea = area;
+      maxRingIndex = index;
+    }
+  });
+
+  // 返回只包含最大外环的简化多边形
+  return {
+    ...esriJson,
+    rings: [rings[maxRingIndex]],
+  };
+};
+
+/**
+ * 将简化后的EsriJSON格式数据转成WKT
+ * @param {Object} esriJson EsriJSON格式的多边形数据
+ * @param {boolean} simplify 是否先简化多边形（默认为true）
+ * @returns {string} WKT格式字符串
+ */
+export const esri2wktGeometry = (esriJson, simplify = true) => {
+  let processedEsriJson = esriJson;
+
+  // 如果需要简化且是多环多边形，先进行简化
+  if (simplify && esriJson.rings && esriJson.rings.length > 1) {
+    processedEsriJson = simplifyEsriPolygon(esriJson);
+  }
+
+  const esriFormat = new EsriJSON();
+  const geom = esriFormat.readGeometry(processedEsriJson);
+  const wktFormat = new WKT();
+  const wktString = wktFormat.writeGeometry(geom);
+  return wktString;
 };
 
 export class OlMap {
