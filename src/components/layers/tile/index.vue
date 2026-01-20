@@ -9,7 +9,8 @@ import Mask from "ol-ext/filter/Mask";
 import { Fill } from "ol/style";
 import GeoTIFF from "ol/source/GeoTIFF";
 import GeoTIFFLayer from "ol/layer/WebGLTile";
-import { Projection } from "ol/proj";
+import { OverviewMap } from "ol/control";
+import { View } from "ol";
 
 export default {
   name: "v-tile",
@@ -92,12 +93,16 @@ export default {
       type: Object,
     },
     GeoTiff: Object,
+    overviewMap: {
+      type: Object,
+    },
   },
   data() {
     return {
       layers: [],
       addForOverview: false,
       filterMask: null,
+      overview: null,
     };
   },
   computed: {
@@ -111,6 +116,23 @@ export default {
         if (newValue && newValue !== oldValue) {
           this.clear(oldValue);
           this.init();
+          if (this.overview) {
+            this.map.removeControl(this.overview);
+            const viewOptDefault = {
+              ...{
+                constrainResolution: false,
+                projection: "EPSG:4326",
+              },
+              ...this.overviewMap.view,
+            };
+            const option = {
+              ...this.overviewMap,
+              view: new View(viewOptDefault),
+              layers: this.init(true),
+            };
+            this.overview = new OverviewMap(option);
+            this.map.addControl(this.overview);
+          }
         }
       },
       immediate: false,
@@ -126,6 +148,23 @@ export default {
           this.map.removeLayer(layer);
         });
         this.init();
+        if (this.overview) {
+          this.map.removeControl(this.overview);
+          const viewOptDefault = {
+            ...{
+              constrainResolution: false,
+              projection: "EPSG:4326",
+            },
+            ...this.overviewMap.view,
+          };
+          const option = {
+            ...this.overviewMap,
+            view: new View(viewOptDefault),
+            layers: this.init(true),
+          };
+          this.overview = new OverviewMap(option);
+          this.map.addControl(this.overview);
+        }
       },
       immediate: false,
       deep: true,
@@ -162,37 +201,77 @@ export default {
         });
       }
     },
-    init() {
+    init(overview) {
       switch (this.tileType.toUpperCase()) {
         case "XYZ":
-          this.initTileXYZ();
+          if (overview) {
+            return this.initTileXYZ(overview);
+          } else {
+            this.initTileXYZ();
+          }
           break;
         case "PGIS_XM_GA":
-          this.initTilePGISXMGA();
+          if (overview) {
+            return this.initTilePGISXMGA(overview);
+          } else {
+            this.initTilePGISXMGA();
+          }
           break;
         case "FJ_BLUE":
-          this.initTileFJBlue();
+          if (overview) {
+            return this.initTileFJBlue(overview);
+          } else {
+            this.initTileFJBlue();
+          }
           break;
         case "FJ_BLUE_GA":
-          this.initTileFJBlueGA();
+          if (overview) {
+            return this.initTileFJBlueGA(overview);
+          } else {
+            this.initTileFJBlueGA();
+          }
           break;
         case "WMS":
-          this.initTileWMS();
+          if (overview) {
+            return this.initTileWMS(overview);
+          } else {
+            this.initTileWMS();
+          }
           break;
         case "TD":
-          this.initTD();
+          if (overview) {
+            return this.initTD(overview);
+          } else {
+            this.initTD();
+          }
           break;
         case "TD_IMG":
-          this.initTDIMG();
+          if (overview) {
+            return this.initTDIMG(overview);
+          } else {
+            this.initTDIMG();
+          }
           break;
         case "BD":
-          this.initBD();
+          if (overview) {
+            return this.initBD("", overview);
+          } else {
+            this.initBD("");
+          }
           break;
         case "BD_BLUE":
-          this.initBD("midnight");
+          if (overview) {
+            return this.initBD("midnight", overview);
+          } else {
+            this.initBD("midnight");
+          }
           break;
         case "BD_DARK":
-          this.initBD("dark");
+          if (overview) {
+            return this.initBD("midndarkight", overview);
+          } else {
+            this.initBD("dark");
+          }
           break;
         case "ARCGISREST":
           this.initTileArcGISRest();
@@ -210,19 +289,39 @@ export default {
           this.initArcgisTile("gray");
           break;
         case "GD":
-          this.initGD();
+          if (overview) {
+            return this.initGD(overview);
+          } else {
+            this.initGD();
+          }
           break;
         case "GD_IMG":
-          this.initAMapImage();
+          if (overview) {
+            return this.initAMapImage(overview);
+          } else {
+            this.initAMapImage();
+          }
           break;
         case "OSM":
-          this.initTileOSM();
+          if (overview) {
+            return this.initTileOSM(overview);
+          } else {
+            this.initTileOSM();
+          }
           break;
         case "GEOTIFF":
-          this.initGeoTIFFTile();
+          if (overview) {
+            return this.initGeoTIFFTile(overview);
+          } else {
+            this.initGeoTIFFTile();
+          }
           break;
         default:
-          this.initTD();
+          if (overview) {
+            return this.initTD(overview);
+          } else {
+            this.initTD();
+          }
           break;
       }
     },
@@ -242,7 +341,7 @@ export default {
       this.layers = [this.layer];
       this.addToMap();
     },
-    initTileXYZ() {
+    initTileXYZ(overview) {
       let tileGrid;
       if (validObjKey(this.xyz, "tileGrid")) {
         tileGrid = new TileGrid(this.xyz.tileGrid);
@@ -258,30 +357,33 @@ export default {
       if (this.zIndex) {
         this.layer.setZIndex(this.zIndex);
       }
+      if (overview) return [this.layer];
       this.layers = [this.layer];
       this.addToMap();
     },
     /**
      * @厦门规划局2022版本
      */
-    initTileFJBlue() {
+    initTileFJBlue(overview) {
       // const url = 'https://xmghszzx.com/arcgis/rest/services/Updata/XMMAP_DP_2000/MapServer/tile'
       const url = "http://172.16.34.120:6080/arcgis/rest/services/xiamen/MapServer/tile"; // 加自绘翔安大桥
       this.layer = this.initXYZbyURL(`${url}/{z}/{y}/{x}`, { projection: "EPSG:4490" });
+      if (overview) return [this.layer];
       this.layers = [this.layer];
       this.addToMap();
     },
     /**
      * @厦门规划局-公安网版本
      */
-    initTileFJBlueGA() {
+    initTileFJBlueGA(overview) {
       const url = "http://10.130.145.45:5001/xmblue";
       this.layer = this.initXYZbyURL(`${url}/{z}/{y}/{x}.png`, { projection: "EPSG:4326" });
+      if (overview) return [this.layer];
       this.layers = [this.layer];
       this.addToMap();
     },
     // 厦门公安网PGIS图层-Tile_sl2019
-    initTilePGISXMGA() {
+    initTilePGISXMGA(overview) {
       const xyzOpt = {
         projection: "EPSG:4326",
         tileUrlFunction: function (tileCoord) {
@@ -301,10 +403,11 @@ export default {
       this.layer = new TileLayer(layerOpt);
       const layerId = this.layerId || `tile-layer-${nanoid()}`;
       this.layer.set("id", layerId);
+      if (overview) return [this.layer];
       this.layers = [this.layer];
       this.addToMap();
     },
-    initTileWMS() {
+    initTileWMS(overview) {
       let tileGrid;
       if (validObjKey(this.wms, "tileGrid")) {
         tileGrid = new TileGrid(this.wms.tileGrid);
@@ -325,16 +428,18 @@ export default {
       if (this.zIndex) {
         this.layer.setZIndex(this.zIndex);
       }
+      if (overview) return [this.layer];
       this.layers = [this.layer];
       this.addToMap();
     },
-    initTD() {
+    initTD(overview) {
       const layerVec = this.initXYZbyURL(
         this.tdVec || "https://t4.tianditu.gov.cn/DataServer?T=vec_w&x={x}&y={y}&l={z}&tk=88e2f1d5ab64a7477a7361edd6b5f68a"
       );
       const layerCva = this.initXYZbyURL(
         this.tdCva || "https://t3.tianditu.gov.cn/DataServer?T=cva_w&x={x}&y={y}&l={z}&tk=88e2f1d5ab64a7477a7361edd6b5f68a"
       );
+      if (overview) return [layerVec, layerCva];
       this.layers = [layerVec, layerCva];
       this.addToMap();
     },
@@ -354,7 +459,7 @@ export default {
       }
       return layer;
     },
-    initTDIMG() {
+    initTDIMG(overview) {
       const layerImg = this.initXYZbyURL(
         this.tdImg || "https://t4.tianditu.gov.cn/DataServer?T=img_w&x={x}&y={y}&l={z}&tk=88e2f1d5ab64a7477a7361edd6b5f68a"
       );
@@ -362,6 +467,7 @@ export default {
         this.tdCia || "https://t3.tianditu.gov.cn/DataServer?T=cia_w&x={x}&y={y}&l={z}&tk=88e2f1d5ab64a7477a7361edd6b5f68a"
       );
       this.layers = [layerImg, layerCia];
+      if (overview) return this.layers;
       this.addToMap();
     },
     initArcgisTile(type) {
@@ -393,7 +499,8 @@ export default {
       this.layers = [this.layer];
       this.addToMap();
     },
-    initBD(customid) {
+    initBD(customid, overview) {
+      if (overview) return this.getBDMap(this.xyz, this.$props, customid);
       this.layers = this.getBDMap(this.xyz, this.$props, customid);
       this.addToMap();
     },
@@ -469,11 +576,12 @@ export default {
       }
       return [layer];
     },
-    initGD() {
+    initGD(overview) {
+      if (overview) return [this.getAMap(this.xyz, this.$props, this.gdUrl)];
       this.layers = [this.getAMap(this.xyz, this.$props, this.gdUrl)];
       this.addToMap();
     },
-    initAMapImage() {
+    initAMapImage(overview) {
       this.layers = [
         this.getAMap(
           this.xyz,
@@ -486,14 +594,13 @@ export default {
           "https://wprd0{1-4}.is.autonavi.com/appmaptile?x={x}&y={y}&z={z}&lang=zh_cn&size=1&scl=1&style=8"
         ),
       ];
-      if (!this.addForOverview) {
-        this.layers.forEach((layer) => {
-          if (this.mask && Object.keys(this.mask).length > 0) {
-            this.addMask(layer, this.mask);
-          }
-          this.map.addLayer(layer);
-        });
-      }
+      if (overview) return this.layers;
+      this.layers.forEach((layer) => {
+        if (this.mask && Object.keys(this.mask).length > 0) {
+          this.addMask(layer, this.mask);
+        }
+        this.map.addLayer(layer);
+      });
     },
     getAMap(xyz, tileLayer, url) {
       const xyzOpt = {
@@ -517,7 +624,7 @@ export default {
       }
       return layer;
     },
-    initTileOSM() {
+    initTileOSM(overview) {
       const source = new OSM();
       const layerOpt = { ...this.$props, ...{ source } };
       this.layer = new TileLayer(layerOpt);
@@ -526,19 +633,18 @@ export default {
       this.layer.set("id", layerId);
       // this.layer.setZIndex(0)
       this.layers = [this.layer];
-      if (!this.addForOverview) {
-        this.layers.forEach((layer) => {
-          if (this.mask && Object.keys(this.mask).length > 0) {
-            this.addMask(layer, this.mask);
-          }
-          if (this.zIndex) {
-            layer.setZIndex(this.zIndex);
-          }
-          this.map.addLayer(layer);
-        });
-      }
+      if (overview) return this.layers;
+      this.layers.forEach((layer) => {
+        if (this.mask && Object.keys(this.mask).length > 0) {
+          this.addMask(layer, this.mask);
+        }
+        if (this.zIndex) {
+          layer.setZIndex(this.zIndex);
+        }
+        this.map.addLayer(layer);
+      });
     },
-    initGeoTIFFTile() {
+    initGeoTIFFTile(overview) {
       const source = new GeoTIFF({
         ...this.GeoTiff,
       });
@@ -551,6 +657,7 @@ export default {
         this.layer.setZIndex(this.zIndex);
       }
       this.layers = [this.layer];
+      if (overview) return this.layers;
       this.addToMap();
     },
     addMask(layer, maskOption) {
@@ -575,30 +682,65 @@ export default {
       layer.addFilter(this.filterMask);
     },
     addToMap() {
-      if (!this.addForOverview) {
-        this.layers.forEach((layer) => {
-          if (this.mask && Object.keys(this.mask).length > 0) {
-            this.addMask(layer, this.mask);
-          }
-          if (this.zIndex) {
-            layer.setZIndex(this.zIndex);
-          }
-          this.map.addLayer(layer);
-        });
-      }
+      console.log("add to map", this.overviewMap);
+      this.layers.forEach((layer) => {
+        if (this.mask && Object.keys(this.mask).length > 0) {
+          this.addMask(layer, this.mask);
+        }
+        if (this.zIndex) {
+          layer.setZIndex(this.zIndex);
+        }
+        this.map.addLayer(layer);
+      });
     },
   },
   updated() {
     this.init();
+    if (this.overviewMap) {
+      const viewOptDefault = {
+        ...{
+          constrainResolution: false,
+          projection: "EPSG:4326",
+        },
+        ...this.overviewMap.view,
+      };
+      const option = {
+        ...this.overviewMap,
+        view: new View(viewOptDefault),
+        layers: this.init(true),
+      };
+      this.overview = new OverviewMap(option);
+      this.map.addControl(this.overview);
+    }
   },
   mounted() {
     this.init();
+    if (this.overviewMap) {
+      const viewOptDefault = {
+        ...{
+          constrainResolution: false,
+          projection: "EPSG:4326",
+        },
+        ...this.overviewMap.view,
+      };
+      const option = {
+        ...this.overviewMap,
+        view: new View(viewOptDefault),
+        layers: this.init(true),
+      };
+      this.overview = new OverviewMap(option);
+      this.map.addControl(this.overview);
+    }
   },
   beforeDestroy() {
     this.layers.forEach((layer) => {
       layer.getSource().clear();
       this.map.removeLayer(layer);
     });
+    if (this.overview) {
+      this.map.removeControl(this.overview);
+      this.overview = null;
+    }
   },
 };
 </script>

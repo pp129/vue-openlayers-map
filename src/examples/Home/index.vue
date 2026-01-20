@@ -1,5 +1,5 @@
 <template>
-  <div id="app">
+  <div id="home">
     <div class="tool">
       <div class="item">
         <span class="label">选择底图</span>
@@ -82,7 +82,13 @@
       @load="onLoad"
       @changeZoom="changeZoom"
     >
-      <v-tile :tile-type="tileType" :xyz="xyz" :z-index="0" :mask="tileFilter"></v-tile>
+      <v-tile
+        :tile-type="tileType"
+        :xyz="xyz"
+        :z-index="0"
+        :mask="tileFilter"
+        :overview-map="{ target: 'home', className: 'ol-overviewmap overview-map-customer', collapsed: false, view: view }"
+      ></v-tile>
       <v-tile ref="wms" tile-type="WMS" :wms="wms" :z-index="9" :visible="wmsVisible"></v-tile>
       <!-- 图片图层 -->
       <v-image
@@ -93,7 +99,13 @@
         :visible="imageVisible"
       ></v-image>
       <!-- <v-tile tile-type="GeoTIFF" :z-index="9" :geo-tiff="GeoTIFF" visible></v-tile> -->
-      <!--      <v-overview :tile-type="tile" :rotateWithView="rotateWithView" collapsible></v-overview>-->
+      <!-- <v-overview
+        :tile-type="tile"
+        :rotateWithView="rotateWithView"
+        target="home"
+        collapsible
+        className="ol-overviewmap overview-map-customer"
+      ></v-overview> -->
       <!-- 海量点聚合 -->
       <v-super-cluster
         ref="clusterLayer"
@@ -334,7 +346,7 @@ export default {
         },
         XYZ_2: {
           url:
-            "http://44.64.128.233:8888/admin-api/Maps/FuJianSheng_XiaMen_vcc_L0_L20_20240929/JointMap?service=GetImage&ak=d59ec87cc74b40bbaf665d65b42554b7&col={x}&row={y}&zoom={z}",
+            "http://27.154.234.238:3398/admin-api/Maps/xm_pgis_20241223/JointMap?service=GetImage&ak=2587aa1916cf48e0bf350777e672484d&col={x}&row={y}&zoom={z}",
           projection: "EPSG:4490",
         },
       },
@@ -3191,5 +3203,10 @@ p {
   transform: rotate(-5deg);
   margin: -1em 0;
   cursor: pointer;
+}
+.overview-map-customer {
+  right: 5rem;
+  left: auto;
+  z-index: 999;
 }
 </style>
