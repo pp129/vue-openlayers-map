@@ -138,6 +138,32 @@ export default {
       immediate: false,
       deep: true,
     },
+    overviewMap: {
+      handler(newValue, oldValue) {
+        if (newValue && newValue !== oldValue) {
+          this.map.removeControl(this.overview);
+          const viewOptDefault = {
+            ...{
+              constrainResolution: false,
+              projection: "EPSG:4326",
+            },
+            ...this.overviewMap.view,
+          };
+          const option = {
+            ...this.overviewMap,
+            view: new View(viewOptDefault),
+            layers: this.init(true),
+          };
+          this.overview = new OverviewMap(option);
+          this.map.addControl(this.overview);
+        } else {
+          this.map.removeControl(this.overview);
+          this.overview = null;
+        }
+      },
+      immediate: false,
+      deep: true,
+    },
     xyz: {
       handler(value) {
         const layers = this.map

@@ -20,6 +20,9 @@
         <label> 可编辑 </label>
         <input type="checkbox" name="modify" v-model="modify" />
         <button v-if="modify" @click="setModify">添加编辑图案（圆）</button>
+
+        <label> 鹰眼图 </label>
+        <input type="checkbox" name="modify" v-model="showOvewviewMap" @change="handleOvewviewChange" />
       </div>
       <div class="item">
         <label>基于super-cluster聚合图层</label>
@@ -82,13 +85,7 @@
       @load="onLoad"
       @changeZoom="changeZoom"
     >
-      <v-tile
-        :tile-type="tileType"
-        :xyz="xyz"
-        :z-index="0"
-        :mask="tileFilter"
-        :overview-map="{ target: 'home', className: 'ol-overviewmap overview-map-customer', collapsed: false, view: view }"
-      ></v-tile>
+      <v-tile :tile-type="tileType" :xyz="xyz" :z-index="0" :mask="tileFilter" :overview-map="overviewMapOptions"></v-tile>
       <v-tile ref="wms" tile-type="WMS" :wms="wms" :z-index="9" :visible="wmsVisible"></v-tile>
       <!-- 图片图层 -->
       <v-image
@@ -237,7 +234,15 @@
 <script>
 import axios from "axios";
 import { calculateCenter, getCentroid } from "@/utils";
-
+const defaultOverviewMapOptions = {
+  target: "home",
+  className: "ol-overviewmap overview-map-customer",
+  collapsed: false,
+  view: {
+    city: "厦门", // 优先级比center高
+    zoom: 12,
+  },
+};
 export default {
   name: "HomePage",
   data() {
@@ -1076,9 +1081,19 @@ export default {
           return style; // 返回样式
         },
       },
+      overviewMapOptions: defaultOverviewMapOptions,
+      showOvewviewMap: true,
     };
   },
   methods: {
+    handleOvewviewChange() {
+      console.log(this.showOvewviewMap);
+      if (this.showOvewviewMap) {
+        this.overviewMapOptions = { ...defaultOverviewMapOptions };
+      } else {
+        this.overviewMapOptions = null;
+      }
+    },
     onLoad() {
       this.mapLoaded = true;
       // setTimeout(() => {
@@ -3205,7 +3220,7 @@ p {
   cursor: pointer;
 }
 .overview-map-customer {
-  right: 5rem;
+  right: 15rem;
   left: auto;
   z-index: 999;
 }

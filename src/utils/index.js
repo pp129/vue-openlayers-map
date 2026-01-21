@@ -1191,6 +1191,18 @@ export const esri2wktGeometry = (esriJson, simplify = true) => {
   return wktString;
 };
 
+export const geoJson2Feature = (geoJson) => {
+  const geoJsonFormat = new GeoJSON();
+  const feature = geoJsonFormat.readFeature(geoJson);
+  return feature;
+};
+
+export const geoJson2Features = (geoJson) => {
+  const geoJsonFormat = new GeoJSON();
+  const features = geoJsonFormat.readFeatures(geoJson);
+  return features;
+};
+
 export class OlMap {
   map = OlMap;
 
