@@ -340,19 +340,18 @@ export default {
     },
     // 鼠标移动事件处理
     handleMouseMove(event) {
-      if (!this.map) return;
+      if (!this.map || !this.visible) return;
 
       const pixel = this.map.getEventPixel(event.originalEvent);
       const feature = this.getFeatureAtPixel(pixel);
-
       if (feature) {
+        // 针对路况要素
         this.map.getTargetElement().style.cursor = "pointer";
         const featureId = feature.get("gid") || "unknown";
         if (this.hoveredFeatureId !== featureId) {
           this.hoveredFeatureId = featureId;
         }
       } else {
-        this.map.getTargetElement().style.cursor = "default";
         if (this.hoveredFeatureId !== null) {
           this.hoveredFeatureId = null;
         }
@@ -562,7 +561,7 @@ export default {
         this.map.getView().un("change:center", this.mapMoveHandler);
         this.map.un("pointermove", this.handleMouseMove);
         this.map.un("click", this.handleMapClick);
-        this.map.getTargetElement().style.cursor = "default";
+        this.map.getTargetElement().style.cursor = "";
       }
 
       if (this.debouncedUpdateTrafficData) {

@@ -227,10 +227,14 @@ export default {
               .forEach((layer) => {
                 if (layer.get("type") === "graphic" || layer.get("type") === "wms") {
                   // console.log(layer)
-                  const data = layer.getData(evt.pixel);
+                  const data = layer.getData(pixel);
                   // console.log(data)
                   const hitImage = data && data[3] > 0; // transparent pixels have zero for data[3]
-                  this.map.getTargetElement().style.cursor = hitImage || hit ? "pointer" : "";
+                  // console.log("hitImage", data);
+                  // this.map.getTargetElement().style.cursor = hitImage || hit ? "pointer" : "";
+                  if (hitImage || hit) {
+                    this.map.getTargetElement().style.cursor = "pointer";
+                  }
                 }
               });
             /**

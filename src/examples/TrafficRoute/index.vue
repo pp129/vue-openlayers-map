@@ -6,6 +6,10 @@
         <input type="checkbox" v-model="GDRoute.visible" />
       </div>
       <div class="item">
+        <label>显示辖区</label>
+        <input type="checkbox" v-model="wms.visible" />
+      </div>
+      <div class="item">
         <label>选择底图</label>
         <select id="changeLayer" class="btn" v-model="tile" @change="changeTile">
           <option v-for="(item, index) in baseTile" :key="index" :value="item.value">{{ item.name }}</option>
@@ -24,6 +28,8 @@
         :declutter="true"
         @click="handleClick"
       ></v-gd-route>
+      <v-vector :features="features"></v-vector>
+      <v-tile ref="wms" tile-type="WMS" :wms="wms" :z-index="9" :visible="wms.visible"></v-tile>
     </v-map>
   </div>
 </template>
@@ -111,6 +117,43 @@ export default {
         },
       ],
       xyz: {},
+      features: [
+        {
+          id: "point2",
+          coordinates: [118.128342, 24.407405],
+          style: {
+            zIndex: 1,
+            icon: {
+              scale: 0.6,
+              // src: require('@/assets/img/point_5.png')
+              src: new URL("../../assets/img/point_4.png", import.meta.url).href,
+            },
+          },
+          properties: {
+            name: "feature2",
+            level: 2,
+          },
+        },
+      ],
+      wms: {
+        visible: true,
+        url: "http://172.16.34.132:8222/geoserver/test/wms",
+        params: {
+          //   VERSION: "1.3.0",
+          FORMAT: "image/png",
+          STYLES: "",
+          LAYERS: "test:v_zdwg",
+          // CQL_FILTER: "manage_department in ('350200271204','350200271208')",
+          //   LAYERS: "test:v_lkd",
+          //   CQL_FILTER: "manage_department in ('350200271208','350200271210')",
+          exceptions: "application/vnd.ogc.se_inimage",
+          //   CRS: "EPSG:4326",
+          tiled: true,
+        },
+        serverType: "geoserver",
+        ratio: 1,
+        crossOrigin: "anonymous",
+      },
     };
   },
   computed: {},
