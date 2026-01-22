@@ -70,6 +70,11 @@ export const constantRouterMap = [
     name: "TrafficWMS",
     component: () => import(/* webpackChunkName: "WMS" */ "../examples/TrafficWMS/index.vue"),
   },
+  {
+    path: "/TrafficImageWMS",
+    name: "TrafficImageWMS",
+    component: () => import(/* webpackChunkName: "WMTS" */ "../examples/TrafficImageWMS/index.vue"),
+  },
 ];
 
 const router = new VueRouter({

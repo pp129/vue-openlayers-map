@@ -3,6 +3,7 @@ import BaseLayer from "../BaseLayer.vue";
 import { nanoid } from "nanoid";
 import Projection from "ol/proj/Projection";
 import ImageLayer from "ol/layer/Image";
+import ImageWMS from "ol/source/ImageWMS";
 import Static from "ol/source/ImageStatic";
 import Layer from "ol-ext/layer/GeoImage";
 import Source from "ol-ext/source/GeoImage";
@@ -45,9 +46,20 @@ export default {
         return false;
       },
     },
+    sourceType: {
+      type: String,
+      default: "Static",
+      validator(value) {
+        return ["Static", "GeoImage", "WMS"].map((item) => item.toLowerCase()).includes(value.toLowerCase());
+      },
+    },
     geoImage: {
       type: Boolean,
       default: false,
+    },
+    wms: {
+      type: Object,
+      default() {},
     },
   },
   data() {
@@ -65,28 +77,36 @@ export default {
   },
   watch: {
     source: {
-      handler(value) {
+      handler() {
         // this.layer.getSource().clear()
-        if (this.geoImage) {
-          this.layer.setSource(new Source(value));
-        } else {
-          this.layer.setSource(new Static(value));
-        }
-        // this.layer.getSource().refresh()
+        this.changeSource();
       },
       immediate: false,
       deep: true,
     },
+    sourceType() {
+      this.changeSource();
+    },
   },
   methods: {
+    changeSource() {
+      if (this.sourceType.toLowerCase() === "geoimage") {
+        this.layer.setSource(new Source(this.source));
+      } else if (this.sourceType.toLowerCase() === "static") {
+        this.layer.setSource(new Static(this.source));
+      } else if (this.sourceType.toLowerCase() === "wms") {
+        this.layer.setSource(new ImageWMS(this.wms));
+      }
+    },
     init() {
-      if (this.geoImage) {
+      if (this.sourceType.toLowerCase() === "geoimage") {
         this.layerOpt = { ...this.$props };
         this.layer = new Layer({
           ...this.layerOpt,
           source: new Source(this.source),
         });
-      } else {
+        this.layer.set("type", "image");
+      } else if (this.sourceType.toLowerCase() === "static") {
         let extent = [0, 0, 180, 90];
         if (validObjKey(this.source, "extent")) {
           extent = this.source.extent;
@@ -106,10 +126,17 @@ export default {
           ...this.layerOpt,
           source,
         });
+        this.layer.set("type", "image");
+      } else if (this.sourceType.toLowerCase() === "wms") {
+        this.layerOpt = { ...this.$props };
+        this.layer = new ImageLayer({
+          ...this.layerOpt,
+          source: new ImageWMS(this.wms),
+        });
+        this.layer.set("type", "wms");
       }
       const layerId = this.layerId || `image-layer-${nanoid()}`;
       this.layer.set("id", layerId);
-      this.layer.set("type", "image");
       this.layer.set("users", true);
       if (this.zIndex) {
         this.layer.setZIndex(this.zIndex);
