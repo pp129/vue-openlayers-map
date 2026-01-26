@@ -6,8 +6,12 @@ Vue.use(VueRouter);
 export const constantRouterMap = [
   {
     path: "/",
+    name: "Index",
+    component: () => import(/* webpackChunkName: "Index" */ "../examples/Index/index.vue"),
+  },
+  {
+    path: "/Home",
     name: "Home",
-    // redirect: '/home',
     component: () => import(/* webpackChunkName: "Home" */ "../examples/Home/index.vue"),
   },
   {
@@ -23,7 +27,7 @@ export const constantRouterMap = [
   {
     path: "/FeatureClick",
     name: "FeatureClick",
-    component: () => import(/* webpackChunkName: "FeatureClick" */ "../examples/FeatureClick/index.vue"),
+    component: () => import(/* webpackChunkName: "FeatureClick" */ "../examples/FeatureClick/index-optimized.vue"),
   },
   {
     path: "/Points",
@@ -41,16 +45,6 @@ export const constantRouterMap = [
     component: () => import(/* webpackChunkName: "Polyline" */ "../examples/Mobile/index.vue"),
   },
   {
-    path: "/TrafficRoute",
-    name: "TrafficRoute",
-    component: () => import(/* webpackChunkName: "TrafficRoute" */ "../examples/TrafficRoute/index.vue"),
-  },
-  {
-    path: "/RouteInArea",
-    name: "RouteInArea",
-    component: () => import(/* webpackChunkName: "RouteInArea" */ "../examples/RouteInArea/index.vue"),
-  },
-  {
     path: "/MultiMap",
     name: "MultiMap",
     component: () => import(/* webpackChunkName: "MultiMap" */ "../examples/MultiMap/index.vue"),
@@ -66,14 +60,64 @@ export const constantRouterMap = [
     component: () => import(/* webpackChunkName: "WMS" */ "../examples/WMS/index.vue"),
   },
   {
-    path: "/TrafficWMS",
-    name: "TrafficWMS",
-    component: () => import(/* webpackChunkName: "WMS" */ "../examples/TrafficWMS/index.vue"),
-  },
-  {
     path: "/TrafficImageWMS",
     name: "TrafficImageWMS",
-    component: () => import(/* webpackChunkName: "WMTS" */ "../examples/TrafficImageWMS/index.vue"),
+    component: () => import(/* webpackChunkName: "TrafficImageWMS" */ "../examples/TrafficImageWMS/index.vue"),
+  },
+  {
+    path: "/OptimizedMap",
+    name: "OptimizedMap",
+    component: () => import(/* webpackChunkName: "OptimizedMap" */ "../examples/OptimizedMap/index.vue"),
+  },
+  {
+    path: "/BasicMapExample",
+    name: "BasicMapExample",
+    component: () => import(/* webpackChunkName: "BasicMapExample" */ "../examples/BasicMapExample/index.vue"),
+  },
+  {
+    path: "/ClusterExample",
+    name: "ClusterExample",
+    component: () => import(/* webpackChunkName: "ClusterExample" */ "../examples/ClusterExample/index.vue"),
+  },
+  {
+    path: "/DrawExample",
+    name: "DrawExample",
+    component: () => import(/* webpackChunkName: "DrawExample" */ "../examples/DrawExample/index.vue"),
+  },
+  {
+    path: "/GroupExample",
+    name: "GroupExample",
+    component: () => import(/* webpackChunkName: "GroupExample" */ "../examples/GroupExample/index.vue"),
+  },
+  {
+    path: "/MeasureExample",
+    name: "MeasureExample",
+    component: () => import(/* webpackChunkName: "MeasureExample" */ "../examples/MeasureExample/index.vue"),
+  },
+  {
+    path: "/OverviewMapExample",
+    name: "OverviewMapExample",
+    component: () => import(/* webpackChunkName: "OverviewMapExample" */ "../examples/OverviewMapExample/index.vue"),
+  },
+  {
+    path: "/ImageLayerExample",
+    name: "ImageLayerExample",
+    component: () => import(/* webpackChunkName: "ImageLayerExample" */ "../examples/ImageLayerExample/index.vue"),
+  },
+  {
+    path: "/GraphicExample",
+    name: "GraphicExample",
+    component: () => import(/* webpackChunkName: "GraphicExample" */ "../examples/GraphicExample/index.vue"),
+  },
+  {
+    path: "/EchartsExample",
+    name: "EchartsExample",
+    component: () => import(/* webpackChunkName: "EchartsExample" */ "../examples/EchartsExample/index.vue"),
+  },
+  {
+    path: "/PathExample",
+    name: "PathExample",
+    component: () => import(/* webpackChunkName: "PathExample" */ "../examples/PathExample/index.vue"),
   },
 ];
 

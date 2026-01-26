@@ -12,11 +12,10 @@
   - 地图交互 [interactions](https://pp129.github.io/vue-openlayers-map/components/MAP.html#interactions)
   - 事件 [events](https://pp129.github.io/vue-openlayers-map/components/MAP.html#events)
   - 方法 [methods](https://pp129.github.io/vue-openlayers-map/components/MAP.html#methods)
-- 鹰眼 [v-overview](https://pp129.github.io/vue-openlayers-map/components/OVERVIEW.html)
 - 图层
   - 矢量图层 [v-vector](https://pp129.github.io/vue-openlayers-map/components/VECTOR.html)
   - 瓦片图层 [v-tile](https://pp129.github.io/vue-openlayers-map/components/TILEL.html)
-  - 图像图层 [v-tile](https://pp129.github.io/vue-openlayers-map/components/IMAGE.html)
+  - 图像图层 [v-image](https://pp129.github.io/vue-openlayers-map/components/IMAGE.html)
   - 热力图 [v-heatmap](https://pp129.github.io/vue-openlayers-map/components/HEATMAP.html)
   - 聚合图层 [v-super-cluster](https://pp129.github.io/vue-openlayers-map/components/CLUSTERLAYER.html) （使用 [SuperCluster](https://github.com/mapbox/supercluster) 实现）
   - 图形图层 [v-graphic](https://pp129.github.io/vue-openlayers-map/components/GRAPHIC.html)

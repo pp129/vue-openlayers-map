@@ -13,6 +13,10 @@ import AvoidanceLayer from "@/utils/avoidance";
 // import { getVectorContext } from 'ol/render'
 import { unByKey } from "ol/Observable";
 import { lineSliceAlong } from "@turf/turf";
+import { throttle, rafThrottle, LRUCache } from "@/utils/performance";
+
+// 全局样式缓存（跨实例共享）
+const globalStyleCache = new LRUCache(200);
 
 export default class vzPath {
   _operators;
@@ -59,6 +63,11 @@ export default class vzPath {
   _nodesCollection;
   // 默认排序数据设置
   _nodeInfos;
+  // 性能优化相关
+  _throttledSimplify;
+  _throttledEventListener;
+  _cachedPath; // 缓存路径坐标，避免每帧重复计算
+  _baseSpeed; // 基础速度，用于倍速计算
   constructor(options) {
     options = options || {};
 
@@ -210,6 +219,8 @@ export default class vzPath {
 
     // 运动速度
     this._speed = this._operators.speed;
+    // 保存基础速度，用于倍速计算
+    this._baseSpeed = this._operators.speed;
     // 点播放动画运动间隔
     this._timeStep = this._operators.timeStep;
     // 加速倍数
@@ -255,10 +266,14 @@ export default class vzPath {
     console.log(this._group);
 
     mapObj?.addLayer(this._group);
-    // 监听内容控制 ['singleclick', 'pointermove']
-    this._tracekEvent = mapObj?.on(["singleclick", "pointermove"], (eve) => {
+
+    // 创建节流的事件监听器（RAF节流，每帧最多执行一次）
+    this._throttledEventListener = rafThrottle((eve) => {
       this.eventListener(eve);
     });
+
+    // 监听内容控制 ['singleclick', 'pointermove']
+    this._tracekEvent = mapObj?.on(["singleclick", "pointermove"], this._throttledEventListener);
 
     /**
      * 基础图层监听事件内容处理 - nodeClick/nodeMouseover/nodeMouseout || pathClick/pathMouseover/pathMouseout
@@ -267,9 +282,14 @@ export default class vzPath {
     // 触发声明内容 自定义监听
     this._eventType = ["nodeClick", "nodeMouseover", "nodeMouseout", "pathClick", "pathMouseover", "pathMouseout", "move"];
 
+    // 创建节流的简化操作（300ms节流）
+    this._throttledSimplify = throttle(300, (eve) => {
+      this.simplifyOpera(eve);
+    });
+
     // 试用simplify进行线型数据的简化
     this._simplifyEvent = mapObj?.getView().on("change:resolution", (eve) => {
-      Number.isInteger(eve.target.getZoom()) && this.simplifyOpera(eve);
+      Number.isInteger(eve.target.getZoom()) && this._throttledSimplify(eve);
     });
     // 执行初始化
     this.initLinesAndMarkers();
@@ -300,15 +320,26 @@ export default class vzPath {
     const isTransfer = this._viewCode !== code;
     const resolution = eve.target.getResolution();
 
-    // 节点数据情况
-    path = this._nodesCollection.map((item) => {
-      if (isTransfer && item.get("isSimplify") === false) {
-        const setting = item.getGeometry()?.transform(this._viewCode, code);
-        setting instanceof Point && item.setGeometry(setting);
-      }
-      const coord = item.getGeometry().getCoordinates();
-      return { x: coord[0] / resolution, y: coord[1] / resolution, idx: item.get("node_idx") };
-    });
+    // 性能优化：获取可视范围，只处理可见节点
+    const extent = this._map.getView().calculateExtent();
+    const padding = resolution * 500; // 添加一些边界缓冲
+    const expandedExtent = [extent[0] - padding, extent[1] - padding, extent[2] + padding, extent[3] + padding];
+
+    // 节点数据情况（过滤不可见节点）
+    path = this._nodesCollection
+      .filter((item) => {
+        const coord = item.getGeometry().getCoordinates();
+        return containsCoordinate(expandedExtent, coord);
+      })
+      .map((item) => {
+        if (isTransfer && item.get("isSimplify") === false) {
+          const setting = item.getGeometry()?.transform(this._viewCode, code);
+          setting instanceof Point && item.setGeometry(setting);
+        }
+        const coord = item.getGeometry().getCoordinates();
+        return { x: coord[0] / resolution, y: coord[1] / resolution, idx: item.get("node_idx") };
+      });
+
     // 同步投影信息
     isTransfer && (this._viewCode = code);
 
@@ -635,7 +666,8 @@ export default class vzPath {
     });
     const arrowStyle = new Style({
       image: new Icon({
-        src: "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAABfUlEQVQ4T3WTTSvFYRDFf8dLKIqytFckthTpJkQWlyhF2fgEVr6BheytpChEsqB08xbZWPgOJAs7ieRlNMzV//75P7vnmZkz58ycR2ZWD7QBF5KM1DGzTuBO0k065neZ2S3QBGwAU5I+iolmNgrsAI9An6SrNIgDnAE9EdgFJiS9+93MuoEToBx4AgYkXSZBHKAWOAS6IrAP5CW9BUge2AIqgJdg8guiSKoBDoDeDJBhwNlVBsiQpNPvGST0VgF7TjPeCsCIpNdo0g84O2fibx4r/AJEUjVwlJDjXbybU/eZjAGbMROXmC8BiKQ64BxoDyYLkuYTTCeB9WD/9B9AA3AMdGQAzALLAfCcluDF3r01itMS5oDFiP3MIUHNi90T7ko/XjyYGOIMsFJSXByimTVGQbFzegOuew0o+7PGKL4AmjM8MA2shua/RjIzX1suw8pucZfiUjOt/AC4BHfaeOoz+d63oziX9Zla3CzAkqTP9G8zM4/dS7r+7zt/Aaattn1kX8VgAAAAAElFTkSuQmCC",
+        src:
+          "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAABfUlEQVQ4T3WTTSvFYRDFf8dLKIqytFckthTpJkQWlyhF2fgEVr6BheytpChEsqB08xbZWPgOJAs7ieRlNMzV//75P7vnmZkz58ycR2ZWD7QBF5KM1DGzTuBO0k065neZ2S3QBGwAU5I+iolmNgrsAI9An6SrNIgDnAE9EdgFJiS9+93MuoEToBx4AgYkXSZBHKAWOAS6IrAP5CW9BUge2AIqgJdg8guiSKoBDoDeDJBhwNlVBsiQpNPvGST0VgF7TjPeCsCIpNdo0g84O2fibx4r/AJEUjVwlJDjXbybU/eZjAGbMROXmC8BiKQ64BxoDyYLkuYTTCeB9WD/9B9AA3AMdGQAzALLAfCcluDF3r01itMS5oDFiP3MIUHNi90T7ko/XjyYGOIMsFJSXByimTVGQbFzegOuew0o+7PGKL4AmjM8MA2shua/RjIzX1suw8pucZfiUjOt/AC4BHfaeOoz+d63oziX9Zla3CzAkqTP9G8zM4/dS7r+7zt/Aaattn1kX8VgAAAAAElFTkSuQmCC",
         anchor: [0.75, 0.5],
         scale: 0.7,
         rotateWithView: false,
@@ -729,6 +761,10 @@ export default class vzPath {
     this._status = "stop";
     this._moving = false;
     this._step = 0;
+
+    // 性能优化：清除缓存
+    this._cachedPath = null;
+
     if (this._moveListener !== null) {
       // 解除事件的监听 remove listener
       unByKey(this._moveListener);
@@ -758,7 +794,7 @@ export default class vzPath {
   }
 
   /**
-   * 按节点内容进行动画播放
+   * 按节点内容进行动画播放（优化版）
    * @param event
    * @returns
    */
@@ -767,9 +803,14 @@ export default class vzPath {
     // const vectorContext = getVectorContext(event); // event.vectorContext;
     const frameState = event.frameState;
 
-    const path = this._nodesCollection.map((item) => {
-      return item.getGeometry().getCoordinates();
-    });
+    // 性能优化：缓存路径坐标
+    if (!this._cachedPath) {
+      this._cachedPath = this._nodesCollection.map((item) => {
+        return item.getGeometry().getCoordinates();
+      });
+    }
+    const path = this._cachedPath;
+
     // this._originPath instanceof LineString ? this._originPath?.getCoordinates() : [];
     const passTime = ((frameState.time - this._nowTime) / 1000) % 60; // 间隔秒,最小到小数据后三位  Math.floor
     if (this._moving && (this._moveIdx === 1 || passTime >= this._timeStep)) {
@@ -1022,6 +1063,10 @@ export default class vzPath {
     // const validate = arr.length > 0 ? arr[0] : {}
     // 清除原有数据
     this.clearPaths();
+
+    // 性能优化：清除缓存
+    this._cachedPath = null;
+
     this._pathInfo = arr;
     this.initLinesAndMarkers();
   }
@@ -1043,6 +1088,11 @@ export default class vzPath {
     unByKey(this._tracekEvent);
     // 存在投影变化的情况，去除影响内容监听
     this._map?.getView().removeEventListener("change:resolution", this._simplifyEvent.listener);
+
+    // 性能优化：取消节流函数
+    if (this._throttledEventListener && typeof this._throttledEventListener.cancel === "function") {
+      this._throttledEventListener.cancel();
+    }
   }
 
   getSpeed() {
@@ -1050,7 +1100,9 @@ export default class vzPath {
   }
 
   setSpeed(num) {
-    this._speed = num;
+    // 修复：更新基础速度和当前速度
+    this._baseSpeed = num;
+    this._speed = num * this._speedUp;
   }
 
   getSpeedUp() {
@@ -1058,8 +1110,9 @@ export default class vzPath {
   }
 
   setSpeedUp(num) {
+    // 修复：基于基础速度计算，避免累乘
     this._speedUp = num;
-    this._speed = this._speed * num;
+    this._speed = this._baseSpeed * num;
   }
 
   getPercentnum() {
@@ -1203,7 +1256,7 @@ export default class vzPath {
   }
 }
 /**
- * 轨迹线的样式内容设置
+ * 轨迹线的样式内容设置（优化版：添加LRU缓存）
  * @param feature 要素
  * @param resolution view的resolution数值
  * @returns
@@ -1212,16 +1265,34 @@ function lineStyles(feature, resolution) {
   // 此处this为Feature line对象
   const defaultStyle = feature.get("arrow");
   const defaultView = feature.get("mainView");
+
+  // 性能优化：使用缓存key
+  const featureId = feature.getId() || "default";
+  const cacheKey = `${featureId}-${resolution.toFixed(4)}`;
+
+  // 尝试从缓存获取
+  const cached = globalStyleCache.get(cacheKey);
+  if (cached) {
+    return cached;
+  }
+
   const styles = [defaultStyle[0]];
   const geometry = feature.getGeometry();
+
   if (geometry && geometry instanceof LineString) {
     const length = geometry.getLength(); // 获取线段长度
     const radio = (200 * resolution) / length;
     // const dradio = 1; //投影坐标系，如3857等，默认设置dradio=1，在EPSG:4326下可以设置dradio=10000，转换成米制
 
+    // 性能优化：预计算可见范围
+    const extent = defaultView ? defaultView.calculateExtent() : null;
+
     for (let i = 0; i <= 1; i += radio) {
       const arrowLocation = geometry.getCoordinateAt(i);
-      const containFlag = containsCoordinate(defaultView.calculateExtent(), arrowLocation);
+
+      // 性能优化：只渲染可见范围内的箭头
+      const containFlag = extent ? containsCoordinate(extent, arrowLocation) : true;
+
       if (containFlag) {
         const dirPosition = geometry.getCoordinateAt(i + 0.00005);
         const dx = dirPosition[0] - arrowLocation[0]; // floatObj.subtract(dirPosition[0], arrowLocation[0]); // base2[0] - base[0];
@@ -1240,6 +1311,9 @@ function lineStyles(feature, resolution) {
       }
     }
   }
+
+  // 性能优化：将结果存入缓存
+  globalStyleCache.set(cacheKey, styles);
 
   return styles;
 }

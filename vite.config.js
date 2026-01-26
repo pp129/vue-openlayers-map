@@ -16,7 +16,7 @@ const build = (env) => {
       outDir: "lib",
       lib: {
         target: "esnext",
-        entry: resolve(__dirname, "src/components/index.js"),
+        entry: resolve(__dirname, "src/packages/index.js"),
         name: "ol-map",
         formats: ["umd"],
         fileName: (format) => `ol-map.${format}.js`,

@@ -45,7 +45,7 @@
 </template>
 
 <script>
-import { utils } from "@/components";
+import { utils } from "@/packages";
 export default {
   name: "TrafficWMS",
   data() {
