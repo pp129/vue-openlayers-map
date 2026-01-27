@@ -72,7 +72,8 @@ export const MapMethods = {
   parameters: {
     docs: {
       description: {
-        story: "地图方法示例",
+        story:
+          "地图方法示例：视图移动(panTo/flyTo)、缩放控制(setZoom/setMaxZoom/setMinZoom)、视图适应(fit/boundingExtent)、工具方法(exportPNG/getDistancePoint)",
       },
       source: {
         language: "html",

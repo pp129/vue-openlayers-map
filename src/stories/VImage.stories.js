@@ -3,6 +3,8 @@ import ImageExample from "./Image/ImageExample.vue";
 import ImageExampleRaw from "./Image/ImageExample.vue?raw";
 import ImageWms from "./ImageWMS/index.vue";
 import ImageWmsRaw from "./ImageWMS/index.vue?raw";
+import ImageGeoExample from "./Image/ImageGeoExample.vue";
+import ImageGeoExampleRaw from "./Image/ImageGeoExample.vue?raw";
 
 export default {
   id: "2-4",
@@ -53,5 +55,23 @@ export const ImageWMS = {
   render: () => ({
     components: { ImageWms },
     template: "<ImageWms />",
+  }),
+};
+
+export const ImageGeo = {
+  parameters: {
+    docs: {
+      description: {
+        story: "Geo图片图层示例。在指定范围内显示Geo图片",
+      },
+      source: {
+        language: "html",
+        code: ImageGeoExampleRaw,
+      },
+    },
+  },
+  render: () => ({
+    components: { ImageGeoExample },
+    template: "<ImageGeoExample />",
   }),
 };

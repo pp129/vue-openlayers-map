@@ -8,7 +8,7 @@
 </template>
 
 <script>
-import { VMap, VTile, VImage } from "@/packages";
+import { VMap, VTile, VImage } from "v-ol-map";
 
 export default {
   name: "ImageExample",
@@ -16,8 +16,8 @@ export default {
   data() {
     return {
       view: { center: [118.0894, 24.4798], zoom: 13, projection: "EPSG:4326" },
-      imageUrl: "https://openlayers.org/en/latest/examples/data/kml/2012_Earthquakes_Mag5.png",
-      imageExtent: [117.9, 24.3, 118.3, 24.7],
+      imageUrl: new URL(`../../assets/img/siming.jpg`, import.meta.url).href,
+      imageExtent: [118.0531, 24.423728, 118.197989, 24.502344],
     };
   },
 };

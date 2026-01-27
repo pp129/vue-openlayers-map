@@ -12,11 +12,17 @@ import * as VImage from "./VImage.stories";
 import { VMap, VTile, VImage } from "v-ol-map";
 ```
 
-## 基础示例
+## 图像叠加示例（Static Image）
 
 > 在指定地理范围内显示静态图片
 
 <Canvas of={VImage.Default} />
+
+## 图像叠加示例（GeoImage）
+
+> 基于 `ol-ext/layer/GeoImage` 的图像叠加示例
+
+<Canvas of={VImage.ImageGeo} />
 
 ## WMS 示例
 

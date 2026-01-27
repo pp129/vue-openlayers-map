@@ -1,9 +1,6 @@
 <script>
 import EChartsLayer from "ol-echarts";
 
-/**
- * 基于`ol-echarts` ECharts 图层组件
- */
 export default {
   name: "v-echarts",
   inject: ["VMap"],

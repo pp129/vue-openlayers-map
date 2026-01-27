@@ -203,14 +203,8 @@ export default {
       this.imageSource = new GeoImageSource(sourceOptions);
 
       this.layer = new GeoImageLayer({
+        ...this.$props,
         source: this.imageSource,
-        opacity: this.opacity,
-        visible: this.visible,
-        extent: this.extent,
-        minZoom: this.minZoom,
-        maxZoom: this.maxZoom,
-        minResolution: this.minResolution,
-        maxResolution: this.maxResolution,
       });
       this.layer.set("type", "geoimage");
     },
