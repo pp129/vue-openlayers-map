@@ -1,6 +1,6 @@
 <template>
   <v-map :view="view" style="width: 100%; height: 600px">
-    <v-tile tile-type="TD" />
+    <v-tile tile-type="BD" />
     <v-vector :geoJson="geoJsonData" :layerStyle="layerStyle" />
   </v-map>
 </template>
@@ -88,6 +88,21 @@ export default {
               coordinates: [118.5894, 24.9087],
             },
           },
+          {
+            type: "Feature",
+            properties: { id: "Polygon", name: "多边形" },
+            geometry: {
+              type: "Polygon",
+              coordinates: [
+                [
+                  [118.0894, 24.4798],
+                  [117.6469, 24.5128],
+                  [118.5894, 24.9087],
+                  [118.0894, 24.4798],
+                ],
+              ],
+            },
+          },
         ],
       },
       layerStyle: {
@@ -96,6 +111,8 @@ export default {
           fill: { color: "rgba(33, 150, 243, 0.8)" },
           stroke: { color: "#fff", width: 2 },
         },
+        fill: { color: "rgba(33, 150, 243, 0.4)" },
+        stroke: { color: "#fff", width: 2 },
       },
     };
   },

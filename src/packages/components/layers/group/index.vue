@@ -7,15 +7,6 @@ import BaseLayer from "../BaseLayer.vue";
 import { nanoid } from "nanoid";
 import Group from "ol/layer/Group";
 
-/**
- * 优化的图层分组组件
- *
- * 优化内容:
- * 1. 继承 BaseLayer，使用统一的事件和资源管理
- * 2. 使用 EventManager 管理事件监听器
- * 3. 完善的 dispose 清理逻辑
- * 4. 移除不必要的 console.log
- */
 export default {
   name: "v-group-layer",
   provide() {

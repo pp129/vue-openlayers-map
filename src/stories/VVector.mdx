@@ -18,17 +18,19 @@ import { VMap, VVector, VTile } from "v-ol-map";
 
 <Canvas of={VVector.Default} />
 
+## GeoJSON 基础示例
+
+> 使用 GeoJSON 数据生成要素，支持要素级别样式(优先级高于图层样式)和图层统一样式。
+>
+> 直接使用 GeoJSON 很方便，**但 GeoJSON 标准不支持 Circle 几何类型。**
+
+<Canvas of={VVector.GeoJsonBasic} />
+
 ## Modify 编辑模式
 
 > 要素可编辑，启用后可拖拽要素移动位置
 
 <Canvas of={VVector.Modify} />
-
-## GeoJSON 基础示例
-
-> 使用 GeoJSON 数据生成要素，支持要素级别样式和图层统一样式
-
-<Canvas of={VVector.GeoJsonBasic} />
 
 ## 鼠标交互改变要素样式示例
 

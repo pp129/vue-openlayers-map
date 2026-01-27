@@ -18,9 +18,10 @@ export default {
       };
     },
     // props: Object.keys(argTypes),
-    components: { VMap, VVector },
+    components: { VMap, VVector, VTile },
     template: `
       <v-map v-bind="args.map">
+        <v-tile tile-type="BD"></v-tile>
         <v-vector v-bind="args.layer"></v-vector>
       </v-map>
     `,
@@ -52,6 +53,46 @@ export const Default = {
           properties: {
             name: "feature1",
             level: 2,
+          },
+        },
+        {
+          id: "circle",
+          type: "circle",
+          center: [118.15, 24.5],
+          radius: 2600,
+          style: {
+            text: {
+              text: "圆形",
+              fill: { color: "#fff" },
+            },
+            fill: { color: "#DC143C" },
+            stroke: { color: "#DC143E", width: 2 },
+          },
+        },
+        {
+          type: "polygon",
+          coordinates: [
+            [
+              [118.12, 24.45],
+              [118.14, 24.46],
+              [118.13, 24.48],
+            ],
+          ],
+          style: {
+            fill: { color: "#FF0000" },
+            stroke: { color: "#000000", width: 2 },
+          },
+        },
+        {
+          type: "LineString",
+          coordinates: [
+            // 厦门范围内随机生成坐标
+            [118.15, 24.55],
+            [118.12, 24.46],
+            [118.11, 24.58],
+          ],
+          style: {
+            stroke: { color: "#FF0000", width: 2 },
           },
         },
       ],
