@@ -9,7 +9,7 @@ import * as VRouteStories from "./VRoute.stories";
 
 ## 基础用法
 
-```vue
+```html
 <template>
   <v-map :view="viewOptions">
     <v-tile tile-type="TD" />
@@ -24,26 +24,26 @@ import * as VRouteStories from "./VRoute.stories";
 </template>
 
 <script>
-export default {
-  data() {
-    return {
-      stops: [
-        [118.08, 24.47],
-        [118.1, 24.49],
-      ],
-      routeStyle: {
-        line: { stroke: { color: "rgba(24, 144, 255, 0.8)", width: 6 } },
-        start: { circle: { radius: 12, fill: { color: "#52c41a" } } },
-        end: { circle: { radius: 12, fill: { color: "#f5222d" } } },
-      },
-    };
-  },
-  methods: {
-    onRouteRender(routeData, map, features) {
-      console.log("路径规划完成", routeData);
+  export default {
+    data() {
+      return {
+        stops: [
+          [118.08, 24.47],
+          [118.1, 24.49],
+        ],
+        routeStyle: {
+          line: { stroke: { color: "rgba(24, 144, 255, 0.8)", width: 6 } },
+          start: { circle: { radius: 12, fill: { color: "#52c41a" } } },
+          end: { circle: { radius: 12, fill: { color: "#f5222d" } } },
+        },
+      };
     },
-  },
-};
+    methods: {
+      onRouteRender(routeData, map, features) {
+        console.log("路径规划完成", routeData);
+      },
+    },
+  };
 </script>
 ```
 
