@@ -1,10 +1,12 @@
-import { VMap, VVector, VTile } from "../components";
+import { VMap, VVector, VTile } from "../packages";
 import { Default as MapStoriies } from "./VMap.stories";
-import md from "./VTile.md?raw";
+import GeoJsonBasicExample from "./GeoJson/GeoJsonBasicExample.vue";
+import GeoJsonBasicExampleRaw from "./GeoJson/GeoJsonBasicExample.vue?raw";
 
 // More on how to set up stories at: https://storybook.js.org/docs/writing-stories
 export default {
-  title: "VOlMap/Vector",
+  id: "2-3",
+  title: "图层/Vector矢量图层",
   // tags: ["autodocs"],
   component: VVector,
   render: (args, { argTypes }) => ({
@@ -24,7 +26,7 @@ export default {
   parameters: {
     docs: {
       description: {
-        component: md,
+        component: "",
       },
     },
   },
@@ -100,5 +102,29 @@ export const Modify = {
         <v-vector v-bind="args.layer"></v-vector>
       </v-map>
     `,
+  }),
+};
+
+/**
+ * GeoJSON 基础示例
+ *
+ * 展示如何使用 geoJson 属性加载 GeoJSON 格式的点数据，
+ * 以及要素级别样式与图层统一样式的优先级关系
+ */
+export const GeoJsonBasic = {
+  parameters: {
+    docs: {
+      description: {
+        story: "GeoJSON 基础示例。展示样式优先级：Feature.properties.style（红色/绿色点）> layerStyle（蓝色点）",
+      },
+      source: {
+        language: "html",
+        code: GeoJsonBasicExampleRaw,
+      },
+    },
+  },
+  render: () => ({
+    components: { GeoJsonBasicExample },
+    template: "<GeoJsonBasicExample />",
   }),
 };

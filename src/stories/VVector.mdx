@@ -6,23 +6,29 @@ import * as VVector from "./VVector.stories";
 
 # v-vector
 
-矢量图层
-
-```js
-import { VMap, VVector } from "v-ol-map";
-```
-
-<Canvas of={VVector.Default} />
-
-## Modify
-
-> 要素可编辑
+矢量图层组件，支持点、线、面等多种要素类型。
 
 ```js
 import { VMap, VVector, VTile } from "v-ol-map";
 ```
 
+## 默认示例
+
+> 使用 features 属性添加矢量要素
+
+<Canvas of={VVector.Default} />
+
+## Modify 编辑模式
+
+> 要素可编辑，启用后可拖拽要素移动位置
+
 <Canvas of={VVector.Modify} />
+
+## GeoJSON 基础示例
+
+> 使用 GeoJSON 数据生成要素，支持要素级别样式和图层统一样式
+
+<Canvas of={VVector.GeoJsonBasic} />
 
 ## Docs
 

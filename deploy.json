@@ -1,0 +1,10 @@
+{
+  "outputDir": "storybook-static",
+  "dest": {
+    "host": "172.16.34.132",
+    "port": 22,
+    "username": "root",
+    "password": "123@qwe",
+    "path": "/home/application"
+  }
+}

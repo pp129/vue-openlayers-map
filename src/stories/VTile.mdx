@@ -6,19 +6,29 @@ import * as VTile from "./VTile.stories";
 
 # v-tile
 
-瓦片图层
+瓦片图层组件，支持多种瓦片地图服务。
 
 ```js
 import { VMap, VTile } from "v-ol-map";
 ```
 
+## 默认示例 - 天地图
+
+> 使用天地图作为底图
+
 <Canvas of={VTile.Default} />
 
-## XYZ
+## XYZ 瓦片
 
-> 自定义 XYZ 规则瓦片图层
+> 使用自定义 XYZ 瓦片服务
 
 <Canvas of={VTile.XYZ} />
+
+## WMS 图层
+
+> 基于`ol/source/TileWMS`的 WMS 图层
+
+<Canvas of={VTile.WMS} />
 
 ## Docs
 

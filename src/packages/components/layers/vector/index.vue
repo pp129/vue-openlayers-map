@@ -32,6 +32,7 @@ import Zoom from "ol-ext/featureanimation/Zoom";
 import Gyeonghwon from "gyeonghwon";
 import StyleCache from "@/packages/utils/styleCache";
 import { shallowArrayEqual, rafThrottle } from "@/packages/utils/performance";
+import GeoJSON from "ol/format/GeoJSON";
 
 /**
  * 矢量图层组件 (优化版)
@@ -118,6 +119,11 @@ export default {
       type: Boolean,
       default: false,
     },
+    // GeoJSON 数据支持
+    geoJson: {
+      type: [Object, String],
+      default: null,
+    },
   },
   data() {
     return {
@@ -194,6 +200,15 @@ export default {
       },
       immediate: false,
     },
+    geoJson: {
+      handler(value, oldValue) {
+        if (value) {
+          this.updateGeoJsonFeatures(value);
+        }
+      },
+      immediate: false,
+      deep: true,
+    },
   },
   created() {
     // 初始化样式缓存 (最多1000条)
@@ -213,6 +228,12 @@ export default {
         source.clear();
         const features = setFeatures(this.features, this.map, this.FeatureStyle && Object.keys(this.FeatureStyle).length > 0);
         source.addFeatures(features);
+      }
+
+      // 处理 GeoJSON 数据
+      if (this.geoJson) {
+        const geoJsonFeatures = this.parseGeoJson(this.geoJson);
+        source.addFeatures(geoJsonFeatures);
       }
 
       // 聚合图层
@@ -235,33 +256,28 @@ export default {
         this.layer.set("overlay", this.overlay);
       } else {
         // 普通矢量图层
-        if (this.layerStyle && Object.keys(this.layerStyle).length > 0) {
-          this.layerOpt = {
-            ...this.$props,
-            source,
-            style: (feature) => {
-              return setFeatureStyle(feature, this.layerStyle, this.map);
-            },
-          };
-          this.layer = new VectorLayer(this.layerOpt);
-        } else {
-          this.layerOpt = { ...this.$props, source };
-          this.layer = new VectorLayer(this.layerOpt);
-          this.layer.setStyle((feature) => {
-            if (feature.get("style")) {
-              return setFeatureStyle(feature, feature.get("style"), this.map);
-            } else {
-              if (this.FeatureStyle && Object.keys(this.FeatureStyle).length > 0) {
-                return setStyle(this.FeatureStyle);
-              } else {
-                return setStyle({
-                  fill: { color: "rgba(67,126,255,0.15)" },
-                  stroke: { color: "rgba(67,126,255,1)", width: 1 },
-                });
-              }
-            }
+        // 样式优先级: Feature.style > layerStyle > FeatureStyle > 默认样式
+        this.layerOpt = { ...this.$props, source };
+        this.layer = new VectorLayer(this.layerOpt);
+        this.layer.setStyle((feature) => {
+          // 最高优先级: 要素自带的 style 属性
+          if (feature.get("style")) {
+            return setFeatureStyle(feature, feature.get("style"), this.map);
+          }
+          // 第二优先级: 图层统一样式 layerStyle
+          if (this.layerStyle && Object.keys(this.layerStyle).length > 0) {
+            return setFeatureStyle(feature, this.layerStyle, this.map);
+          }
+          // 第三优先级: FeatureStyle
+          if (this.FeatureStyle && Object.keys(this.FeatureStyle).length > 0) {
+            return setStyle(this.FeatureStyle);
+          }
+          // 默认样式
+          return setStyle({
+            fill: { color: "rgba(67,126,255,0.15)" },
+            stroke: { color: "rgba(67,126,255,1)", width: 1 },
           });
-        }
+        });
       }
 
       const layerId = this.layerId || `vector-layer-${nanoid()}`;
@@ -286,7 +302,7 @@ export default {
         groupLayer: this.groupLayer,
       });
 
-      // 处理箭头线
+      // 处理箭头线 (features)
       this.features.forEach((feature) => {
         if (
           (feature.type === "polyline" || feature.type === "Polyline" || feature.type === "LineString") &&
@@ -301,6 +317,9 @@ export default {
         }
       });
 
+      // 处理 GeoJSON 箭头线
+      this.processGeoJsonArrows(source);
+
       // 线加箭头 - 使用 BaseLayer 的事件管理
       const resolutionListener = this.map.getView().on("change:resolution", () => {
         const zoom = this.map.getView().getZoom();
@@ -310,6 +329,7 @@ export default {
           }
         });
         if (Math.round(zoom) === zoom) {
+          // 重新添加 features 的箭头线
           this.features.forEach((feature) => {
             if (feature.type === "polyline" && validObjKey(feature, "arrow")) {
               arrowLine({
@@ -320,6 +340,8 @@ export default {
               });
             }
           });
+          // 重新添加 GeoJSON 的箭头线
+          this.processGeoJsonArrows(source);
         }
       });
       this.addListener(resolutionListener, "resolution-change");
@@ -335,6 +357,9 @@ export default {
         }
       }
 
+      /**
+       * 图层加载完成事件
+       */
       this.$emit("load", this.layer, this.map);
 
       if (this.modify) {
@@ -342,11 +367,14 @@ export default {
       }
 
       if (change) {
+        /**
+         * 图层变化事件
+         */
         this.$emit("change", source.getFeatures());
       }
 
       // 绑定事件 - 使用 BaseLayer 的事件管理
-      const eventList = ["singleclick", "pointermove", "dblclick"];
+      const eventList = ["click", "singleclick", "pointermove", "dblclick"];
       eventList.forEach((listenerKey) => {
         // 为 pointermove 事件添加 RAF 节流
         const handler =
@@ -432,6 +460,151 @@ export default {
       }
     },
 
+    /**
+     * 解析 GeoJSON 数据为 OpenLayers Features
+     * @param {Object|string} geoJsonData - GeoJSON 数据（对象或 JSON 字符串）
+     * @returns {Array} OpenLayers Feature 数组
+     */
+    parseGeoJson(geoJsonData) {
+      if (!geoJsonData) return [];
+
+      // 如果是字符串，解析为 JSON 对象
+      let geoJson = geoJsonData;
+      if (typeof geoJsonData === "string") {
+        try {
+          geoJson = JSON.parse(geoJsonData);
+        } catch (e) {
+          console.error("GeoJSON 解析失败:", e);
+          return [];
+        }
+      }
+
+      // 使用 OpenLayers GeoJSON 格式化器解析
+      const format = new GeoJSON();
+      const features = format.readFeatures(geoJson, {
+        dataProjection: "EPSG:4326",
+        featureProjection: this.map.getView().getProjection(),
+      });
+
+      // 处理每个 Feature 的属性，包括样式和其他自定义属性
+      features.forEach((feature) => {
+        const properties = feature.getProperties();
+
+        // 设置 Feature ID
+        if (properties.id) {
+          feature.setId(properties.id);
+          feature.set("id", properties.id);
+        }
+
+        // 设置类型
+        const geomType = feature.getGeometry().getType();
+        feature.set("type", geomType);
+
+        // 处理样式 - 如果 Feature 有 style 属性，将其设置到 feature 上
+        // 样式会在图层的 setStyle 回调中根据优先级处理
+        if (properties.style) {
+          feature.set("style", properties.style);
+        }
+
+        // 处理箭头线配置
+        if (properties.arrow) {
+          feature.set("arrow", properties.arrow);
+        }
+
+        // 处理闪光点配置
+        if (properties.flash) {
+          feature.set("flash", properties.flash);
+        }
+
+        // 设置坐标（用于箭头线等功能）
+        const coordinates = feature.getGeometry().getCoordinates();
+        feature.set("coordinates", coordinates);
+
+        // 标记来源为 GeoJSON
+        feature.set("_source", "geojson");
+      });
+
+      return features;
+    },
+
+    /**
+     * 更新 GeoJSON 要素
+     * @param {Object|string} geoJsonData - GeoJSON 数据
+     */
+    updateGeoJsonFeatures(geoJsonData) {
+      const geoJsonFeatures = this.parseGeoJson(geoJsonData);
+
+      if (this.cluster) {
+        // 聚合模式
+        const clusterSource = this.clusterObj.getSource();
+        // 移除旧的 GeoJSON 要素
+        const existingFeatures = clusterSource.getFeatures();
+        existingFeatures.forEach((feature) => {
+          if (feature.get("_source") === "geojson") {
+            clusterSource.removeFeature(feature);
+          }
+        });
+        // 添加新的 GeoJSON 要素
+        clusterSource.addFeatures(geoJsonFeatures);
+        /**
+         * GeoJSON 要素更新事件
+         */
+        this.$emit("geojson-change", geoJsonFeatures);
+      } else {
+        // 普通模式
+        const source = this.layer.getSource();
+        // 移除旧的 GeoJSON 要素
+        const existingFeatures = source.getFeatures();
+        existingFeatures.forEach((feature) => {
+          if (feature.get("_source") === "geojson") {
+            source.removeFeature(feature);
+          }
+        });
+        // 添加新的 GeoJSON 要素
+        source.addFeatures(geoJsonFeatures);
+
+        // 处理箭头线
+        this.processGeoJsonArrows(source);
+
+        this.$emit("geojson-change", geoJsonFeatures);
+      }
+
+      // 闪光点动画
+      if (this.featureFlash) {
+        this.setFlashAnimate();
+      }
+    },
+
+    /**
+     * 处理 GeoJSON 数据中的箭头线
+     * @param {VectorSource} source - 矢量数据源
+     */
+    processGeoJsonArrows(source) {
+      if (!this.geoJson) return;
+
+      // 获取所有 GeoJSON 来源的 LineString 要素
+      const features = source.getFeatures();
+      features.forEach((feature) => {
+        if (feature.get("_source") !== "geojson") return;
+
+        const geomType = feature.getGeometry().getType();
+        const arrow = feature.get("arrow");
+
+        // 只处理线要素且有箭头配置的
+        if ((geomType === "LineString" || geomType === "MultiLineString") && arrow) {
+          const coordinates = feature.get("coordinates");
+          if (coordinates) {
+            arrowLine({
+              coordinates,
+              map: this.map,
+              source,
+              ...arrow,
+            });
+          }
+        }
+      });
+    },
+
     getFeatureAtPixel(pixel) {
       return this.map.forEachFeatureAtPixel(
         pixel,
@@ -445,7 +618,33 @@ export default {
     eventHandler(listenerKey, evt) {
       const { pixel } = evt;
       const feature = this.getFeatureAtPixel(pixel);
-      this.$emit(listenerKey, evt, feature);
+      switch (listenerKey) {
+        case "click":
+          /**
+           * 点击事件，这是最基础的地图点击事件，‌只要用户在地图上进行一次鼠标点击，无论是否为双击的一部分，都会立即触发‌。因此，当用户双击地图时，click 事件会被触发两次。‌
+           */
+          this.$emit("click", evt, feature);
+          break;
+        case "singleclick":
+          /**
+           * 点击事件，这是一个“真正的”单击事件，‌它会延迟 250 毫秒来判断用户是否在进行双击操作‌。如果在 250 毫秒内没有发生第二次点击，则触发 singleclick 事件。
+
+           */
+          this.$emit("singleclick", evt, feature);
+          break;
+        case "dblclick":
+          /**
+           * 双击事件
+           */
+          this.$emit("dblclick", evt, feature);
+          break;
+        case "pointermove":
+          /**
+           * 指针移动事件
+           */
+          this.$emit("pointermove", evt, feature);
+          break;
+      }
     },
 
     setFlashAnimate() {
@@ -574,6 +773,9 @@ export default {
         });
         this.map.addInteraction(this.selectObj);
         this.selectObj.on("select", (evt) => {
+          /**
+           * 要素选中事件
+           */
           this.$emit("select", evt, this.map);
         });
         features = this.selectObj.getFeatures();
@@ -593,9 +795,15 @@ export default {
       this.map.addInteraction(this.modifyObj);
 
       this.modifyObj.on("modifystart", (evt) => {
+        /**
+         * 修改开始事件
+         */
         this.$emit("modifystart", evt, this.map);
         features.getArray().forEach((feature) => {
           feature.getGeometry().on("change", (evt) => {
+            /**
+             * 修改进行中事件
+             */
             this.$emit("modifychange", evt, this.map, feature);
           });
         });
@@ -611,6 +819,9 @@ export default {
           evt.measure = formatArea(geometry);
         }
         const params = { ...evt, select: this.selectObj };
+        /**
+         * 修改结束事件
+         */
         this.$emit("modifyend", params, this.map);
       });
     },

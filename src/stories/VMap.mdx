@@ -1,0 +1,23 @@
+import { Canvas, Meta, Controls } from "@storybook/blocks";
+
+import * as VMap from "./VMap.stories";
+
+<Meta of={VMap} />
+
+# v-map
+
+地图容器组件，基于 OpenLayers 封装，支持多种坐标系和视图配置。
+
+```js
+import { VMap, VTile } from "v-ol-map";
+```
+
+## 基础示例
+
+> 配置中心点坐标和缩放级别
+
+<Canvas of={VMap.Default} />
+
+## Docs
+
+<Controls />

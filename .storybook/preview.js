@@ -8,6 +8,10 @@ const preview = {
         date: /Date$/i,
       },
     },
+    options: {
+      // 自定义排序
+      storySort: (a, b) => (a.id === b.id ? 0 : a.id.localeCompare(b.id, undefined, { numeric: true })),
+    },
   },
   decorators: [() => ({ template: '<div style="height: 60vh;width: 100%;"><story /></div>' })],
 };

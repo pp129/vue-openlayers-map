@@ -54,6 +54,7 @@ export default defineConfig(({ command, mode }) => {
     resolve: {
       alias: {
         "@": resolve(__dirname, "src"),
+        "v-ol-map": resolve(__dirname, "src/packages/index.js"),
       },
     },
     plugins: [

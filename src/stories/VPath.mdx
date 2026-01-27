@@ -1,0 +1,81 @@
+import { Meta, Canvas, Controls } from "@storybook/blocks";
+import * as VPathStories from "./VPath.stories";
+
+<Meta of={VPathStories} />
+
+# VPath 轨迹回放组件
+
+基于 OpenLayers 实现的轨迹路径回放组件，支持大量轨迹点的高效渲染和动画播放。
+
+## 基础用法
+
+```vue
+<template>
+  <v-map :view="viewOptions">
+    <v-tile tile-type="TD" />
+    <v-path ref="pathRef" :path="pathData" :options="pathOptions" @load="onLoad" @bindMove="onMove" @bindEnd="onEnd" />
+  </v-map>
+</template>
+
+<script>
+export default {
+  data() {
+    return {
+      pathData: [
+        { longitude: 118.08, latitude: 24.47, gnssTime: 1640000000000 },
+        { longitude: 118.09, latitude: 24.48, gnssTime: 1640000005000 },
+        // ... 更多轨迹点
+      ],
+      pathOptions: {
+        lineColor: "rgba(24, 144, 255, 0.8)",
+        lineWidth: 6,
+        passlineColor: "#52c41a",
+        passlineWidth: 4,
+      },
+    };
+  },
+  methods: {
+    onLoad(pathObj) {
+      // 开始播放
+      this.$refs.pathRef.start();
+    },
+    onMove(e) {
+      console.log("当前位置索引:", e.currentIndex);
+    },
+    onEnd() {
+      console.log("播放结束");
+    },
+  },
+};
+</script>
+```
+
+## 播放控制
+
+```javascript
+// 开始播放
+this.$refs.pathRef.start();
+
+// 从指定位置开始
+this.$refs.pathRef.start(100);
+
+// 暂停
+this.$refs.pathRef.pause();
+
+// 继续
+this.$refs.pathRef.resume();
+
+// 停止
+this.$refs.pathRef.stop();
+
+// 设置倍速 (1/2/4/8/16)
+this.$refs.pathRef.setSpeedUp(4);
+```
+
+## 轨迹回放示例
+
+<Canvas of={VPathStories.Default} />
+
+## Docs
+
+<Controls />

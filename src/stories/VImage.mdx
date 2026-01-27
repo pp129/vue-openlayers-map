@@ -1,0 +1,29 @@
+import { Canvas, Meta, Controls } from "@storybook/blocks";
+
+import * as VImage from "./VImage.stories";
+
+<Meta of={VImage} />
+
+# v-image
+
+图片图层组件，支持静态图片、WMS、GeoImage 等多种图片源。
+
+```js
+import { VMap, VTile, VImage } from "v-ol-map";
+```
+
+## 基础示例
+
+> 在指定地理范围内显示静态图片
+
+<Canvas of={VImage.Default} />
+
+## WMS 示例
+
+> 基于 `ol/source/ImageWMS` 的 WMS 图层示例
+
+<Canvas of={VImage.ImageWMS} />
+
+## Docs
+
+<Controls />

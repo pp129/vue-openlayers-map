@@ -144,47 +144,72 @@ export default {
     /**
      * 样式函数 - 使用 StyleCache
      */
-    styleFunction(feature) {
+    styleFunction(styleCache, feature) {
       const cluster = feature.get("cluster") || 0;
       const size = feature.get("point_count_abbreviated") || 0;
-
+      const total = this.cluster?.source?.value?.getSource()?.getFeatures().length || 0;
+      let styles = styleCache[size];
       if (cluster) {
-        // 尝试从缓存获取
-        const cacheKey = `cluster-${size}`;
-        let styles = this.styleCache.get(cacheKey);
-
         if (!styles) {
-          // 创建新样式
+          let styleOptions = {};
+          styleOptions = {
+            image: new CircleStyle({
+              radius: 4,
+              fill: new Fill({
+                color: "blue",
+              }),
+            }),
+            text: new Text({
+              font: "16px sans-serif",
+              text: size.toString(),
+            }),
+          };
+          // const { style } = this.cluster
           if (validObjKey(this.cluster, "style")) {
-            styles = setStyle(this.cluster.style);
-            if (styles.getText()) {
-              styles.getText().setText(size.toString());
+            if (this.cluster.style instanceof Array) {
+              this.cluster.style.forEach((e) => {
+                let min = 0;
+                let max = total;
+                if (validObjKey(e, "min") || validObjKey(e, "max")) {
+                  min = e.min;
+                  max = e.max;
+                  if (min < size && size <= max) {
+                    styleOptions = this.clusterFeatureStyle(e, size.toString());
+                  }
+                } else {
+                  if (total > 0) {
+                    const average = total / styleOptions.style.length;
+                    for (let i = 0; i < styleOptions.style.length; i++) {
+                      min = i * average;
+                      max = average * (i + 1);
+                      if (min < size && size <= max) {
+                        styleOptions = this.clusterFeatureStyle(styleOptions.style[i], size.toString());
+                      }
+                    }
+                  }
+                }
+              });
+              styles = setStyle(styleOptions);
+            } else {
+              styleOptions = this.clusterFeatureStyle(styleOptions, size.toString());
+              styles = setStyle(styleOptions);
             }
           } else {
-            styles = new Style({
-              image: new CircleStyle({
-                radius: 4,
-                fill: new Fill({ color: "blue" }),
-              }),
-              text: new Text({
-                font: "16px sans-serif",
-                text: size.toString(),
-              }),
-            });
+            styles = new Style(styleOptions);
           }
-
-          // 存入缓存
-          this.styleCache.set(cacheKey, styles);
+          styleCache[size] = styles;
         }
-
-        return styles;
       } else {
-        // 单个要素
         const style = feature.get("style");
-        return setStyle(style);
+        styles = setStyle(style);
       }
+      // console.log(styles)
+      return styles;
     },
-
+    clusterFeatureStyle(style, text) {
+      const textStyle = { ...style.text, text };
+      return { ...style, text: textStyle };
+    },
     init() {
       this.clusters = new Supercluster(this.cluster);
       this.clusters.load(this.getGeoFeatures());
@@ -196,7 +221,7 @@ export default {
         type: "FeatureCollection",
         features: cluster,
       };
-
+      const styleCache = {};
       this.layer = new VectorLayer({
         ...this.$props,
         source: new VectorSource({
@@ -212,7 +237,7 @@ export default {
             return feature;
           }),
         }),
-        style: (feature) => this.styleFunction(feature),
+        style: (feature) => this.styleFunction(styleCache, feature),
       });
 
       this.layer.set("cluster", true);

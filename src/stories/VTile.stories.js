@@ -1,10 +1,16 @@
-import { VMap, VTile } from "../components";
+import { VMap, VTile } from "../packages";
 import { Default as MapStoriies } from "./VMap.stories";
-import md from "./VTile.md?raw";
+import TileDefaultExample from "./Tile/TileDefaultExample.vue";
+import TileDefaultExampleRaw from "./Tile/TileDefaultExample.vue?raw";
+import TileXYZExample from "./Tile/TileXYZExample.vue";
+import TileXYZExampleRaw from "./Tile/TileXYZExample.vue?raw";
+import TileWMS from "./TileWMS/index.vue";
+import TileWMSRaw from "./TileWMS/index.vue?raw";
 
 // More on how to set up stories at: https://storybook.js.org/docs/writing-stories
 export default {
-  title: "VOlMap/Tile",
+  id: "2-2",
+  title: "图层/Tile瓦片图层",
   // tags: ["autodocs"],
   component: VTile,
   render: (args, { argTypes }) => ({
@@ -18,7 +24,6 @@ export default {
         xyz,
       };
     },
-    // props: Object.keys(argTypes),
     components: { VMap, VTile },
     template: `
       <v-map :view="view">
@@ -29,27 +34,70 @@ export default {
   parameters: {
     docs: {
       description: {
-        component: md,
+        component: ``,
       },
     },
   },
 };
 
+/**
+ * 默认示例 - 天地图
+ */
 export const Default = {
-  args: {
-    ...MapStoriies.args,
-    tileType: "TD",
-  },
-};
-
-export const XYZ = {
-  args: {
-    ...MapStoriies.args,
-    tileType: "XYZ",
-    xyz: {
-      url: "http://172.16.34.120:6080/arcgis/rest/services/xiamen/MapServer/tile/{z}/{y}/{x}",
-      projection: "EPSG:4490",
-      crossOrigin: "anonymous",
+  parameters: {
+    docs: {
+      description: {
+        story: "使用天地图作为底图",
+      },
+      source: {
+        language: "html",
+        code: TileDefaultExampleRaw,
+      },
     },
   },
+  render: () => ({
+    components: { TileDefaultExample },
+    template: "<TileDefaultExample />",
+  }),
+};
+
+/**
+ * XYZ 瓦片示例
+ *
+ * 展示如何使用自定义 XYZ 瓦片服务
+ */
+export const XYZ = {
+  parameters: {
+    docs: {
+      description: {
+        story: "使用自定义 XYZ 瓦片服务（ArcGIS World Imagery）",
+      },
+      source: {
+        language: "html",
+        code: TileXYZExampleRaw,
+      },
+    },
+  },
+  render: () => ({
+    components: { TileXYZExample },
+    template: "<TileXYZExample />",
+  }),
+};
+
+export const WMS = {
+  parameters: {
+    docs: {
+      description: {
+        story: "使用 WMS 服务",
+      },
+      source: {
+        language: "html",
+        code: TileWMSRaw,
+      },
+    },
+  },
+  render: () => ({
+    components: { TileWMS },
+    template: "<TileWMS />",
+  }),
 };

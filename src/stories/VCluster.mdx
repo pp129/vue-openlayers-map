@@ -1,0 +1,23 @@
+import { Canvas, Meta, Controls } from "@storybook/blocks";
+
+import * as VCluster from "./VCluster.stories";
+
+<Meta of={VCluster} />
+
+# v-super-cluster
+
+聚合图层组件，支持大量点位的高效聚合渲染。
+
+```js
+import { VMap, VTile, VSuperCluster } from "v-ol-map";
+```
+
+## 基础示例
+
+> 根据聚合数量显示不同颜色和大小
+
+<Canvas of={VCluster.Default} />
+
+## Docs
+
+<Controls />

@@ -1,0 +1,56 @@
+import { Meta, Story, Canvas, Controls } from "@storybook/blocks";
+import * as VOverlayStories from "./VOverlay.stories";
+
+<Meta of={VOverlayStories} />
+
+# VOverlay 覆盖物组件
+
+用于在地图上指定位置显示 HTML 内容的覆盖物组件，适用于弹窗、提示框、标注等场景。
+
+## 基础用法
+
+```vue
+<template>
+  <v-map :view="viewOptions">
+    <v-overlay :position="[118.08, 24.47]" positioning="bottom-center" :offset="[0, -10]">
+      <div class="popup">
+        <h3>标题</h3>
+        <p>内容</p>
+      </div>
+    </v-overlay>
+  </v-map>
+</template>
+```
+
+## 动态显示/隐藏
+
+通过设置 `position` 为 `undefined` 来隐藏覆盖物：
+
+```vue
+<template>
+  <v-map :view="viewOptions">
+    <v-overlay :position="showPopup ? coords : undefined">
+      <div>点击显示的内容</div>
+    </v-overlay>
+  </v-map>
+</template>
+
+<script>
+export default {
+  data() {
+    return {
+      showPopup: false,
+      coords: [118.08, 24.47],
+    };
+  },
+};
+</script>
+```
+
+## 弹窗示例
+
+<Canvas of={VOverlayStories.Popup} />
+
+## Docs
+
+<Controls />

@@ -1,0 +1,23 @@
+import { Canvas, Meta, Controls } from "@storybook/blocks";
+
+import * as VGraphic from "./VGraphic.stories";
+
+<Meta of={VGraphic} />
+
+# v-graphic
+
+Canvas 图形图层，使用 Canvas 2D 高效渲染大量图形。
+
+```js
+import { VMap, VTile, VGraphic } from "v-ol-map";
+```
+
+## 基础示例
+
+> 使用 Canvas 渲染大量点位，性能优于矢量图层
+
+<Canvas of={VGraphic.Default} />
+
+## Docs
+
+<Controls />

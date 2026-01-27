@@ -79,7 +79,7 @@
 </template>
 
 <script>
-import { VMap, VVector, VTile, VGroupLayer } from "../../components";
+import { VMap, VVector, VTile, VGroupLayer } from "../../packages";
 export default {
   name: "GroupLayer",
   components: {

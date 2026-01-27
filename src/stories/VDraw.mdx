@@ -1,0 +1,23 @@
+import { Canvas, Meta, Controls } from "@storybook/blocks";
+
+import * as VDraw from "./VDraw.stories";
+
+<Meta of={VDraw} />
+
+# v-draw
+
+绑制工具组件，支持绑制点、线、面、圆等几何图形。
+
+```js
+import { VMap, VTile, VDraw } from "v-ol-map";
+```
+
+## 基础示例
+
+> 支持多种绑制类型，绑制完成后自动添加到矢量图层
+
+<Canvas of={VDraw.Default} />
+
+## Docs
+
+<Controls />

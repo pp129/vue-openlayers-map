@@ -28,17 +28,42 @@ export default {
       type: String,
       default: "",
     },
+    /**
+     * 弹框位置坐标 [lon, lat]，当position为undefined时，覆盖物将不会显示
+     */
     position: {
       type: [Array, undefined],
       default: undefined,
     },
+    /**
+     * Defines how the overlay is actually positioned with respect to its position property
+     */
     positioning: {
       type: String,
+      validator(value) {
+        return [
+          "bottom-left",
+          "bottom-center",
+          "bottom-right",
+          "center-left",
+          "center-center",
+          "center-right",
+          "top-left",
+          "top-center",
+          "top-right",
+        ].includes(value);
+      },
     },
+    /**
+     * Offsets in pixels used when positioning the overlay. The first element in the array is the horizontal offset. A positive value shifts the overlay right. The second element in the array is the vertical offset. A positive value shifts the overlay down.
+     */
     offset: {
       type: Array,
       default: () => [0, 0],
     },
+    /**
+     * Pan the map when calling setPosition, so that the overlay is entirely visible in the current viewport.
+     */
     autoPan: {
       type: Boolean,
       default: false,
