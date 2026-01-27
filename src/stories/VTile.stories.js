@@ -6,6 +6,10 @@ import TileXYZExample from "./Tile/TileXYZExample.vue";
 import TileXYZExampleRaw from "./Tile/TileXYZExample.vue?raw";
 import TileWMS from "./TileWMS/index.vue";
 import TileWMSRaw from "./TileWMS/index.vue?raw";
+import OverviewMapExample from "./OverviewMapExample/index.vue";
+import OverviewMapExampleRaw from "./OverviewMapExample/index.vue?raw";
+import TileMaskExample from "./TileMask/index.vue";
+import TileMaskExampleRaw from "./TileMask/index.vue?raw";
 
 // More on how to set up stories at: https://storybook.js.org/docs/writing-stories
 export default {
@@ -99,5 +103,41 @@ export const WMS = {
   render: () => ({
     components: { TileWMS },
     template: "<TileWMS />",
+  }),
+};
+
+export const overviewMap = {
+  parameters: {
+    docs: {
+      description: {
+        story: "overview map",
+      },
+      source: {
+        language: "html",
+        code: OverviewMapExampleRaw,
+      },
+    },
+  },
+  render: () => ({
+    components: { OverviewMapExample },
+    template: "<OverviewMapExample />",
+  }),
+};
+
+export const TileMask = {
+  parameters: {
+    docs: {
+      description: {
+        story: "tile mask",
+      },
+      source: {
+        language: "html",
+        code: TileMaskExampleRaw,
+      },
+    },
+  },
+  render: () => ({
+    components: { TileMaskExample },
+    template: "<TileMaskExample />",
   }),
 };

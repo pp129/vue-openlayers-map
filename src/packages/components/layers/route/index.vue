@@ -119,7 +119,7 @@ export default {
   },
   computed: {
     bindOlMap() {
-      return this.VMap.bindOlMap;
+      return this.VMap.map;
     },
     groupLayer() {
       return this.VGroupLayer?.layer;
@@ -398,7 +398,7 @@ export default {
         }
         addLayerToParentComp({
           type: this.$parent.$options.name,
-          bindOlMap: this.bindOlMap,
+          map: this.bindOlMap,
           layer: this.layer,
           groupLayer: this.groupLayer,
         });
@@ -421,14 +421,14 @@ export default {
                   this.routeType === "arcgis"
                     ? this.routeData.routes.features[0].geometry.paths[0]
                     : this.routeData.paths[0].points.coordinates,
-                bindOlMap: this.bindOlMap,
+                map: this.bindOlMap,
                 source: this.layer.getSource(),
                 ...this.arrow,
               });
             }
           });
         }
-        this.$emit("bindOnRender", this.routeData, this.bindOlMap, this.features);
+        this.$emit("render", this.routeData, this.bindOlMap, this.features);
       }
     },
     dispose() {

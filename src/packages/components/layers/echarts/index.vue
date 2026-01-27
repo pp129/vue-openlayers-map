@@ -1,18 +1,8 @@
 <script>
-import { nanoid } from "nanoid";
 import EChartsLayer from "ol-echarts";
 
 /**
- * 优化的 ECharts 图层组件
- *
- * 修复问题:
- * 1. stopEvent: false - 解决地图无法拖动、缩放问题
- * 2. pointer-events: none - 解决鼠标悬浮要素无法变pointer问题
- *
- * 优化内容:
- * 1. 添加 interactive prop 控制是否响应鼠标事件
- * 2. 完善的 dispose 清理逻辑
- * 3. 支持动态切换交互状态
+ * 基于`ol-echarts` ECharts 图层组件
  */
 export default {
   name: "v-echarts",

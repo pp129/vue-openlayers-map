@@ -19,8 +19,8 @@ export default {
       },
       // XYZ 瓦片配置
       xyzOptions: {
-        url: "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
-        projection: "EPSG:4326",
+        url: "https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}",
+        projection: "EPSG:3857",
         crossOrigin: "anonymous",
       },
     };

@@ -1,6 +1,10 @@
 import VMap from "../packages/components/map/index.vue";
 import MapDefaultExample from "./Map/MapDefaultExample.vue";
 import MapDefaultExampleRaw from "./Map/MapDefaultExample.vue?raw";
+import MultiMapExample from "./MultiMap/index.vue";
+import MultiMapExampleRaw from "./MultiMap/index.vue?raw";
+import MapMethodsExample from "./MapMethods/index.vue";
+import MapMethodsExampleRaw from "./MapMethods/index.vue?raw";
 
 // More on how to set up stories at: https://storybook.js.org/docs/writing-stories
 export default {
@@ -43,5 +47,41 @@ export const Default = {
   render: () => ({
     components: { MapDefaultExample },
     template: "<MapDefaultExample />",
+  }),
+};
+
+export const MultiMap = {
+  parameters: {
+    docs: {
+      description: {
+        story: "多地图示例",
+      },
+      source: {
+        language: "html",
+        code: MultiMapExampleRaw,
+      },
+    },
+  },
+  render: () => ({
+    components: { MultiMapExample },
+    template: "<MultiMapExample />",
+  }),
+};
+
+export const MapMethods = {
+  parameters: {
+    docs: {
+      description: {
+        story: "地图方法示例",
+      },
+      source: {
+        language: "html",
+        code: MapMethodsExampleRaw,
+      },
+    },
+  },
+  render: () => ({
+    components: { MapMethodsExample },
+    template: "<MapMethodsExample />",
   }),
 };

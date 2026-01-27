@@ -1,0 +1,56 @@
+import { Meta, Canvas, Controls } from "@storybook/blocks";
+import * as VRouteStories from "./VRoute.stories";
+
+<Meta of={VRouteStories} />
+
+# VRoute 路径规划组件
+
+基于 OpenLayers 的路径规划组件，支持 ArcGIS Network Analyst 和 GraphHopper 两种路由服务。
+
+## 基础用法
+
+```vue
+<template>
+  <v-map :view="viewOptions">
+    <v-tile tile-type="TD" />
+    <v-route
+      service-url="https://your-route-service/api/route"
+      route-type="graphhopper"
+      :stops="stops"
+      :route-style="routeStyle"
+      @render="onRouteRender"
+    />
+  </v-map>
+</template>
+
+<script>
+export default {
+  data() {
+    return {
+      stops: [
+        [118.08, 24.47],
+        [118.1, 24.49],
+      ],
+      routeStyle: {
+        line: { stroke: { color: "rgba(24, 144, 255, 0.8)", width: 6 } },
+        start: { circle: { radius: 12, fill: { color: "#52c41a" } } },
+        end: { circle: { radius: 12, fill: { color: "#f5222d" } } },
+      },
+    };
+  },
+  methods: {
+    onRouteRender(routeData, map, features) {
+      console.log("路径规划完成", routeData);
+    },
+  },
+};
+</script>
+```
+
+## 路径规划示例
+
+<Canvas of={VRouteStories.Default} />
+
+## Docs
+
+<Controls />

@@ -2,6 +2,8 @@ import { VMap, VVector, VTile } from "../packages";
 import { Default as MapStoriies } from "./VMap.stories";
 import GeoJsonBasicExample from "./GeoJson/GeoJsonBasicExample.vue";
 import GeoJsonBasicExampleRaw from "./GeoJson/GeoJsonBasicExample.vue?raw";
+import FeatureHoverExample from "./Hover/index.vue";
+import FeatureHoverExampleRaw from "./Hover/index.vue?raw";
 
 // More on how to set up stories at: https://storybook.js.org/docs/writing-stories
 export default {
@@ -126,5 +128,23 @@ export const GeoJsonBasic = {
   render: () => ({
     components: { GeoJsonBasicExample },
     template: "<GeoJsonBasicExample />",
+  }),
+};
+
+export const FeatureHover = {
+  parameters: {
+    docs: {
+      description: {
+        story: "Feature 鼠标悬停示例",
+      },
+      source: {
+        language: "html",
+        code: FeatureHoverExampleRaw,
+      },
+    },
+  },
+  render: () => ({
+    components: { FeatureHoverExample },
+    template: "<FeatureHoverExample />",
   }),
 };
