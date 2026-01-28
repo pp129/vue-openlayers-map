@@ -5,7 +5,7 @@
 </template>
 
 <script>
-import { VMap, VTile } from "@/packages";
+import { VMap, VTile } from "v-ol-map";
 
 export default {
   name: "TileXYZExample",

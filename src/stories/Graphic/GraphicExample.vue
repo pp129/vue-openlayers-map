@@ -8,7 +8,7 @@
 </template>
 
 <script>
-import { VMap, VTile, VGraphic } from "@/packages";
+import { VMap, VTile, VGraphic } from "v-ol-map";
 
 export default {
   name: "GraphicExample",

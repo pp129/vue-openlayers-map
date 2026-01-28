@@ -8,7 +8,7 @@
 </template>
 
 <script>
-import { VMap, VTile, VHeatmap } from "@/packages";
+import { VMap, VTile, VHeatmap } from "v-ol-map";
 
 export default {
   name: "HeatmapExample",

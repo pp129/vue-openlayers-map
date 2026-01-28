@@ -6,17 +6,6 @@ import { createDefaultStyle } from "ol/style/flat";
 import VectorSource from "ol/source/Vector";
 import { GeoJSON } from "ol/format";
 
-/**
- * 优化的 WebGL 矢量图层组件
- *
- * 优化内容:
- * 1. 继承 BaseLayer，使用统一的事件和资源管理
- * 2. 使用 EventManager 管理事件监听器，防止内存泄漏
- * 3. 优化 GeoJSON 数据处理
- * 4. 移除不必要的 console.log
- * 5. 完善的 dispose 清理逻辑
- * 6. 支持事件节流
- */
 export default {
   name: "v-webgl-vector",
   render() {

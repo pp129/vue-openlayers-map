@@ -8,18 +8,7 @@ import { LineString, Point, Polygon } from "ol/geom";
 import VectorLayer from "ol/layer/Vector";
 import VectorSource from "ol/source/Vector";
 import Draw from "ol/interaction/Draw";
-import { unByKey } from "ol/Observable";
 
-/**
- * 优化的测量工具组件
- *
- * 优化内容:
- * 1. 使用 EventManager 统一管理交互事件
- * 2. 优化样式配置，支持自定义
- * 3. 完善的 dispose 清理逻辑
- * 4. 移除不必要的 console.log
- * 5. 改进测量结果显示
- */
 export default {
   name: "v-measure",
   extends: BaseLayer,

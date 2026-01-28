@@ -1,5 +1,5 @@
 <template>
-  <div v-if="rendered"><slot></slot></div>
+  <div ref="groupLayer" v-if="rendered"><slot></slot></div>
 </template>
 
 <script>
@@ -62,6 +62,14 @@ export default {
         const layerId = this.layerId || `group-layer-${nanoid()}`;
         this.layer.set("id", layerId);
         this.layer.set("type", "group");
+
+        this.layer.on("addlayer", (evt) => {
+          this.$emit("addlayer", evt, this.layer);
+          this.$refs.groupLayer.remove();
+        });
+        this.layer.on("removelayer", (evt) => {
+          this.$emit("removelayer", evt, this.layer);
+        });
 
         if (this.title) {
           this.layer.set("title", this.title);

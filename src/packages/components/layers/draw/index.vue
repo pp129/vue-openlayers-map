@@ -1,5 +1,3 @@
-<template><div></div></template>
-
 <script>
 import BaseLayer from "@/packages/components/layers/BaseLayer.vue";
 import { nanoid } from "nanoid";
@@ -11,14 +9,6 @@ import { arrowLine } from "@/utils/arrowLine";
 import { addVectorSource, formatArea, formatLength, setFeatures, setStyle } from "@/utils";
 import { addLayerToParentComp } from "@/utils/parent";
 
-/**
- * 绘制图层组件 (优化版)
- *
- * 优化内容:
- * 1. 修复事件重复绑定问题
- * 2. 使用 BaseLayer 的事件管理
- * 3. 完善 dispose 清理逻辑
- */
 export default {
   name: "v-draw",
   extends: BaseLayer,
@@ -26,7 +16,7 @@ export default {
     VMap: { value: "VMap", default: null },
     VGroupLayer: { value: "VGroupLayer", default: null },
   },
-  render(createElement, context) {
+  render() {
     return null;
   },
   props: {

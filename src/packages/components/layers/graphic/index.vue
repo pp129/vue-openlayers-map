@@ -8,16 +8,6 @@ import ImageLayer from "ol/layer/Image";
 import Feature from "ol/Feature";
 import { Style, Icon, Circle as CircleStyle, Fill, Stroke, Text } from "ol/style";
 
-/**
- * 优化的 Canvas 图形图层组件
- *
- * 优化内容:
- * 1. 继承 BaseLayer，使用统一的资源管理
- * 2. 优化 Canvas 渲染性能
- * 3. 完善的 dispose 清理逻辑
- * 4. 移除不必要的 console.log
- * 5. 内置样式处理，减少外部依赖
- */
 export default {
   name: "v-graphic",
   render() {

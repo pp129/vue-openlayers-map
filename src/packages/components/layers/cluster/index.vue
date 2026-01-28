@@ -1,7 +1,3 @@
-<template>
-  <div><slot></slot></div>
-</template>
-
 <script>
 import BaseLayer from "@/packages/components/layers/BaseLayer.vue";
 import { nanoid } from "nanoid";
@@ -16,15 +12,6 @@ import { addLayerToParentComp } from "@/utils/parent";
 import StyleCache from "@/packages/utils/styleCache";
 import { debounce } from "@/packages/utils/performance";
 
-/**
- * 超级聚合图层组件 (优化版)
- *
- * 优化内容:
- * 1. 使用防抖替代 precompose 事件
- * 2. 使用 StyleCache 管理样式
- * 3. 使用 BaseLayer 的事件管理
- * 4. 完善 dispose 清理逻辑
- */
 export default {
   name: "v-super-cluster",
   extends: BaseLayer,
@@ -37,6 +24,9 @@ export default {
       value: "VGroupLayer",
       default: null,
     },
+  },
+  render() {
+    return null;
   },
   props: {
     layerId: {

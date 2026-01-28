@@ -14,7 +14,7 @@
 </template>
 
 <script>
-import { VMap, VTile, VMeasure } from "@/packages";
+import { VMap, VTile, VMeasure } from "v-ol-map";
 
 export default {
   name: "MeasureExample",

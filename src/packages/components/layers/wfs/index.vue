@@ -7,16 +7,6 @@ import { WFS, GeoJSON } from "ol/format";
 import { Style, Fill, Stroke, Circle as CircleStyle, Text } from "ol/style";
 import { unByKey } from "ol/Observable";
 
-/**
- * 优化的 WFS 服务图层组件
- *
- * 优化内容:
- * 1. 继承 BaseLayer，使用统一的资源管理
- * 2. 使用 EventManager 统一事件管理
- * 3. 完善的 dispose 清理逻辑
- * 4. 支持更多 WFS 配置选项
- * 5. 增强的错误处理
- */
 export default {
   name: "v-wfs",
   render() {

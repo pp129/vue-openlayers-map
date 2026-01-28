@@ -9,17 +9,6 @@ import Static from "ol/source/ImageStatic";
 import GeoImageLayer from "ol-ext/layer/GeoImage";
 import GeoImageSource from "ol-ext/source/GeoImage";
 
-/**
- * 优化的图片图层组件
- *
- * 优化内容:
- * 1. 继承 BaseLayer，使用统一的资源管理
- * 2. 支持多种图片数据源（Static、GeoImage、WMS）
- * 3. 完善的 dispose 清理逻辑
- * 4. 移除不必要的 console.log
- * 5. 优化数据源切换逻辑
- * 6. 支持 ol-ext 的 GeoImage 功能
- */
 export default {
   name: "v-image",
   render() {

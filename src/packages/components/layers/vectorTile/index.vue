@@ -5,16 +5,6 @@ import { createDefaultStyle } from "ol/style/flat";
 import VectorTileSource from "ol/source/VectorTile";
 import VectorTileLayer from "ol/layer/VectorTile";
 
-/**
- * 优化的矢量瓦片图层组件
- *
- * 优化内容:
- * 1. 继承 BaseLayer，使用统一的资源管理
- * 2. 使用 EventManager 管理事件监听器
- * 3. 完善的 dispose 清理逻辑
- * 4. 移除不必要的 console.log
- * 5. 优化样式配置
- */
 export default {
   name: "v-vector-tile",
   render() {

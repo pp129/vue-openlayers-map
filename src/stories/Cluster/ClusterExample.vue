@@ -22,7 +22,7 @@
 </template>
 
 <script>
-import { VMap, VTile, VSuperCluster } from "@/packages";
+import { VMap, VTile, VSuperCluster } from "v-ol-map";
 
 export default {
   name: "ClusterExample",

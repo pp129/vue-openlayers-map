@@ -12,18 +12,9 @@ import GeoTIFFLayer from "ol/layer/WebGLTile";
 import { OverviewMap } from "ol/control";
 import { View } from "ol";
 
-/**
- * 优化的 Tile 图层组件
- *
- * 优化内容:
- * 1. 继承 BaseLayer，使用统一的事件和资源管理
- * 2. 优化 dispose 逻辑，确保资源完全清理
- * 3. 移除不必要的 console.log
- * 4. 添加错误处理
- */
 export default {
   name: "v-tile",
-  render(createElement, context) {
+  render() {
     return null;
   },
   extends: BaseLayer,

@@ -1,7 +1,3 @@
-<template>
-  <div><slot></slot></div>
-</template>
-
 <script>
 import BaseLayer from "@/packages/components/layers/BaseLayer.vue";
 import { nanoid } from "nanoid";
@@ -20,11 +16,9 @@ import { addLayerToParentComp } from "@/utils/parent";
 import VectorLayer from "ol/layer/Vector";
 import { Modify, Select } from "ol/interaction";
 import Collection from "ol/Collection";
-import { getVectorContext } from "ol/render";
 import { easeOut } from "ol/easing";
 import { Stroke, Style, Icon } from "ol/style";
 import CircleStyle from "ol/style/Circle";
-import { asArray } from "ol/color";
 import { Cluster } from "ol/source";
 import { arrowLine } from "@/utils/arrowLine";
 import { Point } from "ol/geom";
@@ -34,16 +28,6 @@ import StyleCache from "@/packages/utils/styleCache";
 import { shallowArrayEqual, rafThrottle } from "@/packages/utils/performance";
 import GeoJSON from "ol/format/GeoJSON";
 
-/**
- * 矢量图层组件 (优化版)
- *
- * 优化内容:
- * 1. 使用 StyleCache 管理样式缓存
- * 2. 使用 BaseLayer 的事件管理
- * 3. 完善 dispose 清理 Gyeonghwon 对象
- * 4. 优化 features watch 使用浅比较
- * 5. 清理定时器引用
- */
 export default {
   name: "v-vector",
   extends: BaseLayer,
@@ -56,6 +40,9 @@ export default {
       value: "VGroupLayer",
       default: null,
     },
+  },
+  render() {
+    return null;
   },
   props: {
     layerId: {

@@ -5,17 +5,9 @@ import { Heatmap } from "ol/layer";
 import { addVectorSource, setFeatures } from "@/utils";
 import { addLayerToParentComp } from "@/utils/parent";
 
-/**
- * 热力图图层组件 (优化版)
- *
- * 优化内容:
- * 1. 继承优化后的 BaseLayer
- * 2. 使用事件管理器
- * 3. 完善 dispose 清理逻辑
- */
 export default {
   name: "v-heatmap",
-  render(createElement, context) {
+  render() {
     return null;
   },
   extends: BaseLayer,

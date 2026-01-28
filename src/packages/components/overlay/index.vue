@@ -8,14 +8,6 @@
 import { nanoid } from "nanoid";
 import { Overlay } from "ol";
 
-/**
- * 优化的 Overlay 组件
- *
- * 优化内容:
- * 1. 添加完善的清理逻辑
- * 2. 添加错误处理
- * 3. 优化 watch 性能
- */
 export default {
   name: "v-overlay",
   inject: ["VMap"],

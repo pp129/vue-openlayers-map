@@ -12,19 +12,7 @@ import { getCenter, boundingExtent } from "ol/extent";
 import * as olEasing from "ol/easing";
 import { throttle } from "@/packages/utils/performance";
 import EventManager from "@/packages/utils/eventManager";
-import { unByKey } from "ol/Observable";
 
-/**
- * 地图容器组件 (优化版)
- * @displayName v-map
- *
- * 优化内容:
- * 1. 添加 pointermove 事件节流 (50ms)
- * 2. 统一事件管理,避免内存泄漏
- * 3. 优化光标切换逻辑,只检查可见图层
- * 4. 修复递归 zoomEnd 监听问题
- * 5. 完善 dispose 清理逻辑
- */
 export default {
   name: "v-map",
   provide() {

@@ -7,7 +7,7 @@ export const constantRouterMap = [
   {
     path: "/",
     name: "Index",
-    component: () => import(/* webpackChunkName: "Index" */ "../examples/Home/index.vue"),
+    component: () => import(/* webpackChunkName: "Index" */ "../examples/Index/index.vue"),
   },
   {
     path: "/Home",

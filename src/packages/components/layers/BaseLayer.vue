@@ -1,18 +1,9 @@
 <script>
 import EventManager from "@/packages/utils/eventManager";
 
-/**
- * 基础图层组件 (优化版)
- *
- * 优化内容:
- * 1. 添加统一的事件管理器
- * 2. 增强 dispose 清理逻辑
- * 3. 提供通用的生命周期钩子
- * 4. 避免内存泄漏
- */
 export default {
   name: "base-layer",
-  render(createElement, context) {
+  render() {
     return null;
   },
   props: {

@@ -10,7 +10,7 @@ import { addLayerToParentComp } from "@/utils/parent";
 
 export default {
   name: "v-route",
-  render(bindCreateElement, context) {
+  render() {
     return null;
   },
   extends: BaseLayer,
