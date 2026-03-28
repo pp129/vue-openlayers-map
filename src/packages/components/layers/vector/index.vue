@@ -760,10 +760,22 @@ export default {
         });
         this.map.addInteraction(this.selectObj);
         this.selectObj.on("select", (evt) => {
-          /**
-           * 要素选中事件
-           */
-          this.$emit("select", evt, this.map);
+          // 获取被选中的要素（新增选中）
+          const selectedFeatures = evt.selected;
+          // 获取被取消选中的要素（失焦/取消选中）
+          const deselectedFeatures = evt.deselected;
+
+          if (deselectedFeatures.length > 0) {
+            console.log("失焦了！被取消选中的要素：", deselectedFeatures);
+            // 在这里执行失焦后的逻辑，比如：
+            this.$emit("deselect", evt, this.map);
+          }
+
+          if (selectedFeatures.length > 0) {
+            console.log("选中了要素：", selectedFeatures);
+            // 处理选中逻辑
+            this.$emit("select", evt, this.map);
+          }
         });
         features = this.selectObj.getFeatures();
       } else {

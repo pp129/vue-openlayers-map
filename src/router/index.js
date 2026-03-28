@@ -40,6 +40,11 @@ export const constantRouterMap = [
     component: () => import(/* webpackChunkName: "ModifyLine" */ "../examples/ModifyLine/index.vue"),
   },
   {
+    path: "/ModifyCircle",
+    name: "ModifyCircle",
+    component: () => import(/* webpackChunkName: "ModifyCircle" */ "../examples/ModifyCircle/index.vue"),
+  },
+  {
     path: "/Mobile",
     name: "Mobile",
     component: () => import(/* webpackChunkName: "Polyline" */ "../examples/Mobile/index.vue"),

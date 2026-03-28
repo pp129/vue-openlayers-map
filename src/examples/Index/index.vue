@@ -64,6 +64,7 @@ export default {
             { path: "/DrawExample", name: "Draw", desc: "绑制图形工具", icon: "✏️" },
             { path: "/MeasureExample", name: "Measure", desc: "测距测面积", icon: "📏" },
             { path: "/ModifyLine", name: "ModifyLine", desc: "线段编辑修改", icon: "〰️" },
+            { path: "/ModifyCircle", name: "ModifyCircle", desc: "圆编辑修改", icon: "◯" },
           ],
         },
         {
