@@ -18,6 +18,7 @@ storybook-static
 .vscode/*
 !.vscode/extensions.json
 .idea
+.qoder
 .DS_Store
 *.suo
 *.ntvs*

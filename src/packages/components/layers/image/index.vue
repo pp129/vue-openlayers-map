@@ -280,6 +280,18 @@ export default {
       };
 
       this.imageSource = new ImageWMS(wmsOptions);
+      // 监听图片加载事件
+      this.imageSource.on("imageloadstart", () => {
+        this.$emit("imageloadstart");
+      });
+
+      this.imageSource.on("imageloadend", (event) => {
+        this.$emit("imageloadend", event);
+      });
+
+      this.imageSource.on("imageloaderror", (error) => {
+        this.$emit("imageloaderror", error);
+      });
     },
 
     /**

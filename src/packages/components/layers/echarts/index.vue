@@ -74,7 +74,9 @@ export default {
     chartOptions: {
       handler(val) {
         if (this.layer) {
-          this.layer.setChartOptions(val);
+          // 深拷贝避免 ol-echarts 内部修改原对象触发无限循环
+          const clonedOptions = JSON.parse(JSON.stringify(val));
+          this.layer.setChartOptions(clonedOptions);
         }
       },
       deep: true,
