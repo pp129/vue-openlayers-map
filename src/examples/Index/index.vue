@@ -47,6 +47,7 @@ export default {
             { path: "/GroupExample", name: "GroupExample", desc: "图层组示例", icon: "📂" },
             { path: "/WMS", name: "WMS", desc: "WMS 图层加载", icon: "🌐" },
             { path: "/ImageLayerExample", name: "ImageLayer", desc: "图片图层叠加", icon: "🖼️" },
+            { path: "/TileExample", name: "TileExample", desc: "切换瓦片图层", icon: "🖼️" },
           ],
         },
         {

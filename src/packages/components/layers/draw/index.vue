@@ -283,15 +283,21 @@ export default {
 
     disposeDraw() {
       if (this.draw) {
-        this.map.removeInteraction(this.draw);
+        if (this.map) {
+          this.map.removeInteraction(this.draw);
+        }
         this.draw = null;
       }
       if (this.select) {
-        this.map.removeInteraction(this.select);
+        if (this.map) {
+          this.map.removeInteraction(this.select);
+        }
         this.select = null;
       }
       if (this.modify) {
-        this.map.removeInteraction(this.modify);
+        if (this.map) {
+          this.map.removeInteraction(this.modify);
+        }
         this.modify = null;
       }
     },
@@ -303,7 +309,10 @@ export default {
       this.disposeDraw();
 
       if (this.layer) {
-        this.layer.getSource().clear();
+        const source = this.layer.getSource();
+        if (source) {
+          source.clear();
+        }
         if (this.map) {
           this.map.removeLayer(this.layer);
         }

@@ -87,7 +87,7 @@ export default {
         { label: "线", value: "LineString" },
         { label: "多边形", value: "Polygon" },
         { label: "圆", value: "Circle" },
-        { label: "矩形", value: "Box" },
+        { label: "矩形", value: "Square" },
       ],
       drawStyle: {
         fill: { color: "rgba(67, 126, 255, 0.3)" },
@@ -133,8 +133,8 @@ export default {
 
       // 将绘制的要素添加到数组
       const newFeature = {
-        type: this.drawType === "Box" ? "Polygon" : this.drawType,
-        coordinates: this.getFeatureCoordinates(feature),
+        type: this.drawType === "Square" ? "Polygon" : this.drawType,
+        ...this.getFeatureCoordinates(feature),
         id: `drawn-feature-${Date.now()}`,
         style: this.getFeatureStyle(this.drawType),
         properties: {
@@ -154,7 +154,8 @@ export default {
     /**
      * 获取要素坐标
      */
-    getFeatureCoordinates(feature) {
+    getFeatureCoordinates({ feature }) {
+      console.log("[DrawExample] 获取要素坐标", feature);
       const geom = feature.getGeometry();
       const type = geom.getType();
 
@@ -164,15 +165,18 @@ export default {
           center: geom.getCenter(),
           radius: geom.getRadius(),
         };
+      } else {
+        return {
+          coordinates: geom.getCoordinates(),
+        };
       }
-
-      return geom.getCoordinates();
     },
 
     /**
      * 获取要素样式
      */
     getFeatureStyle(type) {
+      console.log("[DrawExample] 获取要素样式", type);
       const styles = {
         Point: {
           circle: {
@@ -192,7 +196,7 @@ export default {
           fill: { color: "rgba(255, 165, 0, 0.3)" },
           stroke: { color: "rgba(255, 165, 0, 1)", width: 2 },
         },
-        Box: {
+        Square: {
           fill: { color: "rgba(128, 0, 128, 0.3)" },
           stroke: { color: "rgba(128, 0, 128, 1)", width: 2 },
         },

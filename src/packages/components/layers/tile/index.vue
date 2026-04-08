@@ -177,7 +177,9 @@ export default {
      */
     removeOverview() {
       if (this.overview) {
-        this.map.removeControl(this.overview);
+        if (this.map) {
+          this.map.removeControl(this.overview);
+        }
         this.overview = null;
       }
     },
@@ -599,7 +601,9 @@ export default {
         if (source && typeof source.clear === "function") {
           source.clear();
         }
-        this.map.removeLayer(layer);
+        if (this.map) {
+          this.map.removeLayer(layer);
+        }
       });
       this.layers = [];
 

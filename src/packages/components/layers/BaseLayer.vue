@@ -247,22 +247,27 @@ export default {
 
       // 清理图层
       if (this.layer) {
-        const source = this.layer.getSource();
-        if (source) {
-          // 清空数据源
-          if (typeof source.clear === "function") {
-            source.clear();
-          }
-          // 释放数据源资源
-          if (typeof source.dispose === "function") {
-            source.dispose();
+        // Group 图层没有 getSource 方法，需要判断
+        if (typeof this.layer.getSource === "function") {
+          const source = this.layer.getSource();
+          if (source) {
+            // 清空数据源
+            if (typeof source.clear === "function") {
+              source.clear();
+            }
+            // 释放数据源资源
+            if (typeof source.dispose === "function") {
+              source.dispose();
+            }
           }
         }
 
         // 清理渲染器
-        const renderer = this.layer.getRenderer();
-        if (renderer && typeof renderer.dispose === "function") {
-          renderer.dispose();
+        if (typeof this.layer.getRenderer === "function") {
+          const renderer = this.layer.getRenderer();
+          if (renderer && typeof renderer.dispose === "function") {
+            renderer.dispose();
+          }
         }
 
         // 注意: 图层从地图移除应该由子类处理

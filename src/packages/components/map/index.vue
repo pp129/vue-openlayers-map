@@ -306,6 +306,10 @@ export default {
     dispose() {
       if (!this.map) return;
 
+      // 先标记为未加载，让子组件（slot）先卸载，
+      // 避免子组件在地图销毁过程中访问已失效的地图对象
+      this.load = false;
+
       // 清理事件管理器
       if (this.eventManager) {
         this.eventManager.dispose();
@@ -344,12 +348,15 @@ export default {
       });
 
       // 清理地图对象
-      if (typeof this.map.disposeInternal === "function") {
-        this.map.disposeInternal();
+      try {
+        if (typeof this.map.disposeInternal === "function") {
+          this.map.disposeInternal();
+        }
+      } catch (e) {
+        // 忽略销毁过程中的内部错误
       }
 
       this.vMap = null;
-      this.load = false;
     },
 
     /**

@@ -129,6 +129,11 @@ export const constantRouterMap = [
     name: "GeoJsonExample",
     component: () => import(/* webpackChunkName: "GeoJsonExample" */ "../examples/GeoJsonExample/index.vue"),
   },
+  {
+    path: "/TileExample",
+    name: "TileExample",
+    component: () => import(/* webpackChunkName: "TileExample" */ "../examples/TileExample/index.vue"),
+  },
 ];
 
 const router = new VueRouter({

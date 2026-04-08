@@ -695,11 +695,15 @@ export default {
 
       // 清理交互对象
       if (this.selectObj) {
-        this.map.removeInteraction(this.selectObj);
+        if (this.map) {
+          this.map.removeInteraction(this.selectObj);
+        }
         this.selectObj = null;
       }
       if (this.modifyObj) {
-        this.map.removeInteraction(this.modifyObj);
+        if (this.map) {
+          this.map.removeInteraction(this.modifyObj);
+        }
         this.modifyObj = null;
       }
 
