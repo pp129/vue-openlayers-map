@@ -85,6 +85,7 @@ export default {
   data() {
     return {
       imageSource: null,
+      isDisposed: false, // 标记组件是否已销毁
     };
   },
   computed: {
@@ -280,18 +281,25 @@ export default {
       };
 
       this.imageSource = new ImageWMS(wmsOptions);
-      // 监听图片加载事件
-      this.imageSource.on("imageloadstart", () => {
+
+      // 保存事件处理函数引用，以便销毁时解绑
+      this._onImageLoadStart = () => {
+        if (this.isDisposed) return;
         this.$emit("imageloadstart");
-      });
-
-      this.imageSource.on("imageloadend", (event) => {
+      };
+      this._onImageLoadEnd = (event) => {
+        if (this.isDisposed) return;
         this.$emit("imageloadend", event);
-      });
-
-      this.imageSource.on("imageloaderror", (error) => {
+      };
+      this._onImageLoadError = (error) => {
+        if (this.isDisposed) return;
         this.$emit("imageloaderror", error);
-      });
+      };
+
+      // 监听图片加载事件
+      this.imageSource.on("imageloadstart", this._onImageLoadStart);
+      this.imageSource.on("imageloadend", this._onImageLoadEnd);
+      this.imageSource.on("imageloaderror", this._onImageLoadError);
     },
 
     /**
@@ -329,6 +337,7 @@ export default {
      * 刷新图片
      */
     refresh() {
+      if (this.isDisposed) return;
       if (this.imageSource && typeof this.imageSource.refresh === "function") {
         this.imageSource.refresh();
       }
@@ -338,6 +347,7 @@ export default {
      * 更新 WMS 参数
      */
     updateWMSParams(params) {
+      if (this.isDisposed) return;
       if (this.imageSource && typeof this.imageSource.updateParams === "function") {
         this.imageSource.updateParams(params);
       }
@@ -381,10 +391,39 @@ export default {
     },
 
     /**
+     * 解绑 WMS 数据源的事件监听
+     */
+    unbindSourceEvents() {
+      if (this.imageSource) {
+        if (this._onImageLoadStart) {
+          this.imageSource.un("imageloadstart", this._onImageLoadStart);
+        }
+        if (this._onImageLoadEnd) {
+          this.imageSource.un("imageloadend", this._onImageLoadEnd);
+        }
+        if (this._onImageLoadError) {
+          this.imageSource.un("imageloaderror", this._onImageLoadError);
+        }
+      }
+      this._onImageLoadStart = null;
+      this._onImageLoadEnd = null;
+      this._onImageLoadError = null;
+    },
+
+    /**
      * 优化的 dispose 方法
      */
     dispose() {
-      if (!this.layer || !this.map) return;
+      // 标记组件已销毁，防止后续操作
+      this.isDisposed = true;
+
+      // 解绑数据源事件监听
+      this.unbindSourceEvents();
+
+      if (!this.layer || !this.map) {
+        this.imageSource = null;
+        return;
+      }
 
       // 从地图或图层组移除
       if (this.groupLayer) {
