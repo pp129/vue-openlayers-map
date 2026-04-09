@@ -8,7 +8,7 @@ import { addCoordinateTransforms, addProjection, Projection, transform } from "o
 import { applyTransform, containsCoordinate, containsExtent, getHeight, getWidth, getCenter } from "ol/extent";
 import { distance, point, polygon, centroid } from "@turf/turf";
 import coordtransform, { gcj02towgs84, bd09towgs84 } from "@/utils/coordtransform";
-import { Circle, LineString, MultiPoint, MultiPolygon, Point, Polygon } from "ol/geom";
+import { Circle, LineString, MultiPoint, MultiPolygon, MultiLineString, Point, Polygon } from "ol/geom";
 import { Fill, Icon, RegularShape, Stroke, Style, Text } from "ol/style";
 import CircleStyle from "ol/style/Circle";
 import { nanoid } from "nanoid";
@@ -455,6 +455,8 @@ export const setFeature = (option, map, hasStyle = false) => {
       case "Polyline":
       case "LineString":
         return setPolyline(option);
+      case "MultiLineString":
+        return setMultiLineString(option);
       case "circle":
       case "Circle":
         return setCircle(option, map);
@@ -596,6 +598,29 @@ export const setMultiPolygon = (option) => {
     geometry: new MultiPolygon(coordinates),
   });
   feature.setId(option.id || `polygon-${nanoid()}`);
+  if (typeof option === "object") {
+    for (const i in option) {
+      if (Object.prototype.hasOwnProperty.call(option, i)) {
+        feature.set(i, option[i]);
+      }
+    }
+  }
+  return feature;
+};
+
+export const setMultiLineString = (option) => {
+  let coordinates = [];
+  if (validObjKey(option, "convert") && option.convert) {
+    option.coordinates.forEach((coordinate) => {
+      coordinates.push(convertCoordinate(coordinate, option.convert));
+    });
+  } else {
+    coordinates = option.coordinates;
+  }
+  const feature = new FeatureExt({
+    geometry: new MultiLineString(coordinates),
+  });
+  feature.setId(option.id || `MultiLineString-${nanoid()}`);
   if (typeof option === "object") {
     for (const i in option) {
       if (Object.prototype.hasOwnProperty.call(option, i)) {
