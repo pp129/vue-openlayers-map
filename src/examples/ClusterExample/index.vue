@@ -117,7 +117,7 @@ export default {
   },
   mounted() {
     // 初始生成 100 个点
-    this.generatePoints(100);
+    this.generatePoints(2000);
   },
   methods: {
     onMapLoad(map) {

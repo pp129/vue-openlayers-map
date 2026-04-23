@@ -249,7 +249,9 @@ export default {
 
       // 优化: 使用 moveend 替代 precompose,并添加防抖
       const moveendListener = this.map.on("moveend", () => {
-        this.debouncedUpdateCluster();
+        if (typeof this.debouncedUpdateCluster === "function") {
+          this.debouncedUpdateCluster();
+        }
         this.$emit("moveend");
       });
       this.addListener(moveendListener, "moveend");
@@ -334,7 +336,10 @@ export default {
         this.clusters = null;
       }
 
-      // 清理防抖函数
+      // 清理防抖函数 (先取消待执行的防抖调用)
+      if (typeof this.debouncedUpdateCluster?.cancel === "function") {
+        this.debouncedUpdateCluster.cancel();
+      }
       this.debouncedUpdateCluster = null;
 
       // 清理图层
