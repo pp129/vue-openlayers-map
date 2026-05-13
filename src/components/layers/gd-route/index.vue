@@ -393,6 +393,7 @@ export default {
 
         const whereParam = this.getCurrentWhereParam();
         formData.append("where", whereParam);
+        // formData.append("where", "1=1");
 
         const geometryParam = this.getCurrentGeometryParam();
         if (geometryParam) {

@@ -87,6 +87,7 @@ export default {
             { path: "/Mobile", name: "Mobile", desc: "移动端适配", icon: "📱" },
             { path: "/OverviewMapExample", name: "OverviewMap", desc: "鹰眼控件", icon: "🔍" },
             { path: "/TrafficImageWMS", name: "TrafficWMS", desc: "交通态势图层", icon: "🚦" },
+            { path: "/GdRouteExample", name: "GdRoute", desc: "高德路况图层", icon: "🛣️" },
             { path: "/OptimizedMap", name: "OptimizedMap", desc: "性能优化示例", icon: "⚡" },
           ],
         },

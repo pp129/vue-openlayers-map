@@ -392,8 +392,8 @@ export default {
      */
     initTileFJBlue(overview) {
       // const url = 'https://xmghszzx.com/arcgis/rest/services/Updata/XMMAP_DP_2000/MapServer/tile'
-      const url = "http://172.16.34.120:6080/arcgis/rest/services/xiamen/MapServer/tile"; // 加自绘翔安大桥
-      this.layer = this.initXYZbyURL(`${url}/{z}/{y}/{x}`, { projection: "EPSG:4490" });
+      const url = "http://172.16.34.132:5002/xmblue"; // 加自绘翔安大桥
+      this.layer = this.initXYZbyURL(`${url}/{z}/{y}/{x}.png`, { projection: "EPSG:4326" });
       if (overview) return [this.layer];
       this.layers = [this.layer];
       this.addToMap();

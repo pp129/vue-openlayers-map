@@ -134,6 +134,11 @@ export const constantRouterMap = [
     name: "TileExample",
     component: () => import(/* webpackChunkName: "TileExample" */ "../examples/TileExample/index.vue"),
   },
+  {
+    path: "/GdRouteExample",
+    name: "GdRouteExample",
+    component: () => import(/* webpackChunkName: "GdRouteExample" */ "../examples/GdRouteExample/index.vue"),
+  },
 ];
 
 const router = new VueRouter({

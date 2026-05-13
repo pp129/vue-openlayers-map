@@ -6,6 +6,7 @@
         <option value="BD">百度</option>
         <option value="GD">高德</option>
         <option value="XYZ">Carto</option>
+        <option value="FJ_BLUE">FJ_BLUE</option>
       </select>
     </div>
     <v-map ref="map" :view="view">
