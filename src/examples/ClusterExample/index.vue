@@ -6,21 +6,21 @@
 
       <!-- 聚合图层 -->
       <v-super-cluster
+        ref="cluster"
         :features="clusterFeatures"
-        :distance="clusterDistance"
-        :min-distance="40"
         :z-index="10"
-        :style="clusterStyle"
+        :cluster="cluster"
         @load="onClusterLoad"
-        @cluster-click="onClusterClick"
+        @precompose="updateClusterCount"
+        @singleclick="onClusterClick"
       />
     </v-map>
 
     <!-- 控制面板 -->
     <div class="control-panel">
       <div class="control-group">
-        <label>聚合距离: {{ clusterDistance }}px</label>
-        <input type="range" v-model.number="clusterDistance" min="20" max="100" step="10" />
+        <label>聚合距离: {{ cluster.radius }}px</label>
+        <input type="range" v-model.number="cluster.radius" min="20" max="100" step="10" />
       </div>
 
       <div class="control-group">
@@ -57,66 +57,68 @@ export default {
         projection: "EPSG:4326",
       },
       clusterFeatures: [],
-      clusterDistance: 60,
       clusterCount: 0,
-      clusterStyle: [
-        {
-          min: 0,
-          max: 10,
-          circle: {
-            radius: 15,
-            fill: { color: "rgba(52, 211, 153, 0.8)" },
-            stroke: { color: "#fff", width: 2 },
+      cluster: {
+        radius: 60,
+        style: [
+          {
+            min: 0,
+            max: 10,
+            circle: {
+              radius: 15,
+              fill: { color: "rgba(52, 211, 153, 0.8)" },
+              stroke: { color: "#fff", width: 2 },
+            },
+            text: {
+              fill: { color: "#fff" },
+              font: "bold 14px sans-serif",
+            },
           },
-          text: {
-            fill: { color: "#fff" },
-            font: "bold 14px sans-serif",
+          {
+            min: 10,
+            max: 50,
+            circle: {
+              radius: 20,
+              fill: { color: "rgba(59, 130, 246, 0.8)" },
+              stroke: { color: "#fff", width: 2 },
+            },
+            text: {
+              fill: { color: "#fff" },
+              font: "bold 16px sans-serif",
+            },
           },
-        },
-        {
-          min: 10,
-          max: 50,
-          circle: {
-            radius: 20,
-            fill: { color: "rgba(59, 130, 246, 0.8)" },
-            stroke: { color: "#fff", width: 2 },
+          {
+            min: 50,
+            max: 200,
+            circle: {
+              radius: 25,
+              fill: { color: "rgba(251, 146, 60, 0.8)" },
+              stroke: { color: "#fff", width: 2 },
+            },
+            text: {
+              fill: { color: "#fff" },
+              font: "bold 18px sans-serif",
+            },
           },
-          text: {
-            fill: { color: "#fff" },
-            font: "bold 16px sans-serif",
+          {
+            min: 200,
+            max: Infinity,
+            circle: {
+              radius: 30,
+              fill: { color: "rgba(239, 68, 68, 0.8)" },
+              stroke: { color: "#fff", width: 2 },
+            },
+            text: {
+              fill: { color: "#fff" },
+              font: "bold 20px sans-serif",
+            },
           },
-        },
-        {
-          min: 50,
-          max: 200,
-          circle: {
-            radius: 25,
-            fill: { color: "rgba(251, 146, 60, 0.8)" },
-            stroke: { color: "#fff", width: 2 },
-          },
-          text: {
-            fill: { color: "#fff" },
-            font: "bold 18px sans-serif",
-          },
-        },
-        {
-          min: 200,
-          max: 99999,
-          circle: {
-            radius: 30,
-            fill: { color: "rgba(239, 68, 68, 0.8)" },
-            stroke: { color: "#fff", width: 2 },
-          },
-          text: {
-            fill: { color: "#fff" },
-            font: "bold 20px sans-serif",
-          },
-        },
-      ],
+        ],
+      },
     };
   },
   mounted() {
-    // 初始生成 100 个点
+    // 初始生成 2000 个点
     this.generatePoints(2000);
   },
   methods: {
@@ -130,21 +132,24 @@ export default {
       this.updateClusterCount();
     },
 
-    onClusterClick(feature) {
-      const features = feature.get("features");
-      if (features && features.length > 1) {
+    onClusterClick(evt, feature) {
+      console.log(evt, feature);
+      if (!feature) return;
+      const isClusterFeature = feature.get("cluster");
+      const extent = feature.get("geometry").getExtent();
+      this.map.getView().fit(extent, {
+        duration: 500,
+        padding: [50, 50, 50, 50],
+        maxZoom: 16,
+      });
+      if (!isClusterFeature) {
         // 点击聚合点，放大地图
-        const extent = feature.getGeometry().getExtent();
-        this.map.getView().fit(extent, {
-          duration: 500,
-          padding: [50, 50, 50, 50],
-          maxZoom: 18,
-        });
-      } else {
-        // 单个点，显示详情
-        const singleFeature = features[0];
-        const props = singleFeature.get("properties");
+        const props = feature.get("properties");
         alert(`点击了: ${props.name || "未命名点"}`);
+      } else {
+        const id = feature.get("cluster_id");
+        const leaves = this.$refs.cluster.getLeaves(id);
+        console.log(leaves);
       }
     },
 
@@ -155,16 +160,18 @@ export default {
       const points = [];
       const centerLon = 118.0894;
       const centerLat = 24.4798;
-      const spread = 0.3; // 散布范围
+      const spread = 0.1; // 散布范围（调小以便点更集中、聚合效果更直观）
+      const startIndex = this.clusterFeatures.length;
 
       for (let i = 0; i < count; i++) {
         const randomLon = centerLon + (Math.random() - 0.5) * spread;
         const randomLat = centerLat + (Math.random() - 0.5) * spread;
+        const index = startIndex + i;
 
         points.push({
           type: "point",
           coordinates: [randomLon, randomLat],
-          id: `cluster-point-${Date.now()}-${i}`,
+          id: `cluster-point-${Date.now()}-${index}`,
           style: {
             circle: {
               radius: 5,
@@ -173,14 +180,15 @@ export default {
             },
           },
           properties: {
-            name: `点 ${i + 1}`,
+            name: `点 ${index + 1}`,
             value: Math.floor(Math.random() * 100),
           },
         });
       }
 
-      this.clusterFeatures = points;
-      console.log(`[ClusterExample] 生成了 ${count} 个点`);
+      // 累加到现有点集（生成新数组引用以触发 features 侦听器重建聚合）
+      this.clusterFeatures = this.clusterFeatures.concat(points);
+      console.log(`[ClusterExample] 新增 ${count} 个点，当前共 ${this.clusterFeatures.length} 个`);
     },
 
     /**
@@ -195,14 +203,11 @@ export default {
      * 更新聚合点数量
      */
     updateClusterCount() {
-      // 这个方法可以由聚合图层触发的事件来更新
-      // 这里简单模拟
-      setTimeout(() => {
-        if (this.map) {
-          // 实际应该从聚合图层获取
-          this.clusterCount = this.clusterFeatures.length;
-        }
-      }, 100);
+      // 从聚合图层读取当前实际渲染的聚合要素数量（随缩放/平移变化）
+      this.$nextTick(() => {
+        const cluster = this.$refs.cluster;
+        this.clusterCount = cluster && typeof cluster.getFeatureCount === "function" ? cluster.getFeatureCount() : 0;
+      });
     },
   },
 };

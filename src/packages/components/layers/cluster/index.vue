@@ -11,6 +11,7 @@ import { convertCoordinate, setStyle, validObjKey } from "@/utils";
 import { addLayerToParentComp } from "@/utils/parent";
 import StyleCache from "@/packages/utils/styleCache";
 import { debounce } from "@/packages/utils/performance";
+import EventManager from "@/packages/utils/eventManager";
 
 export default {
   name: "v-super-cluster",
@@ -201,6 +202,18 @@ export default {
       return { ...style, text: textStyle };
     },
     init() {
+      // features 侦听器走 dispose() -> init() 重建路径，
+      // 而 dispose() 会清空 eventManager 与防抖函数（二者仅在 created() 创建一次），
+      // 这里需重新创建，否则重建后 moveend 不再触发聚合更新、且监听器无法被追踪清理
+      if (!this.eventManager) {
+        this.eventManager = new EventManager();
+      }
+      if (typeof this.debouncedUpdateCluster !== "function") {
+        this.debouncedUpdateCluster = debounce(100, () => {
+          this.updateClusterFeatures();
+        });
+      }
+
       this.clusters = new Supercluster(this.cluster);
       this.clusters.load(this.getGeoFeatures());
       this.total = this.clusters.points.length;
@@ -268,6 +281,8 @@ export default {
         const listener = this.map.on(listenerKey, (evt) => this.eventHandler(listenerKey, evt));
         this.addListener(listener, `event-${listenerKey}`);
       });
+
+      this.$emit("load", this.layer, this.map);
     },
 
     /**
