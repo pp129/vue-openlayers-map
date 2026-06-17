@@ -48,8 +48,8 @@ export default {
     stopDrawing() {
       this.isDrawing = false;
     },
-    onDrawEnd(feature) {
-      const geom = feature.getGeometry();
+    onDrawEnd(evt) {
+      const geom = evt.feature.getGeometry();
       this.drawnFeatures.push({
         type: this.drawType,
         coordinates: geom.getCoordinates(),
@@ -57,6 +57,11 @@ export default {
         style: {
           fill: { color: "rgba(67, 126, 255, 0.3)" },
           stroke: { color: "#437eff", width: 2 },
+          circle: {
+            radius: 8,
+            fill: { color: "rgba(255, 0, 0, 0.6)" },
+            stroke: { color: "#fff", width: 2 },
+          },
         },
       });
     },
